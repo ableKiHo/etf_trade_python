@@ -154,3 +154,6 @@ log/
 *.bat
 .idea/workspace.xml
 !/kiwoomStart.bat
+!/properties/
+properties/
+*.ini

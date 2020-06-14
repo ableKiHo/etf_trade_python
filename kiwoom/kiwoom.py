@@ -10,12 +10,14 @@ from config.errorCode import *
 from config.kiwoomType import *
 from config.lineNotify import LineNotify
 from config.log_class import *
+from config.property import Property
 
 
 class Kiwoom(QAxWidget):
     def __init__(self):
         super().__init__()
 
+        self.property = Property()
         self.realType = RealType()
         self.logging = Logging()
         self.line = LineNotify()
@@ -32,13 +34,14 @@ class Kiwoom(QAxWidget):
         ##########################################
 
         # 계좌 관련 변수
-        self.account_num = None  # 계좌번호
+        self.account_num = self.property.account  # 계좌번호
+        self.account_pw = self.property.accountPw
         self.use_money = 0  # 실제 투자에 사용할 금액
         self.use_money_percent = 0.5  # 예수금에서 실제 사용할 비율
         self.deposit = 0  # 예수금
         self.buy_possible_deposit = 0  # 주문가능 금액
         self.purchased_deposit = 0  # 구매한 금액
-        self.target_etf_file_path = "C:/stock/target_etf_info.txt"
+        self.target_etf_file_path = self.property.targetEtfFilePath
         ##########################################
 
         #  종목정보 가져오기
@@ -61,25 +64,50 @@ class Kiwoom(QAxWidget):
         self.buy_screen_meme_stock = "3000"  # 종목별 할당할 주문용 스크린 번호
         self.buy_screen_real_stock = "6000"  # 종별별 할당할 스크린 번호
 
+        now = datetime.datetime.now()
+        t = ['월', '화', '수', '목', '금', '토', '일']
+        weekDay = datetime.datetime.today().weekday()
+        if t[weekDay] == '토' or t[weekDay] == '일':
+            sys.exit()
+
         # 초기 셋팅 함수들 바로 실행
         self.get_ocx_instance()  # OCX 방식을 파이썬에 사용할 수 있게 변환해 주는 함수
         self.event_slots()  # 키움과 연결하기 위한 시그널 / 슬롯 모음
         self.real_event_slot()  # 실시간 이벤트 시그널 / 슬롯 연결
         self.signal_login_commconnect()  # 로그인 요청 함수 포함
-        self.get_account_info()  # 계좌번호 가져오기
+        # self.get_account_info()  # 계좌번호 가져오기
 
-        now = datetime.datetime.now()
         hour = int(now.hour)
-        if hour < 8 or hour > 18:
-            self.line.notification("장 종료 후 준비 작업")
-            # TODO 매도 수익률 확인용 필요
-            self.detail_account_mystock()  # 계좌평가잔고내역 가져오기(보유 ETF 조회)
-            self.prepare_next_day()
-        else:
-            self.detail_account_info()
+
+        if 8 <= hour <= 10:
+            self.line.notification("ETF AUTO SELL TRADE START")
             self.detail_account_mystock()  # 계좌평가잔고내역 가져오기(보유 ETF 조회)
             QTest.qWait(10000)
             self.sell_screen_number_setting()
+            QTest.qWait(5000)
+
+            for sCode in self.sell_portfolio_stock_dict.keys():
+                asd = self.account_stock_dict[sCode]
+                QTest.qWait(1000)
+                order_success = self.dynamicCall(
+                    "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+                    ["신규매도", self.sell_portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 2, sCode, asd['보유수량'],
+                     0, self.realType.SENDTYPE['거래구분']['시장가'], ""]
+                )
+
+                if order_success == 0:
+                    self.logging.logger.info("매도주문 전달 성공 [%s]" % sCode)
+                    self.not_order_sell_stock_dict.update({sCode: {"사유": "매도주문 전달 성공"}})
+                else:
+                    self.logging.logger.info("매도주문 전달 실패 [%s]" % sCode)
+
+            QTest.qWait(10000)
+            self.line.notification("ETF AUTO SELL TRADE END")
+            QTest.qWait(5000)
+            sys.exit()
+        elif 11 <= hour <= 17:
+            self.line.notification("ETF BUY TRADE START")
+            self.detail_account_info()
             QTest.qWait(5000)
             self.read_target_etf_file()  # 대상 ETF(파일) 읽기
             QTest.qWait(10000)
@@ -87,17 +115,21 @@ class Kiwoom(QAxWidget):
 
             QTest.qWait(5000)
             # 실시간 수신 관련 함수
-            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '', self.realType.REALTYPE['장시작시간']['장운영구분'], "0")
-
-            for code in self.sell_portfolio_stock_dict.keys():
-                screen_num = self.sell_portfolio_stock_dict[code]['스크린번호']
-                fids = self.realType.REALTYPE['주식체결']['체결시간']
-                self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
+            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
+                             self.realType.REALTYPE['장시작시간']['장운영구분'], "0")
 
             for code in self.portfolio_stock_dict.keys():
                 screen_num = self.portfolio_stock_dict[code]['스크린번호']
                 fids = self.realType.REALTYPE['주식체결']['체결시간']
                 self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
+
+        else:
+            self.line.notification("ETF PREPARE AUTO TRADE START")
+            # TODO 일일 수익률 확인 필요
+            self.end_detail_account_info()
+            self.detail_account_mystock()  # 계좌평가잔고내역 가져오기(보유 ETF 조회)
+            self.prepare_next_day()
+            self.line.notification("ETF PREPARE AUTO TRADE END")
 
     def get_ocx_instance(self):
         self.setControl("KHOPENAPI.KHOpenApiCtrl.1")
@@ -122,19 +154,11 @@ class Kiwoom(QAxWidget):
         # 로그인 처리가 완료댔으면 이벤트 루프를 종료한다.
         self.login_event_loop.exit()
 
-    def get_account_info(self):
-        account_list = self.dynamicCall("GetLoginInfo(QString)", "ACCNO")  # 계좌번호 반환(구분자 ';'로 연결된 보유계좌)
-        account_num = account_list.split(';')[0]  # a;b;c -> [a, b, c]
-        self.account_num = account_num
-
-        self.logging.logger.info("계좌번호 : %s" % account_num)
-        self.line.notification("계좌번호 > %s" % account_num)
-
     def detail_account_info(self, sPrevNext="0"):
         self.logging.logger.info("detail_account_info")
         QTest.qWait(5000)
         self.dynamicCall("SetInputValue(QString, QString)", "계좌번호", self.account_num)
-        self.dynamicCall("SetInputValue(QString, QString)", "비밀번호", "0000")
+        self.dynamicCall("SetInputValue(QString, QString)", "비밀번호", self.account_pw)
         self.dynamicCall("SetInputValue(QString, QString)", "비밀번호입력매체구분", "00")
         self.dynamicCall("SetInputValue(QString, QString)", "조회구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "예수금상세현황요청", "opw00001", sPrevNext, self.screen_my_info)
@@ -166,21 +190,29 @@ class Kiwoom(QAxWidget):
             use_money = float(self.buy_possible_deposit) * self.use_money_percent
             self.use_money = int(use_money)
             self.purchased_deposit = int(use_money)
-            #  한 종목을 매수할 떄 모든 돈을 다 쓰면 안되므로 6종목 매수할 수 있게 나눔
-            self.use_money = self.use_money / 6
+            #  한 종목을 매수할 떄 모든 돈을 다 쓰면 안되므로 3종목 매수할 수 있게 나눔
+            self.use_money = self.use_money / 3
 
             self.stop_screen_cancel(self.screen_my_info)
             self.detail_account_info_event_loop.exit()
             self.logging.logger.info("당일 예산 [%s]" % self.purchased_deposit)
             self.line.notification("당일 예산 [%s]" % self.purchased_deposit)
+        elif sRQName == "예수금상세현황요청_마감":
+            deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "예수금")
+            self.deposit = int(deposit)
+            self.logging.logger.info("마감 예수금 : %s" % self.deposit)
+            self.line.notification("마감 예수금 : %s" % self.deposit)
+            self.stop_screen_cancel(self.screen_my_info)
+            self.detail_account_info_event_loop.exit()
+
         elif sRQName == "ETF전체시세요청":
             rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
             for i in range(rows):
                 volume = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "거래량")
                 volume = volume.strip()
-                if int(volume) >= 100000:
-                    code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "종목코드")
-                    code = code.strip()
+                code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "종목코드")
+                code = code.strip()
+                if int(volume) >= 100000 and code not in self.account_stock_dict.keys():
                     code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "종목명")
                     code_nm = code_nm.strip()
 
@@ -199,20 +231,19 @@ class Kiwoom(QAxWidget):
             code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "종목코드")
             code = code.strip()
             code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "종목명")
-            code_nm = code_nm.strip()
             highest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "고가")
             lowest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "저가")
             last_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "현재가")
             change_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "전일대비")
 
-            market_cap = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "시가총액")
+            market_cap = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "시가총액") # 단위 억
             market_cap = market_cap.strip()
 
             self.logging.logger.info("종목번호: %s / 고가: %s / 저가: %s / 종가: %s / 전일대비: %s / 시가총액: %s" % (
                 code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price.strip(), market_cap)
             )
 
-            if market_cap >= 13000000000:
+            if int(market_cap) >= 130:
                 self.target_etf_stock_dict[code].update({"종목명": code_nm})
                 self.target_etf_stock_dict[code].update({"전일고가": abs(int(highest_stock_price.strip()))})
                 self.target_etf_stock_dict[code].update({"전일저가": abs(int(lowest_stock_price.strip()))})
@@ -357,30 +388,54 @@ class Kiwoom(QAxWidget):
                 for code in self.sell_portfolio_stock_dict.keys():
                     self.dynamicCall("SetRealRemove(QString, QString)", self.sell_portfolio_stock_dict[code]['스크린번호'], code)
 
+                self.line.notification("시스템 종료")
                 sys.exit()
 
         elif sRealType == "주식체결":
+            b = self.dynamicCall("GetCommRealData(QString, int)", sCode,
+                                 self.realType.REALTYPE[sRealType]['현재가'])  # 출력 : +(-)2520
+            b = abs(int(b.strip()))
+            e = self.dynamicCall("GetCommRealData(QString, int)", sCode,
+                                 self.realType.REALTYPE[sRealType]['(최우선)매도호가'])  # 출력 : +(-)2520
+            e = abs(int(e.strip()))
 
-            if sCode in self.account_stock_dict.keys() and sCode in self.sell_portfolio_stock_dict.keys() and sCode not in self.not_order_sell_stock_dict.keys():
-                asd = self.account_stock_dict[sCode]
+            if self.purchased_deposit > 0 and sCode in self.not_order_stock_dict.keys():
+                if len(self.portfolio_stock_dict.keys()) == len(self.order_stock_dict.keys()) + len(self.not_order_stock_dict.keys()):
 
-                order_success = self.dynamicCall(
-                    "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-                    ["신규매도", self.sell_portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 2, sCode, asd['보유수량'], 0, self.realType.SENDTYPE['거래구분']['시장가'], ""]
-                )
+                    value = self.cal_target_etf_stock_dict[sCode]
+                    reason = value['사유']
+                    if reason == '매수주문 불가 [주문가능 수량 부족]':
+                        goal_stock_price = value['목표가']
+                        if b > goal_stock_price:
+                            result = self.purchased_deposit / e
+                            quantity = int(result)
+                            total_buy_price = e * quantity
+                            if quantity > 1 and self.purchased_deposit > total_buy_price:
+                                # 사용자 구분명, 화면번호, 계좌번호 10자리, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호
+                                # 주문유형 1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
+                                order_success = self.dynamicCall(
+                                    "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+                                    ["신규매수", self.portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 1, sCode,
+                                     quantity, e, self.realType.SENDTYPE['거래구분']['지정가'], ""])
 
-                if order_success == 0:
-                    self.logging.logger.info("매도주문 전달 성공 [%s]" % sCode)
-                    self.not_order_sell_stock_dict.update({sCode: {"사유": "매도주문 전달 성공"}})
-                else:
-                    self.logging.logger.info("매도주문 전달 실패 [%s]" % sCode)
+                                if order_success == 0:
+                                    self.purchased_deposit -= total_buy_price
+                                    self.order_stock_dict.update({sCode: {"사유": "매수주문 전달 성공"}})
+                                    self.logging.logger.info("[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (
+                                    sCode, quantity, e, self.purchased_deposit))
+                                    self.line.notification("[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (
+                                    sCode, quantity, e, self.purchased_deposit))
+                                else:
+                                    self.logging.logger.info("매수주문 전달 실패")
+                            else:
+                                self.logging.logger.info(
+                                    "[%s] > 매수주문 불가2 [주문가능 수량 부족] [ 보유잔액: %s / 주문수량: %s / 총주문가: %s ]" % (
+                                    sCode, self.purchased_deposit, quantity, total_buy_price))
+                                self.not_order_stock_dict.update({sCode: {"사유": "매수주문 불가2 [주문가능 수량 부족]"}})
 
-            if self.purchased_deposit > 0 and sCode in self.cal_target_etf_stock_dict.keys() and sCode in self.portfolio_stock_dict.keys() and sCode not in self.sell_portfolio_stock_dict.keys() and sCode not in self.account_stock_dict.keys() and sCode not in self.order_stock_dict.keys() and sCode not in self.not_order_stock_dict.keys():
+            if self.purchased_deposit > 0 and sCode in self.cal_target_etf_stock_dict.keys() and sCode in self.portfolio_stock_dict.keys() and sCode not in self.order_stock_dict.keys() and sCode not in self.not_order_stock_dict.keys():
                 a = self.dynamicCall("GetCommRealData(QString, int)", sCode,
                                      self.realType.REALTYPE[sRealType]['체결시간'])  # 출력 HHMMSS
-                b = self.dynamicCall("GetCommRealData(QString, int)", sCode,
-                                     self.realType.REALTYPE[sRealType]['현재가'])  # 출력 : +(-)2520
-                b = abs(int(b.strip()))
 
                 c = self.dynamicCall("GetCommRealData(QString, int)", sCode,
                                      self.realType.REALTYPE[sRealType]['전일대비'])  # 출력 : +(-)2520
@@ -389,10 +444,6 @@ class Kiwoom(QAxWidget):
                 d = self.dynamicCall("GetCommRealData(QString, int)", sCode,
                                      self.realType.REALTYPE[sRealType]['등락율'])  # 출력 : +(-)12.98
                 d = float(d.strip())
-
-                e = self.dynamicCall("GetCommRealData(QString, int)", sCode,
-                                     self.realType.REALTYPE[sRealType]['(최우선)매도호가'])  # 출력 : +(-)2520
-                e = abs(int(e.strip()))
 
                 f = self.dynamicCall("GetCommRealData(QString, int)", sCode,
                                      self.realType.REALTYPE[sRealType]['(최우선)매수호가'])  # 출력 : +(-)2515
@@ -447,7 +498,7 @@ class Kiwoom(QAxWidget):
                     result = self.use_money / e
                     quantity = int(result)
                     total_buy_price = e * quantity
-                    if quantity > 1 and self.purchased_deposit > total_buy_price:
+                    if quantity >= 1 and self.purchased_deposit > total_buy_price:
                         # 사용자 구분명, 화면번호, 계좌번호 10자리, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호
                         # 주문유형 1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
                         order_success = self.dynamicCall(
@@ -473,6 +524,7 @@ class Kiwoom(QAxWidget):
         self.get_etf_stock_info()  # 주식기본정보요청(opt10001) => 고가, 저가, 종가 -> 파일 생성
 
         self.line.notification("시스템 종료")
+        QTest.qWait(5000)
         sys.exit()
 
     def cal_goal_stock_price(self, code, value):
@@ -486,8 +538,8 @@ class Kiwoom(QAxWidget):
         lowest_stock_price = int(lowest_stock_price)
 
         if start_stock_price > last_stock_price:
-            if (start_stock_price - last_stock_price) <= 0.3 * (highest_stock_price - lowest_stock_price):
-                goal_stock_price = start_stock_price + (0.3 * (highest_stock_price - lowest_stock_price))
+            if (start_stock_price - last_stock_price) <= (highest_stock_price - lowest_stock_price):
+                goal_stock_price = start_stock_price + (0.4 * (highest_stock_price - lowest_stock_price))
                 goal_stock_price = round(goal_stock_price, 0)
             else:
                 goal_stock_price = 0

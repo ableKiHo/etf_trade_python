@@ -2,12 +2,16 @@ import os
 
 import requests
 
+from config.property import Property
+
 
 class LineNotify():
     # pip install requests
     def __init__(self):
+        self.property = Property()
         self.token = 'Bearer '
         self.getToken()
+
 
     def notification(self, message):
         headers = {'Authorization': self.token}
@@ -20,7 +24,7 @@ class LineNotify():
         # print("response body: %s" % resp.text)
 
     def getToken(self):
-        token_file_path = "C:/stock/Authorization/Bearer.txt"
+        token_file_path = self.property.tokenfilePath
         if os.path.exists(token_file_path):
             f = open(token_file_path, "r", encoding="utf8")
 
