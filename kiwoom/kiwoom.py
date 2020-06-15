@@ -526,6 +526,9 @@ class Kiwoom(QAxWidget):
                              self.realType.REALTYPE[sRealType]['저가'])  # 출력 : +(-)2530
         k = abs(int(k.strip()))
 
+        if sCode not in self.total_cal_target_etf_stock_dict.keys():
+            self.total_cal_target_etf_stock_dict.update({sCode: {}})
+
         self.total_cal_target_etf_stock_dict[sCode].update({"체결시간": a})
         self.total_cal_target_etf_stock_dict[sCode].update({"현재가": b})
         self.total_cal_target_etf_stock_dict[sCode].update({"전일대비": c})
