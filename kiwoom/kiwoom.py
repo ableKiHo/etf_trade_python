@@ -42,6 +42,7 @@ class Kiwoom(QAxWidget):
         self.buy_possible_deposit = 0  # 주문가능 금액
         self.purchased_deposit = 0  # 구매한 금액
         self.target_etf_file_path = self.property.targetEtfFilePath
+        self.max_sell_stock_count = 3  # 일일 최대 구매 가능 종목 수
         ##########################################
 
         #  종목정보 가져오기
