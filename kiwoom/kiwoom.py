@@ -539,7 +539,7 @@ class Kiwoom(QAxWidget):
         self.total_cal_target_etf_stock_dict[sCode].update({"고가": i})
         self.total_cal_target_etf_stock_dict[sCode].update({"시가": j})
         self.total_cal_target_etf_stock_dict[sCode].update({"저가": k})
-        self.total_cal_target_etf_stock_dict[sCode].update({"당일시가": self.total_portfolio_stock_dict[sCode]['시가']})
+        self.total_cal_target_etf_stock_dict[sCode].update({"당일시가": self.total_cal_target_etf_stock_dict[sCode]["시가"]})
 
 
     def realdata_slot(self, sCode, sRealType, sRealData):
