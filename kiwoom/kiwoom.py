@@ -135,7 +135,6 @@ class Kiwoom(QAxWidget):
 
         else:
             self.line.notification("ETF PREPARE AUTO TRADE START")
-            # TODO 일일 수익률 확인 필요
             self.detail_account_mystock()  # 계좌평가잔고내역 가져오기(보유 ETF 조회)
             self.prepare_next_day()
             self.line.notification("ETF PREPARE AUTO TRADE END")
@@ -405,7 +404,7 @@ class Kiwoom(QAxWidget):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > 매수 미대상 [목표가 0원]" % sCode)
             self.priority_not_order_stock_dict.update({sCode: {"사유": "매수 미대상 [목표가 0원]"}})
-        elif goal_stock_price <= self.priority_cal_target_etf_stock_dict[sCode]["현재가"] < self.priority_cal_target_etf_stock_dict[sCode]["고가"]:
+        elif goal_stock_price <= self.priority_cal_target_etf_stock_dict[sCode]["현재가"] < self.priority_cal_target_etf_stock_dict[sCode]["고가"] and self.isGoalStockPriceRange(goal_stock_price):
 
             self.logging.logger.info("%s > 매수조건 통과  목표가 : %s" % (sCode, goal_stock_price))
             result = self.use_money / self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"]
@@ -457,7 +456,7 @@ class Kiwoom(QAxWidget):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > 매수 미대상 [목표가 0원]" % sCode)
             self.second_not_order_stock_dict.update({sCode: {"사유": "매수 미대상 [목표가 0원]"}})
-        elif goal_stock_price <= self.second_cal_target_etf_stock_dict[sCode]["현재가"] < self.second_cal_target_etf_stock_dict[sCode]["고가"]:
+        elif goal_stock_price <= self.second_cal_target_etf_stock_dict[sCode]["현재가"] < self.second_cal_target_etf_stock_dict[sCode]["고가"] and self.isGoalStockPriceRange(goal_stock_price):
 
             self.logging.logger.info("%s > 매수조건 통과  목표가 : %s" % (sCode, goal_stock_price))
             result = self.use_money / self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"]
@@ -781,3 +780,8 @@ class Kiwoom(QAxWidget):
             screen_num = self.second_portfolio_stock_dict[code]['스크린번호']
             fids = self.realType.REALTYPE['주식체결']['체결시간']
             self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
+
+    def isGoalStockPriceRange(self, goalStockPrice):
+        rangePercentage = 1.5
+        maxPrice = goalStockPrice + round(goalStockPrice * (rangePercentage / 100))
+        return goalStockPrice <= maxPrice
