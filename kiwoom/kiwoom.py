@@ -397,6 +397,8 @@ class Kiwoom(QAxWidget):
 
         value = self.priority_cal_target_etf_stock_dict[sCode]
         goal_stock_price = value['목표가']
+        current_stock_price = self.priority_cal_target_etf_stock_dict[sCode]["현재가"]
+        limit_stock_price = self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"]
         if goal_stock_price == '':
             goal_stock_price = self.cal_goal_stock_price(code=sCode, value=value)
             self.priority_cal_target_etf_stock_dict[sCode].update({"목표가": goal_stock_price})
@@ -404,27 +406,27 @@ class Kiwoom(QAxWidget):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > 매수 미대상 [목표가 0원]" % sCode)
             self.priority_not_order_stock_dict.update({sCode: {"사유": "매수 미대상 [목표가 0원]"}})
-        elif goal_stock_price <= self.priority_cal_target_etf_stock_dict[sCode]["현재가"] < self.priority_cal_target_etf_stock_dict[sCode]["고가"] and self.isGoalStockPriceRange(goal_stock_price):
+        elif goal_stock_price <= current_stock_price != self.priority_cal_target_etf_stock_dict[sCode]["고가"] and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
 
             self.logging.logger.info("%s > 매수조건 통과  목표가 : %s" % (sCode, goal_stock_price))
-            result = self.use_money / self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"]
+            result = self.use_money / limit_stock_price
             quantity = int(result)
-            total_buy_price = self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"] * quantity
+            total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
                 # 사용자 구분명, 화면번호, 계좌번호 10자리, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호
                 # 주문유형 1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
                 order_success = self.dynamicCall(
                     "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-                    ["신규매수", self.priority_portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 1, sCode, quantity, self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"],
+                    ["신규매수", self.priority_portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 1, sCode, quantity, limit_stock_price,
                      self.realType.SENDTYPE['거래구분']['지정가'], ""])
 
                 if order_success == 0:
                     self.purchased_deposit -= total_buy_price
                     self.priority_order_stock_dict.update({sCode: {"사유": "매수주문 전달 성공"}})
                     self.logging.logger.info(
-                        "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"], self.purchased_deposit))
+                        "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, limit_stock_price, self.purchased_deposit))
                     self.line.notification(
-                        "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, self.priority_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"], self.purchased_deposit))
+                        "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, limit_stock_price, self.purchased_deposit))
                 else:
                     self.logging.logger.info("매수주문 전달 실패")
             else:
@@ -449,6 +451,8 @@ class Kiwoom(QAxWidget):
 
         value = self.second_cal_target_etf_stock_dict[sCode]
         goal_stock_price = value['목표가']
+        current_stock_price = self.second_cal_target_etf_stock_dict[sCode]["현재가"]
+        limit_stock_price = self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"]
         if goal_stock_price == '':
             goal_stock_price = self.cal_goal_stock_price(code=sCode, value=value)
             self.second_cal_target_etf_stock_dict[sCode].update({"목표가": goal_stock_price})
@@ -456,18 +460,18 @@ class Kiwoom(QAxWidget):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > 매수 미대상 [목표가 0원]" % sCode)
             self.second_not_order_stock_dict.update({sCode: {"사유": "매수 미대상 [목표가 0원]"}})
-        elif goal_stock_price <= self.second_cal_target_etf_stock_dict[sCode]["현재가"] < self.second_cal_target_etf_stock_dict[sCode]["고가"] and self.isGoalStockPriceRange(goal_stock_price):
+        elif goal_stock_price <= current_stock_price != self.second_cal_target_etf_stock_dict[sCode]["고가"] and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
 
             self.logging.logger.info("%s > 매수조건 통과  목표가 : %s" % (sCode, goal_stock_price))
-            result = self.use_money / self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"]
+            result = self.use_money / limit_stock_price
             quantity = int(result)
-            total_buy_price = self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"] * quantity
+            total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
                 # 사용자 구분명, 화면번호, 계좌번호 10자리, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호
                 # 주문유형 1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
                 order_success = self.dynamicCall(
                     "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-                    ["신규매수", self.second_portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 1, sCode, quantity, self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"],
+                    ["신규매수", self.second_portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 1, sCode, quantity, limit_stock_price,
                      self.realType.SENDTYPE['거래구분']['지정가'], ""])
 
                 if order_success == 0:
@@ -475,8 +479,8 @@ class Kiwoom(QAxWidget):
                     self.purchased_deposit -= total_buy_price
                     self.second_order_stock_dict.update({sCode: {"사유": "매수주문 전달 성공"}})
                     self.logging.logger.info(
-                        "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"], self.purchased_deposit))
-                    self.line.notification("[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, self.second_cal_target_etf_stock_dict[sCode]["(최우선)매도호가"], self.purchased_deposit))
+                        "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, limit_stock_price, self.purchased_deposit))
+                    self.line.notification("[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]" % (sCode, quantity, limit_stock_price, self.purchased_deposit))
                 else:
                     self.logging.logger.info("매수주문 전달 실패")
             else:
@@ -781,7 +785,7 @@ class Kiwoom(QAxWidget):
             fids = self.realType.REALTYPE['주식체결']['체결시간']
             self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
-    def isGoalStockPriceRange(self, goalStockPrice):
+    def isGoalStockPriceRange(self, goalStockPrice, currentStockPrice):
         rangePercentage = 1.5
         maxPrice = goalStockPrice + round(goalStockPrice * (rangePercentage / 100))
-        return goalStockPrice <= maxPrice
+        return currentStockPrice <= maxPrice
