@@ -30,8 +30,9 @@ class ParentKiwoom(QAxWidget):
         if self.weekend.isWeekend:
             self.line.notification("ETF AUTO TRADE WEEKEND")
             QTest.qWait(5000)
-            # sys.exit()
+            sys.exit()
 
+        self.screen_my_info = "2000"  # 계좌 관련한 스크린 번호
         self.login_event_loop = QEventLoop()
 
         self.target_etf_file_path = self.property.targetEtfFilePath
