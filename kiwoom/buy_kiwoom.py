@@ -406,7 +406,7 @@ class BuyKiwoom(ParentKiwoom):
 
         if start_stock_price > last_stock_price:
             if (start_stock_price - last_stock_price) <= (highest_stock_price - lowest_stock_price):
-                goal_stock_price = start_stock_price + (0.35 * (highest_stock_price - lowest_stock_price))
+                goal_stock_price = last_stock_price + (0.35 * (highest_stock_price - lowest_stock_price))
                 goal_stock_price = round(goal_stock_price, 0)
             else:
                 goal_stock_price = 0

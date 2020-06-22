@@ -22,3 +22,4 @@ class LogType():
         self.OWN_TOTAL_STOCK_LOG = "계좌에 가지고 있는 종목은 %s"
         self.CONCLUSION_ORDER_STATUS_LOG = "%s_주문체결 %s[%s] / 주문상태 : %s / 체결가 : %s / 체결량 : %s"
         self.CHEJAN_STATUS_LOG = "%s_잔고 %s[%s] / 보유수량 : %s / 주문가능수량 : %s / 매입단가 : %s / 총매입가 : %s / 손익율 : %s"
+        self.OPT40003_STATUS_LOG = "종목번호: %s / AVG: %s / MAX: %s / MIN: %s"
