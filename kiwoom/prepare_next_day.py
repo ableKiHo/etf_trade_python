@@ -99,7 +99,7 @@ class PrepareNextDay(ParentKiwoom):
             volume = volume.strip()
             code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_CODE)
             code = code.strip()
-            if int(volume) >= 100000:
+            if int(volume) >= 50000:
                 code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NAME)
                 code_nm = code_nm.strip()
 
@@ -139,7 +139,7 @@ class PrepareNextDay(ParentKiwoom):
         self.etf_info_event_loop.exit()
 
     def isTragetEtfStock(self, value):
-        return int(value[self.customType.MARTKET_CAP]) >= 130
+        return int(value[self.customType.MARTKET_CAP]) >= 65
 
     def createTargetEtfStockFile(self):
         self.logging.logger.info("createTargetEtfStockFile")
