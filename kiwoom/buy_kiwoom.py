@@ -24,9 +24,7 @@ class BuyKiwoom(ParentKiwoom):
         self.total_portfolio_stock_dict = {}  # 실시간 조회 주식 정보 저장용(전체)
         self.priority_portfolio_stock_dict = {}  # 실시간 조회 주식 정보 저장용(레버리지, 인버스용)
         self.second_portfolio_stock_dict = {}  # 실시간 조회 주식 정보 저장용(일반)
-        self.priority_order_stock_dict = {}  # 매수 주문 완료 저장용
         self.priority_not_order_stock_dict = {}  # 매수 주문 불가 저장용
-        self.second_order_stock_dict = {}  # 매수 주문 완료 저장용
         self.second_not_order_stock_dict = {}  # 매수 주문 불가 저장용
 
         self.screen_start_stop_real = "1000"  # 장 시작/종료 실시간 스크린 번호
@@ -252,9 +250,6 @@ class BuyKiwoom(ParentKiwoom):
 
             if self.purchased_deposit > 0 and sCode in self.priority_cal_target_etf_stock_dict.keys() and sCode not in self.priority_order_stock_dict.keys() and sCode not in self.priority_not_order_stock_dict.keys():
                 self.buyPriorityEtf(sCode, sRealType, sRealData)
-
-    def sell_analysis_stock(self, sCode, sRealType, sRealData):
-        self.createSellAnalysisEtfFile(sCode, sRealData)
 
     def commRealData(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])  # 출력 : +(-)2520

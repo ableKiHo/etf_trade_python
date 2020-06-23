@@ -47,6 +47,9 @@ class ParentKiwoom(QAxWidget):
         self.purchased_deposit = 0  # 구매한 금액
         self.max_sell_stock_count = 3  # 일일 최대 구매 가능 종목 수
 
+        self.priority_order_stock_dict = {}  # 매수 주문 완료 저장용
+        self.second_order_stock_dict = {}  # 매수 주문 완료 저장용
+
         self.get_ocx_instance()
         self.login_event_slots()
         self.signal_login_commconnect()
@@ -110,6 +113,12 @@ class ParentKiwoom(QAxWidget):
             total_buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.TOTAL_PURCHASE_PRICE])
             total_buy_price = int(total_buy_price)
             income_rate = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PROFIT_AND_LOSS])
+
+            if sCode in self.priority_order_stock_dict.keys():
+                self.priority_order_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price})
+
+            if sCode in self.second_order_stock_dict.keys():
+                self.second_order_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price})
 
             self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, stock_quan, like_quan, buy_price, total_buy_price, income_rate))
             self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, stock_quan, like_quan, buy_price, total_buy_price, income_rate))
