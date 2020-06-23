@@ -239,11 +239,11 @@ class BuyKiwoom(ParentKiwoom):
                 sys.exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            self.createAnalysisEtfFile(sCode, sRealData, self.analysis_etf_file_path)
             self.commRealData(sCode, sRealType, sRealData)
+            self.createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
 
             if sCode in self.second_order_stock_dict.keys() or sCode in self.priority_order_stock_dict.keys():
-                self.createAnalysisEtfFile(sCode, sRealData, self.sell_analysis_etf_file_path)
+                self.createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.sell_analysis_etf_file_path)
 
             if self.purchased_deposit > 0 and sCode in self.second_cal_target_etf_stock_dict.keys() and sCode not in self.second_order_stock_dict.keys() and sCode not in self.second_not_order_stock_dict.keys():
                 self.buySecondEtf(sCode, sRealType, sRealData)
