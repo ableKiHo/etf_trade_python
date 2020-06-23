@@ -14,7 +14,7 @@ class BuyKiwoom(ParentKiwoom):
         self.logging.logger.info("ETF BuyKiwoom() class start.")
         self.line.notification("ETF BuyKiwoom() class start.")
 
-        self.detail_account_info_event_loop = QEventLoop()  # 예수금 요청용 이벤트 루프
+
 
         self.use_money = 0  # 실제 투자에 사용할 금액
         self.use_money_percent = 0.5  # 예수금에서 실제 사용할 비율
