@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 
@@ -14,7 +15,7 @@ class BuyKiwoom(ParentKiwoom):
         self.logging.logger.info("ETF BuyKiwoom() class start.")
         self.line.notification("ETF BuyKiwoom() class start.")
 
-
+        self.analysis_etf_file_path = self.property.analysisEtfFilePath
 
         self.use_money = 0  # 실제 투자에 사용할 금액
         self.use_money_percent = 0.5  # 예수금에서 실제 사용할 비율
@@ -234,6 +235,7 @@ class BuyKiwoom(ParentKiwoom):
                 sys.exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
+            self.createAnalysisEtfFile(sCode, sRealData)
             self.commRealData(sCode, sRealType, sRealData)
 
             if self.purchased_deposit > 0 and sCode in self.second_cal_target_etf_stock_dict.keys() and sCode in self.second_portfolio_stock_dict.keys() and sCode not in self.second_order_stock_dict.keys() and sCode not in self.second_not_order_stock_dict.keys():
@@ -417,3 +419,15 @@ class BuyKiwoom(ParentKiwoom):
             return goal_stock_price
         else:
             return 0
+
+    def createAnalysisEtfFile(self, sCode, sRealData):
+        now = datetime.datetime.now()
+        nowDate = now.strftime('%Y-%m-%d')
+        parent_path = self.analysis_etf_file_path + nowDate
+        if not os.path.isdir(parent_path):
+            os.mkdir(parent_path)
+        path = parent_path + '/' + sCode + '.txt'
+        f = open(path, "a", encoding="utf8")
+        f.write("%s\t%s\n" %
+                (sCode, sRealData))
+        f.close()
