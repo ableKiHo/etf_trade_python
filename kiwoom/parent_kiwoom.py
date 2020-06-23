@@ -40,6 +40,13 @@ class ParentKiwoom(QAxWidget):
         self.account_num = self.property.account  # 계좌번호
         self.account_pw = self.property.accountPw
 
+        self.use_money = 0  # 실제 투자에 사용할 금액
+        self.use_money_percent = 0.5  # 예수금에서 실제 사용할 비율
+        self.deposit = 0  # 예수금
+        self.buy_possible_deposit = 0  # 주문가능 금액
+        self.purchased_deposit = 0  # 구매한 금액
+        self.max_sell_stock_count = 3  # 일일 최대 구매 가능 종목 수
+
         self.get_ocx_instance()
         self.login_event_slots()
         self.signal_login_commconnect()

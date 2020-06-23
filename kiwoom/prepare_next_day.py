@@ -89,7 +89,6 @@ class PrepareNextDay(ParentKiwoom):
             self.logging.logger.info(self.logType.OPT40003_STATUS_LOG % (code, avgValue, maxValue, minValue))
         del self.target_etf_day_info_dict[:]
 
-        self.stop_screen_cancel(self.screen_etf_day_stock)
         self.etf_day_info_event_loop.exit()
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):

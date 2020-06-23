@@ -16,13 +16,7 @@ class BuyKiwoom(ParentKiwoom):
         self.line.notification("ETF BuyKiwoom() class start.")
 
         self.analysis_etf_file_path = self.property.analysisEtfFilePath
-
-        self.use_money = 0  # 실제 투자에 사용할 금액
-        self.use_money_percent = 0.5  # 예수금에서 실제 사용할 비율
-        self.deposit = 0  # 예수금
-        self.buy_possible_deposit = 0  # 주문가능 금액
-        self.purchased_deposit = 0  # 구매한 금액
-        self.max_sell_stock_count = 3  # 일일 최대 구매 가능 종목 수
+        self.sell_analysis_etf_file_path = self.property.sellAnalysisEtfFIlePath
 
         self.priority_cal_target_etf_stock_dict = {}  # 장 시작 후 시가 저장 후 목표가 설정용(레버리지, 인버스용)
         self.second_cal_target_etf_stock_dict = {}  # 장 시작 후 시가 저장 후 목표가 설정용(일반)
@@ -117,26 +111,38 @@ class BuyKiwoom(ParentKiwoom):
                     stock_name = ls[1]
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
-                    last_stock_price = ls[4].rstrip('\n')
+                    last_stock_price = ls[4]
+                    avg_the_day_before_price = ls[5]
+                    max_the_day_before_price = ls[6]
+                    min_the_day_before_price = ls[7].rstrip('\n')
 
                     if stock_name.find("레버리지") or stock_name.find("인버스"):
                         self.priority_cal_target_etf_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
                                                                                      self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                                      self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
                                                                                      self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
+                                                                                     self.customType.THE_DAY_BEFORE_AVG: avg_the_day_before_price,
+                                                                                     self.customType.THE_DAY_BEFORE_MAX: max_the_day_before_price,
+                                                                                     self.customType.THE_DAY_BEFORE_MIN: min_the_day_before_price,
                                                                                      self.customType.GOAL_PRICE: ''}})
                     else:
                         self.second_cal_target_etf_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
                                                                                    self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                                    self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
                                                                                    self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
+                                                                                   self.customType.THE_DAY_BEFORE_AVG: avg_the_day_before_price,
+                                                                                   self.customType.THE_DAY_BEFORE_MAX: max_the_day_before_price,
+                                                                                   self.customType.THE_DAY_BEFORE_MIN: min_the_day_before_price,
                                                                                    self.customType.GOAL_PRICE: ''}})
 
                     self.total_portfolio_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
-                                                                                   self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
-                                                                                   self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
-                                                                                   self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
-                                                                                   self.customType.GOAL_PRICE: ''}})
+                                                                         self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
+                                                                         self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
+                                                                         self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
+                                                                         self.customType.THE_DAY_BEFORE_AVG: avg_the_day_before_price,
+                                                                         self.customType.THE_DAY_BEFORE_MAX: max_the_day_before_price,
+                                                                         self.customType.THE_DAY_BEFORE_MIN: min_the_day_before_price,
+                                                                         self.customType.GOAL_PRICE: ''}})
             f.close()
             self.logging.logger.info("전일자 대상건 파일 처리 완료")
             self.logging.logger.info("레버리지, 인버스 %s" % self.priority_cal_target_etf_stock_dict)
@@ -235,14 +241,20 @@ class BuyKiwoom(ParentKiwoom):
                 sys.exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            self.createAnalysisEtfFile(sCode, sRealData)
+            self.createAnalysisEtfFile(sCode, sRealData, self.analysis_etf_file_path)
             self.commRealData(sCode, sRealType, sRealData)
 
-            if self.purchased_deposit > 0 and sCode in self.second_cal_target_etf_stock_dict.keys() and sCode in self.second_portfolio_stock_dict.keys() and sCode not in self.second_order_stock_dict.keys() and sCode not in self.second_not_order_stock_dict.keys():
+            if sCode in self.second_order_stock_dict.keys() or sCode in self.priority_order_stock_dict.keys():
+                self.createAnalysisEtfFile(sCode, sRealData, self.sell_analysis_etf_file_path)
+
+            if self.purchased_deposit > 0 and sCode in self.second_cal_target_etf_stock_dict.keys() and sCode not in self.second_order_stock_dict.keys() and sCode not in self.second_not_order_stock_dict.keys():
                 self.buySecondEtf(sCode, sRealType, sRealData)
 
-            if self.purchased_deposit > 0 and sCode in self.priority_cal_target_etf_stock_dict.keys() and sCode in self.priority_portfolio_stock_dict.keys() and sCode not in self.priority_order_stock_dict.keys() and sCode not in self.priority_not_order_stock_dict.keys():
+            if self.purchased_deposit > 0 and sCode in self.priority_cal_target_etf_stock_dict.keys() and sCode not in self.priority_order_stock_dict.keys() and sCode not in self.priority_not_order_stock_dict.keys():
                 self.buyPriorityEtf(sCode, sRealType, sRealData)
+
+    def sell_analysis_stock(self, sCode, sRealType, sRealData):
+        self.createSellAnalysisEtfFile(sCode, sRealData)
 
     def commRealData(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])  # 출력 : +(-)2520
@@ -314,29 +326,15 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price != self.priority_cal_target_etf_stock_dict[sCode][self.customType.HIGHEST_PRICE] and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
-
+        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
+            # TODO 하락장 제외
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
             result = self.use_money / limit_stock_price
+
             quantity = int(result)
             total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
-                # 사용자 구분명, 화면번호, 계좌번호 10자리, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호
-                # 주문유형 1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
-                order_success = self.dynamicCall(
-                    "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-                    [self.customType.NEW_PURCHASE, self.priority_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, sCode, quantity, limit_stock_price,
-                     self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
-
-                if order_success == 0:
-                    self.purchased_deposit -= total_buy_price
-                    self.priority_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_SUCCESS_LOG}})
-                    self.logging.logger.info(
-                        self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
-                    self.line.notification(
-                        self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
-                else:
-                    self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
+                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.priority_order_stock_dict)
             else:
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
                 self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
@@ -368,33 +366,40 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price != self.second_cal_target_etf_stock_dict[sCode][self.customType.HIGHEST_PRICE] and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
-
+        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
+            # TODO 하락장 제외
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
             result = self.use_money / limit_stock_price
             quantity = int(result)
             total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
-                # 사용자 구분명, 화면번호, 계좌번호 10자리, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호
-                # 주문유형 1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정
-                order_success = self.dynamicCall(
-                    "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-                    [self.customType.NEW_PURCHASE, self.second_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, sCode, quantity, limit_stock_price,
-                     self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
-
-                if order_success == 0:
-
-                    self.purchased_deposit -= total_buy_price
-                    self.second_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_SUCCESS_LOG}})
-                    self.logging.logger.info(
-                        self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
-                    self.line.notification(
-                        self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
-                else:
-                    self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
+                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict)
+            elif total_buy_price >= self.purchased_deposit >= limit_stock_price:
+                result = self.purchased_deposit / limit_stock_price
+                quantity = int(result)
+                total_buy_price = limit_stock_price * quantity
+                if quantity >= 1:
+                    self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict)
             else:
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
-                self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
+                self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
+
+    def send_order_limit_stock_price(self, sCode, total_buy_price, quantity, limit_stock_price, use_dict):
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_PURCHASE, self.second_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, sCode, quantity, limit_stock_price,
+             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
+
+        if order_success == 0:
+
+            self.purchased_deposit -= total_buy_price
+            use_dict.update({sCode: {"사유": self.logType.ORDER_BUY_SUCCESS_LOG}})
+            self.logging.logger.info(
+                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
+            self.line.notification(
+                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
+        else:
+            self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
 
     def cal_goal_stock_price(self, code, value):
         start_stock_price = value[self.customType.CURRENT_START_PRICE]
@@ -420,10 +425,10 @@ class BuyKiwoom(ParentKiwoom):
         else:
             return 0
 
-    def createAnalysisEtfFile(self, sCode, sRealData):
+    def createAnalysisEtfFile(self, sCode, sRealData, target_path):
         now = datetime.datetime.now()
         nowDate = now.strftime('%Y-%m-%d')
-        parent_path = self.analysis_etf_file_path + nowDate
+        parent_path = target_path + nowDate
         if not os.path.isdir(parent_path):
             os.mkdir(parent_path)
         path = parent_path + '/' + sCode + '.txt'
