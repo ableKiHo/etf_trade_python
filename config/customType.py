@@ -62,7 +62,7 @@ class CustomType():
         self.CONCLUSION = '체결'
         self.SELL_BUY_CLASSIFICATOIN = '매도매수구분'
         self.AVAILABLE_QUANTITY = '주문가능수량'
-        self.PURCHASE_PRICE = '매입단가'
+        self.PURCHASE_UNIT_PRICE = '매입단가'
         self.TOTAL_PURCHASE_PRICE = '총매입가'
         self.PROFIT_AND_LOSS = '손익율'
         self.TRANSACTION_CLASSFICATION = '거래구분'

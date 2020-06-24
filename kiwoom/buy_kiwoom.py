@@ -329,7 +329,7 @@ class BuyKiwoom(ParentKiwoom):
             quantity = int(result)
             total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
-                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.priority_order_stock_dict)
+                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.priority_order_stock_dict, self.priority_portfolio_stock_dict)
             else:
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
                 self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
@@ -368,21 +368,21 @@ class BuyKiwoom(ParentKiwoom):
             quantity = int(result)
             total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
-                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict)
+                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict, self.second_portfolio_stock_dict)
             elif total_buy_price >= self.purchased_deposit >= limit_stock_price:
                 result = self.purchased_deposit / limit_stock_price
                 quantity = int(result)
                 total_buy_price = limit_stock_price * quantity
                 if quantity >= 1:
-                    self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict)
+                    self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict, self.second_portfolio_stock_dict)
             else:
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
                 self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
 
-    def send_order_limit_stock_price(self, sCode, total_buy_price, quantity, limit_stock_price, use_dict):
+    def send_order_limit_stock_price(self, sCode, total_buy_price, quantity, limit_stock_price, use_dict, stock_dict):
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_PURCHASE, self.second_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, sCode, quantity, limit_stock_price,
+            [self.customType.NEW_PURCHASE, stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, sCode, quantity, limit_stock_price,
              self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
 
         if order_success == 0:
