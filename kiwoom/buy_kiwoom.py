@@ -218,10 +218,17 @@ class BuyKiwoom(ParentKiwoom):
             fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
             self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
-    def isGoalStockPriceRange(self, goalStockPrice, currentStockPrice):
-        rangePercentage = 1.5
+    def isCurrentPriceCompareHistory(self, current_stock_price, current_price_list):
+        if len(current_price_list) < 9:
+            return False
+
+        filter_list = [price for price in current_price_list if price > current_stock_price]
+        return len(filter_list) == 0
+
+    def isGoalStockPriceRange(self, goalStockPrice, current_stock_price):
+        rangePercentage = 0.75
         maxPrice = goalStockPrice + round(goalStockPrice * (rangePercentage / 100))
-        return currentStockPrice <= maxPrice
+        return current_stock_price <= maxPrice
 
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
@@ -285,6 +292,8 @@ class BuyKiwoom(ParentKiwoom):
         if sCode not in self.total_cal_target_etf_stock_dict.keys():
             self.total_cal_target_etf_stock_dict.update({sCode: {}})
 
+        current_price_list = []
+
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: a})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: b})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.THE_DAY_BEFORE: c})
@@ -296,6 +305,14 @@ class BuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
+        if self.total_cal_target_etf_stock_dict[sCode].has_key(self.customType.CURRENT_PRICE_LIST):
+            current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
+            current_price_list.insert(0, b)
+            if len(current_price_list) == 10:
+                del current_price_list[9:]
+        else:
+            current_price_list.append(b)
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
 
     def buyPriorityEtf(self, sCode, sRealType, sRealData):
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIGHTENING_TIME]})
@@ -309,11 +326,14 @@ class BuyKiwoom(ParentKiwoom):
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.LOWEST_PRICE]})
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_START_PRICE]})
+        self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]})
 
         value = self.priority_cal_target_etf_stock_dict[sCode]
         goal_stock_price = value[self.customType.GOAL_PRICE]
         current_stock_price = self.priority_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         limit_stock_price = self.priority_cal_target_etf_stock_dict[sCode][self.customType.SELLING_QUOTE]
+        current_price_list = self.priority_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
+
         if goal_stock_price == '':
             goal_stock_price = self.cal_goal_stock_price(code=sCode, value=value)
             self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.GOAL_PRICE: goal_stock_price})
@@ -321,7 +341,7 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
+        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price, current_price_list):
             # TODO 하락장 제외
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
             result = self.use_money / limit_stock_price
@@ -349,11 +369,14 @@ class BuyKiwoom(ParentKiwoom):
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.LOWEST_PRICE]})
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_START_PRICE]})
+        self.second_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]})
 
         value = self.second_cal_target_etf_stock_dict[sCode]
         goal_stock_price = value[self.customType.GOAL_PRICE]
         current_stock_price = self.second_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         limit_stock_price = self.second_cal_target_etf_stock_dict[sCode][self.customType.SELLING_QUOTE]
+        current_price_list = self.priority_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
+
         if goal_stock_price == '':
             goal_stock_price = self.cal_goal_stock_price(code=sCode, value=value)
             self.second_cal_target_etf_stock_dict[sCode].update({self.customType.GOAL_PRICE: goal_stock_price})
@@ -361,7 +384,7 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price):
+        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price, current_price_list):
             # TODO 하락장 제외
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
             result = self.use_money / limit_stock_price

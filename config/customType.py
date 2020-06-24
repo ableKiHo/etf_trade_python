@@ -69,3 +69,4 @@ class CustomType():
         self.BALANCE = '잔고'
         self.SELLING_CATEGORY = '매도수구분'
         self.NEW_STOCK_SELL = '신규매도'
+        self.CURRENT_PRICE_LIST = 'current_price_list'
