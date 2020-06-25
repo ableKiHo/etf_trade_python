@@ -70,3 +70,7 @@ class CustomType():
         self.SELLING_CATEGORY = '매도수구분'
         self.NEW_STOCK_SELL = '신규매도'
         self.CURRENT_PRICE_LIST = 'current_price_list'
+        self.SELL_STD_HIGHEST_PRICE = '익절기준고가'
+        self.SELL_HIGHEST_PRICE = '익절기준단가'
+        self.SELL_STD_PRICE = '손절기준단가'
+        

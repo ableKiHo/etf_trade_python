@@ -33,16 +33,7 @@ class SellKiwoom(ParentKiwoom):
         for sCode in self.sell_portfolio_stock_dict.keys():
             asd = self.account_stock_dict[sCode]
             QTest.qWait(1000)
-            order_success = self.dynamicCall(
-                "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-                [self.customType.NEW_STOCK_SELL, self.sell_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], self.account_num, 2, sCode, asd[self.customType.HOLDING_QUANTITY],
-                 0, self.realType.SENDTYPE['TransactionClassification']['MarketPrice'], ""]
-            )
-
-            if order_success == 0:
-                self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
-            else:
-                self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
+            self.sell_send_order(sCode, self.sell_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], asd[self.customType.HOLDING_QUANTITY])
 
         QTest.qWait(60000)
         self.line.notification("ETF AUTO SELL TRADE END")

@@ -122,3 +122,22 @@ class ParentKiwoom(QAxWidget):
 
             self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, stock_quan, like_quan, buy_price, total_buy_price, income_rate))
             self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, stock_quan, like_quan, buy_price, total_buy_price, income_rate))
+
+            if meme_gubun == '매도':
+                self.purchased_deposit = self.purchased_deposit + total_buy_price
+                if sCode in self.priority_order_stock_dict.keys():
+                    del self.priority_order_stock_dict[sCode]
+                if sCode in self.second_order_stock_dict.keys():
+                    del self.second_order_stock_dict[sCode]
+
+    def sell_send_order(self, sCode, screen_number, quantity):
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE['TransactionClassification']['MarketPrice'], ""]
+        )
+        if order_success == 0:
+            self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
+        else:
+            self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
+
+        return order_success

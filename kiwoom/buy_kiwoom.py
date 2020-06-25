@@ -225,8 +225,16 @@ class BuyKiwoom(ParentKiwoom):
         filter_list = [price for price in current_price_list if price > current_stock_price]
         return len(filter_list) == 0
 
+    def get_minus_sell_std_price(self, purchase_price):
+        sell_std_per = 1
+        return purchase_price + round(purchase_price * (sell_std_per / 100))
+
+    def get_plus_sell_std_price(self, purchase_price, sell_std_highest_price):
+        return purchase_price + round((sell_std_highest_price - purchase_price) / 2)
+
+
     def isGoalStockPriceRange(self, goalStockPrice, current_stock_price):
-        rangePercentage = 0.75
+        rangePercentage = 0.7
         maxPrice = goalStockPrice + round(goalStockPrice * (rangePercentage / 100))
         return current_stock_price <= maxPrice
 
@@ -250,13 +258,49 @@ class BuyKiwoom(ParentKiwoom):
             self.createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
 
             if sCode in self.second_order_stock_dict.keys() or sCode in self.priority_order_stock_dict.keys():
-                self.createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.sell_analysis_etf_file_path)
+
+                current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
+                if sCode in self.priority_order_stock_dict.keys():
+                    order_info = self.priority_cal_target_etf_stock_dict[sCode]
+                    if current_stock_price < order_info[self.customType.SELL_STD_PRICE]:
+                        self.logging.logger.info(self.logType.SELL_MINUS_STD_PRICE_LOG % (sCode, order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_PRICE], current_stock_price))
+
+                        self.sell_send_order(sCode, self.priority_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
+                    else:
+                        if self.customType.SELL_STD_HIGHEST_PRICE in order_info:
+                            if current_stock_price > order_info[self.customType.SELL_STD_HIGHEST_PRICE]:
+                                order_info.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+                        else:
+                            order_info.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+
+                        if current_stock_price <= self.get_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_HIGHEST_PRICE]):
+                            if order_info[self.customType.SELL_STD_HIGHEST_PRICE] - order_info[self.customType.PURCHASE_PRICE] > 20:
+                                self.sell_send_order(sCode, self.priority_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
+                    self.createAnalysisEtfFile(sCode, order_info, self.sell_analysis_etf_file_path)
+
+                if sCode in self.second_order_stock_dict.keys():
+                    order_info = self.second_cal_target_etf_stock_dict[sCode]
+                    if current_stock_price < order_info[self.customType.SELL_STD_PRICE]:
+                        self.logging.logger.info(self.logType.SELL_MINUS_STD_PRICE_LOG % (sCode, order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_PRICE], current_stock_price))
+
+                        self.sell_send_order(sCode, self.second_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
+                    else:
+                        if self.customType.SELL_STD_HIGHEST_PRICE in order_info:
+                            if current_stock_price > order_info[self.customType.SELL_STD_HIGHEST_PRICE]:
+                                order_info.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+                        else:
+                            order_info.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+
+                        if current_stock_price <= self.get_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_HIGHEST_PRICE]):
+                            if order_info[self.customType.SELL_STD_HIGHEST_PRICE] - order_info[self.customType.PURCHASE_PRICE] > 20:
+                                self.sell_send_order(sCode, self.second_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
+                    self.createAnalysisEtfFile(sCode, order_info, self.sell_analysis_etf_file_path)
 
             if self.purchased_deposit > 0 and sCode in self.second_cal_target_etf_stock_dict.keys() and sCode not in self.second_order_stock_dict.keys() and sCode not in self.second_not_order_stock_dict.keys():
-                self.buySecondEtf(sCode, sRealType, sRealData)
+                self.buy_second_etf(sCode, sRealType, sRealData)
 
             if self.purchased_deposit > 0 and sCode in self.priority_cal_target_etf_stock_dict.keys() and sCode not in self.priority_order_stock_dict.keys() and sCode not in self.priority_not_order_stock_dict.keys():
-                self.buyPriorityEtf(sCode, sRealType, sRealData)
+                self.buy_priority_etf(sCode, sRealType, sRealData)
 
     def commRealData(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])  # 출력 : +(-)2520
@@ -314,7 +358,7 @@ class BuyKiwoom(ParentKiwoom):
             current_price_list.append(b)
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
 
-    def buyPriorityEtf(self, sCode, sRealType, sRealData):
+    def buy_priority_etf(self, sCode, sRealType, sRealData):
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIGHTENING_TIME]})
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]})
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.THE_DAY_BEFORE: self.total_cal_target_etf_stock_dict[sCode][self.customType.THE_DAY_BEFORE]})
@@ -343,13 +387,17 @@ class BuyKiwoom(ParentKiwoom):
             self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
         elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price,
                                                                                                                                                                  current_price_list):
-            self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
+            self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price, current_stock_price, limit_stock_price))
             result = self.use_money / limit_stock_price
 
             quantity = int(result)
             total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
-                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.priority_order_stock_dict, self.priority_portfolio_stock_dict)
+                order_success = self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.priority_order_stock_dict, self.priority_portfolio_stock_dict)
+                if order_success == 0:
+                    self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: limit_stock_price})
+                    self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.HOLDING_QUANTITY: quantity})
+                    self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_PRICE: self.get_minus_sell_std_price(limit_stock_price)})
             else:
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
                 self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
@@ -357,7 +405,7 @@ class BuyKiwoom(ParentKiwoom):
         if len(self.priority_portfolio_stock_dict.keys()) == len(self.priority_order_stock_dict.keys()) + len(self.priority_not_order_stock_dict.keys()) and self.purchased_deposit > 0:
             self.secondPortfolioStockRealReg()
 
-    def buySecondEtf(self, sCode, sRealType, sRealData):
+    def buy_second_etf(self, sCode, sRealType, sRealData):
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIGHTENING_TIME]})
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]})
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.THE_DAY_BEFORE: self.total_cal_target_etf_stock_dict[sCode][self.customType.THE_DAY_BEFORE]})
@@ -386,18 +434,26 @@ class BuyKiwoom(ParentKiwoom):
             self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
         elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price,
                                                                                                                                                                  current_price_list):
-            self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
+            self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price, current_stock_price, limit_stock_price))
             result = self.use_money / limit_stock_price
             quantity = int(result)
             total_buy_price = limit_stock_price * quantity
             if quantity >= 1 and self.purchased_deposit > total_buy_price:
-                self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict, self.second_portfolio_stock_dict)
+                order_success = self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict, self.second_portfolio_stock_dict)
+                if order_success == 0:
+                    self.second_cal_target_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: limit_stock_price})
+                    self.second_cal_target_etf_stock_dict[sCode].update({self.customType.HOLDING_QUANTITY: quantity})
+                    self.second_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_PRICE: self.get_minus_sell_std_price(limit_stock_price)})
             elif total_buy_price >= self.purchased_deposit >= limit_stock_price:
                 result = self.purchased_deposit / limit_stock_price
                 quantity = int(result)
                 total_buy_price = limit_stock_price * quantity
                 if quantity >= 1:
-                    self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict, self.second_portfolio_stock_dict)
+                    order_success = self.send_order_limit_stock_price(sCode, total_buy_price, quantity, limit_stock_price, self.second_order_stock_dict, self.second_portfolio_stock_dict)
+                    if order_success == 0:
+                        self.second_cal_target_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: limit_stock_price})
+                        self.second_cal_target_etf_stock_dict[sCode].update({self.customType.HOLDING_QUANTITY: quantity})
+                        self.second_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_PRICE: self.get_minus_sell_std_price(limit_stock_price)})
             else:
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
                 self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
@@ -418,6 +474,7 @@ class BuyKiwoom(ParentKiwoom):
                 self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (sCode, quantity, limit_stock_price, self.purchased_deposit))
         else:
             self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
+        return order_success
 
     def cal_goal_stock_price(self, code, value):
         start_stock_price = value[self.customType.CURRENT_START_PRICE]
