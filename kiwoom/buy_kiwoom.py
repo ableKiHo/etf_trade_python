@@ -305,7 +305,7 @@ class BuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
-        if self.total_cal_target_etf_stock_dict[sCode].has_key(self.customType.CURRENT_PRICE_LIST):
+        if self.customType.CURRENT_PRICE_LIST in self.total_cal_target_etf_stock_dict[sCode]:
             current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
             current_price_list.insert(0, b)
             if len(current_price_list) == 10:
@@ -341,8 +341,8 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price, current_price_list):
-            # TODO 하락장 제외
+        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price,
+                                                                                                                                                                 current_price_list):
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
             result = self.use_money / limit_stock_price
 
@@ -384,8 +384,8 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price, current_price_list):
-            # TODO 하락장 제외
+        elif goal_stock_price <= current_stock_price and self.isGoalStockPriceRange(goal_stock_price, current_stock_price) and self.isCurrentPriceCompareHistory(current_stock_price,
+                                                                                                                                                                 current_price_list):
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price))
             result = self.use_money / limit_stock_price
             quantity = int(result)
