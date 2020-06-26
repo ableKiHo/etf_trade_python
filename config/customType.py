@@ -4,6 +4,7 @@ class CustomType():
         self.MARKET_OPERATION = '장운영구분'
         self.SCREEN_NUMBER = '스크린번호'
         self.MEME_SCREEN_NUMBER = '주문용스크린번호'
+        self.SELL_MEME_SCREEN_NUMBER = '매도주문용스크린번호'
         self.STOCK_CONCLUSION = '주식체결'
         self.TIGHTENING_TIME = '체결시간'
         self.ACCOUNT_NUMBER = '계좌번호'

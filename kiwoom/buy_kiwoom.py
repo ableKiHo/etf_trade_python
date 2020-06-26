@@ -30,6 +30,7 @@ class BuyKiwoom(ParentKiwoom):
         self.screen_start_stop_real = "1000"  # 장 시작/종료 실시간 스크린 번호
         self.buy_screen_meme_stock = "3000"  # 종목별 할당할 주문용 스크린 번호
         self.buy_screen_real_stock = "6000"  # 종별별 할당할 스크린 번호
+        self.sell_screen_meme_stock = "4000"
 
         self.event_slots()  # 키움과 연결하기 위한 시그널 / 슬롯 모음
         self.real_event_slot()  # 실시간 이벤트 시그널 / 슬롯 연결
@@ -158,6 +159,7 @@ class BuyKiwoom(ParentKiwoom):
         cnt = 0
         temp_screen = int(self.buy_screen_real_stock)
         meme_screen = int(self.buy_screen_meme_stock)
+        sell_meme_screen = int(self.sell_screen_meme_stock)
 
         for code in screen_overwrite:
 
@@ -169,11 +171,18 @@ class BuyKiwoom(ParentKiwoom):
                 meme_screen = int(meme_screen) + 1
                 meme_screen = str(meme_screen)
 
+            if (cnt % 20) == 0:
+                sell_meme_screen = int(sell_meme_screen) + 1
+                sell_meme_screen = str(sell_meme_screen)
+
             if code in self.priority_portfolio_stock_dict.keys():
                 self.priority_portfolio_stock_dict[code].update({self.customType.SCREEN_NUMBER: str(temp_screen)})
                 self.priority_portfolio_stock_dict[code].update({self.customType.MEME_SCREEN_NUMBER: str(meme_screen)})
+                self.priority_portfolio_stock_dict[code].update({self.customType.SELL_MEME_SCREEN_NUMBER: str(sell_meme_screen)})
             elif code not in self.priority_portfolio_stock_dict.keys():
-                self.priority_portfolio_stock_dict.update({code: {self.customType.SCREEN_NUMBER: str(temp_screen), self.customType.MEME_SCREEN_NUMBER: str(meme_screen)}})
+                self.priority_portfolio_stock_dict.update({code: {self.customType.SCREEN_NUMBER: str(temp_screen),
+                                                                self.customType.MEME_SCREEN_NUMBER: str(meme_screen),
+                                                                self.customType.SELL_MEME_SCREEN_NUMBER: str(sell_meme_screen)}})
 
             cnt += 1
 
@@ -191,6 +200,7 @@ class BuyKiwoom(ParentKiwoom):
         cnt = 0
         temp_screen = int(self.buy_screen_real_stock)
         meme_screen = int(self.buy_screen_meme_stock)
+        sell_meme_screen = int(self.sell_screen_meme_stock)
 
         for code in screen_overwrite:
 
@@ -202,11 +212,19 @@ class BuyKiwoom(ParentKiwoom):
                 meme_screen = int(meme_screen) + 1
                 meme_screen = str(meme_screen)
 
+            if (cnt % 20) == 0:
+                sell_meme_screen = int(sell_meme_screen) + 1
+                sell_meme_screen = str(sell_meme_screen)
+
             if code in self.second_portfolio_stock_dict.keys():
                 self.second_portfolio_stock_dict[code].update({self.customType.SCREEN_NUMBER: str(temp_screen)})
                 self.second_portfolio_stock_dict[code].update({self.customType.MEME_SCREEN_NUMBER: str(meme_screen)})
+                self.second_portfolio_stock_dict[code].update({self.customType.SELL_MEME_SCREEN_NUMBER: str(sell_meme_screen)})
             elif code not in self.second_portfolio_stock_dict.keys():
-                self.second_portfolio_stock_dict.update({code: {self.customType.SCREEN_NUMBER: str(temp_screen), self.customType.MEME_SCREEN_NUMBER: str(meme_screen)}})
+                self.second_portfolio_stock_dict.update({code: {self.customType.SCREEN_NUMBER: str(temp_screen),
+                                                                self.customType.MEME_SCREEN_NUMBER: str(meme_screen),
+                                                                self.customType.SELL_MEME_SCREEN_NUMBER: str(sell_meme_screen)}})
+
 
             cnt += 1
 
@@ -227,7 +245,7 @@ class BuyKiwoom(ParentKiwoom):
 
     def get_minus_sell_std_price(self, purchase_price):
         sell_std_per = 1
-        return purchase_price + round(purchase_price * (sell_std_per / 100))
+        return purchase_price - round(purchase_price * (sell_std_per / 100))
 
     def get_plus_sell_std_price(self, purchase_price, sell_std_highest_price):
         return purchase_price + round((sell_std_highest_price - purchase_price) / 2)
