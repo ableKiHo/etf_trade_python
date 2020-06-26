@@ -133,7 +133,7 @@ class ParentKiwoom(QAxWidget):
     def sell_send_order(self, sCode, screen_number, quantity):
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE['TransactionClassification']['MarketPrice'], ""]
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_PRICE], ""]
         )
         if order_success == 0:
             self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)

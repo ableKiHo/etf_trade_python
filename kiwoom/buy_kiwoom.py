@@ -283,7 +283,7 @@ class BuyKiwoom(ParentKiwoom):
                     if current_stock_price < order_info[self.customType.SELL_STD_PRICE]:
                         self.logging.logger.info(self.logType.SELL_MINUS_STD_PRICE_LOG % (sCode, order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_PRICE], current_stock_price))
 
-                        self.sell_send_order(sCode, self.priority_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
+                        self.sell_send_order(sCode, self.priority_portfolio_stock_dict[sCode][self.customType.SELL_MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
                     else:
                         if self.customType.SELL_STD_HIGHEST_PRICE in order_info:
                             if current_stock_price > order_info[self.customType.SELL_STD_HIGHEST_PRICE]:
@@ -293,7 +293,7 @@ class BuyKiwoom(ParentKiwoom):
 
                         if current_stock_price <= self.get_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_HIGHEST_PRICE]):
                             if order_info[self.customType.SELL_STD_HIGHEST_PRICE] - order_info[self.customType.PURCHASE_PRICE] > 20:
-                                self.sell_send_order(sCode, self.priority_portfolio_stock_dict[sCode][self.customType.MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
+                                self.sell_send_order(sCode, self.priority_portfolio_stock_dict[sCode][self.customType.SELL_MEME_SCREEN_NUMBER], order_info[self.customType.HOLDING_QUANTITY])
                     self.createAnalysisEtfFile(sCode, order_info, self.sell_analysis_etf_file_path)
 
                 if sCode in self.second_order_stock_dict.keys():
