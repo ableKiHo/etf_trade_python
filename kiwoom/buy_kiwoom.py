@@ -272,7 +272,7 @@ class BuyKiwoom(ParentKiwoom):
                         else:
                             order_info.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
 
-                        if current_stock_price < order_info[self.customType.SELL_STD_HIGHEST_PRICE] and is_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], current_stock_price):
+                        if current_stock_price < order_info[self.customType.SELL_STD_HIGHEST_PRICE] and is_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], current_stock_price, 'priority'):
                             plus_sell_std_price = get_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_HIGHEST_PRICE])
                             if current_stock_price <= plus_sell_std_price:
                                 self.logging.logger.info(
@@ -297,7 +297,7 @@ class BuyKiwoom(ParentKiwoom):
                         else:
                             order_info.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
 
-                        if current_stock_price < order_info[self.customType.SELL_STD_HIGHEST_PRICE] and is_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], current_stock_price):
+                        if current_stock_price < order_info[self.customType.SELL_STD_HIGHEST_PRICE] and is_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], current_stock_price, 'second'):
                             plus_sell_std_price = get_plus_sell_std_price(order_info[self.customType.PURCHASE_PRICE], order_info[self.customType.SELL_STD_HIGHEST_PRICE])
                             if current_stock_price <= plus_sell_std_price:
                                 self.logging.logger.info(

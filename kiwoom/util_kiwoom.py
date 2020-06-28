@@ -41,6 +41,9 @@ def get_max_plus_sell_std_price(purchase_price):
     return purchase_price + round(purchase_price * (max_sell_std_per / 100))
 
 
-def is_plus_sell_std_price(purchase_price, current_stock_price):
-    sell_std_target_per = 3
+def is_plus_sell_std_price(purchase_price, current_stock_price, buy_type):
+    if buy_type == 'priority':
+        sell_std_target_per = 3
+    else:
+        sell_std_target_per = 2
     return current_stock_price > (purchase_price + round(purchase_price * (sell_std_target_per / 100)))
