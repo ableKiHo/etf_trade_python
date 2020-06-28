@@ -24,4 +24,4 @@ class LogType():
         self.CHEJAN_STATUS_LOG = "%s_잔고 %s[%s] / 보유수량 : %s / 주문가능수량 : %s / 매입단가 : %s / 총매입가 : %s / 손익율 : %s"
         self.OPT40003_STATUS_LOG = "종목번호: %s / AVG: %s / MAX: %s / MIN: %s"
         self.SELL_MINUS_STD_PRICE_LOG = "-1퍼센트 손절 대상 종목번호: %s / : 매입가 : %s / 손절기준가 : %s / 현재가 : %s"
-        self.SELL_PLUS_STD_PRICE_LOG = "고점 대비 50퍼센트 익절 대상 : 매입가 : %s / 익절기준고가 : %s / 익절기준단가 : %s / 현재가 : %s"
+        self.SELL_PLUS_STD_PRICE_LOG = "고점 대비 50퍼센트 익절 대상 종목번호: %s / 매입가 : %s / 익절기준고가 : %s / 익절기준단가 : %s / 현재가 : %s"
