@@ -311,7 +311,7 @@ class BuyKiwoom(ParentKiwoom):
             current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
             current_price_list.insert(0, b)
             if len(current_price_list) == 10:
-                del current_price_list[:9]
+                del current_price_list[9:]
         else:
             current_price_list.append(b)
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
