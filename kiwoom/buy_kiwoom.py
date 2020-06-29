@@ -397,7 +397,7 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price and self.is_goal_stock_price_range(goal_stock_price, current_stock_price) and self.is_current_price_compare_history(current_stock_price,
+        elif goal_stock_price <= current_stock_price and is_target_stock_price_range(goal_stock_price, current_stock_price) and is_current_price_compare_history(current_stock_price,
                                                                                                                                                                          current_price_list):
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price, current_stock_price, limit_stock_price))
             result = self.use_money / limit_stock_price
@@ -446,7 +446,7 @@ class BuyKiwoom(ParentKiwoom):
         if goal_stock_price == 0:
             self.logging.logger.info("%s > %s" % (sCode, self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG))
             self.second_not_order_stock_dict.update({sCode: {"사유": self.logType.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG}})
-        elif goal_stock_price <= current_stock_price and self.is_goal_stock_price_range(goal_stock_price, current_stock_price) and self.is_current_price_compare_history(current_stock_price,
+        elif goal_stock_price <= current_stock_price and is_target_stock_price_range(goal_stock_price, current_stock_price) and is_current_price_compare_history(current_stock_price,
                                                                                                                                                                          current_price_list):
             self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, goal_stock_price, current_stock_price, limit_stock_price))
             result = self.use_money / limit_stock_price
