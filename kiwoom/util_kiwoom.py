@@ -37,13 +37,21 @@ def is_target_stock_price_range(target_stock_price, current_stock_price):
 
 
 def get_max_plus_sell_std_price(purchase_price):
-    max_sell_std_per = 5
+    max_sell_std_per = 2
     return purchase_price + round(purchase_price * (max_sell_std_per / 100))
 
 
-def is_plus_sell_std_price(purchase_price, current_stock_price, buy_type):
-    if buy_type == 'priority':
-        sell_std_target_per = 3
+def is_second_rank_plus_sell_price(purchase_price, sell_std_highest_price, current_price):
+    max_plus_purchase_start_price = purchase_price + round(purchase_price * 2.05 / 100)
+    max_plus_purchase_end_price = purchase_price + round(purchase_price * 1.95 / 100)
+    second_rank_plus_purchase_start_price = purchase_price + round(purchase_price * 1.55 / 100)
+    second_rank_plus_purchase_end_price = purchase_price + round(purchase_price * 1.45 / 100)
+    third_rank_plus_purchase_start_price = purchase_price + round(purchase_price * 1.3 / 100)
+    third_rank_plus_purchase_end_price = purchase_price + round(purchase_price * 1.2 / 100)
+
+    if max_plus_purchase_start_price >= sell_std_highest_price >= max_plus_purchase_end_price and second_rank_plus_purchase_start_price >= current_price >= second_rank_plus_purchase_end_price:
+        return True
+    elif second_rank_plus_purchase_start_price >= sell_std_highest_price >= second_rank_plus_purchase_end_price and third_rank_plus_purchase_start_price >= current_price >= third_rank_plus_purchase_end_price:
+        return True
     else:
-        sell_std_target_per = 2
-    return current_stock_price > (purchase_price + round(purchase_price * (sell_std_target_per / 100)))
+        return False
