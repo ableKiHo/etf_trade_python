@@ -3,6 +3,7 @@ import argparse
 from PyQt5.QtWidgets import *
 
 from kiwoom.buy_kiwoom import *
+from kiwoom.new_buy_kiwoom import NewBuyKiwoom
 from kiwoom.prepare_next_day import PrepareNextDay
 from kiwoom.sell_kiwoom import SellKiwoom
 
@@ -23,6 +24,7 @@ class Main():
             self.sellKiwoom = SellKiwoom()
         elif auto_type == 'buy':
             self.kiwoom = BuyKiwoom()
+            # self.kiwoom = NewBuyKiwoom()
         elif auto_type == 'prepare':
             self.prepareNextDay = PrepareNextDay()
         else:

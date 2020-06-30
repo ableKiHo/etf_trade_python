@@ -33,6 +33,8 @@ class BuyKiwoom(ParentKiwoom):
         self.buy_screen_real_stock = "6000"  # 종별별 할당할 스크린 번호
         self.sell_screen_meme_stock = "4000"
 
+        self.callable_sencod_stock = True
+
         self.event_slots()  # 키움과 연결하기 위한 시그널 / 슬롯 모음
         self.real_event_slot()  # 실시간 이벤트 시그널 / 슬롯 연결
 
@@ -116,7 +118,7 @@ class BuyKiwoom(ParentKiwoom):
                     max_the_day_before_price = ls[6]
                     min_the_day_before_price = ls[7].rstrip('\n')
 
-                    if stock_name.find("레버리지") or stock_name.find("인버스"):
+                    if stock_name.find("레버리지") >= 0 or stock_name.find("인버스") >= 0:
                         self.priority_cal_target_etf_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
                                                                                      self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                                      self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
@@ -190,6 +192,7 @@ class BuyKiwoom(ParentKiwoom):
         self.logging.logger.info(self.logType.PORTFOLIO_STOCK_DICT_LOG % stock_dict)
 
     def second_portfolio_stock_real_reg(self):
+        self.callable_sencod_stock = False
         for code in self.second_portfolio_stock_dict.keys():
             screen_num = self.second_portfolio_stock_dict[code][self.customType.SCREEN_NUMBER]
             fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
@@ -372,8 +375,10 @@ class BuyKiwoom(ParentKiwoom):
             self.priority_wait_order_stock_dict[sCode].update({'current_price_list': current_price_list})
 
         if len(self.priority_portfolio_stock_dict.keys()) == len(self.priority_order_stock_dict.keys()) + len(self.priority_not_order_stock_dict.keys()) + len(self.priority_wait_order_stock_dict.keys()) and self.purchased_deposit > 0:
-            self.logging.logger.info("second_portfolio_stock_start")
-            self.second_portfolio_stock_real_reg()
+
+            if self.callable_sencod_stock:
+                self.logging.logger.info("second_portfolio_stock_start")
+                self.second_portfolio_stock_real_reg()
 
     def buy_second_etf(self, sCode, sRealType, sRealData):
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIGHTENING_TIME]})
