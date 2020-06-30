@@ -365,6 +365,8 @@ class BuyKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.ORDER_BUY_FAIL_STATUS_LOG % (sCode, self.purchased_deposit, quantity, total_buy_price))
                 self.priority_not_order_stock_dict.update({sCode: {"사유": self.logType.ORDER_BUY_FAIL_NOT_POSSIBLE}})
         else:
+            if sCode not in self.priority_wait_order_stock_dict.keys():
+                self.priority_wait_order_stock_dict.update({sCode: {}})
             self.priority_wait_order_stock_dict[sCode].update({'goal_stock_price': goal_stock_price})
             self.priority_wait_order_stock_dict[sCode].update({'current_stock_price': current_stock_price})
             self.priority_wait_order_stock_dict[sCode].update({'current_price_list': current_price_list})
