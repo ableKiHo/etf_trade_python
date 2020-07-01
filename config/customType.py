@@ -74,4 +74,5 @@ class CustomType():
         self.SELL_STD_HIGHEST_PRICE = '익절기준고가'
         self.SELL_HIGHEST_PRICE = '익절기준단가'
         self.SELL_STD_PRICE = '손절기준단가'
+        self.TIC_120_PRICE = '120TIC'
         

@@ -1,3 +1,7 @@
+import datetime
+import os
+
+
 def get_tic_price(target_price):
     if target_price < 1000:
         return 1
@@ -13,11 +17,11 @@ def get_tic_price(target_price):
         return 500
 
 
-def is_current_price_compare_history(current_stock_price, current_price_list):
-    if len(current_price_list) < 9:
+def is_current_price_compare_history(current_stock_price, price_history_list):
+    if len(price_history_list) < 5:
         return False
 
-    filter_list = [price for price in current_price_list if price > current_stock_price]
+    filter_list = [price for price in price_history_list if price > current_stock_price]
     return len(filter_list) == 0
 
 
@@ -55,3 +59,37 @@ def is_second_rank_plus_sell_price(purchase_price, sell_std_highest_price, curre
         return True
     else:
         return False
+
+
+def createAnalysisEtfFile(sCode, sRealData, target_path):
+    now = datetime.datetime.now()
+    nowDate = now.strftime('%Y-%m-%d')
+    parent_path = target_path + nowDate
+    if not os.path.isdir(parent_path):
+        os.mkdir(parent_path)
+    path = parent_path + '/' + sCode + '.txt'
+    f = open(path, "a", encoding="utf8")
+    f.write("%s\t%s\n" %
+            (sCode, sRealData))
+    f.close()
+
+
+def cal_goal_stock_price(start_stock_price, last_stock_price, highest_stock_price, lowest_stock_price):
+    start_stock_price = int(start_stock_price)
+    last_stock_price = int(last_stock_price)
+    highest_stock_price = int(highest_stock_price)
+    lowest_stock_price = int(lowest_stock_price)
+
+    if start_stock_price > last_stock_price:
+        if (start_stock_price - last_stock_price) <= (highest_stock_price - lowest_stock_price):
+            goal_stock_price = last_stock_price + (0.35 * (highest_stock_price - lowest_stock_price))
+            goal_stock_price = round(goal_stock_price, 0)
+        else:
+            goal_stock_price = 0
+    else:
+        goal_stock_price = 0
+
+    if goal_stock_price > 0:
+        return goal_stock_price
+    else:
+        return 0
