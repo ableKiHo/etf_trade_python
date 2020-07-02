@@ -329,6 +329,7 @@ class BuyKiwoom(ParentKiwoom):
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.LOWEST_PRICE]})
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_START_PRICE]})
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]})
+        self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]})
 
         value = self.priority_cal_target_etf_stock_dict[sCode]
         goal_stock_price = value[self.customType.GOAL_PRICE]
@@ -392,6 +393,7 @@ class BuyKiwoom(ParentKiwoom):
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.LOWEST_PRICE]})
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_START_PRICE]})
         self.second_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]})
+        self.second_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]})
 
         value = self.second_cal_target_etf_stock_dict[sCode]
         goal_stock_price = value[self.customType.GOAL_PRICE]
