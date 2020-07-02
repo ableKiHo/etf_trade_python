@@ -311,10 +311,10 @@ class BuyKiwoom(ParentKiwoom):
                 else:
                     tic_price_list.append(np.mean(current_price_list))
                 current_price_list.clear()
-                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
         else:
             current_price_list.append(b)
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
 
     def buy_priority_etf(self, sCode, sRealType, sRealData):
         self.priority_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIGHTENING_TIME]})
