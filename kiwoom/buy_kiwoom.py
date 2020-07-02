@@ -299,12 +299,16 @@ class BuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
+        if self.customType.TIC_120_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
+            tic_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]
+        else:
+            self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
+
         if self.customType.CURRENT_PRICE_LIST in self.total_cal_target_etf_stock_dict[sCode]:
             current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
             current_price_list.insert(0, b)
             if len(current_price_list) >= 120:
-                if self.customType.TIC_120_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
-                    tic_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]
+                if len(tic_price_list) > 0:
                     tic_price_list.insert(0, np.mean(current_price_list))
                     if len(tic_price_list) >= 6:
                         del tic_price_list[6:]
