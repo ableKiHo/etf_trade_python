@@ -373,7 +373,7 @@ class NewBuyKiwoom(ParentKiwoom):
         today = get_today_by_format('%Y%m%d')
         first_tic = analysis_rows[0]
         other_tics = analysis_rows[1:]
-        if first_tic[self.customType.TIGHTENING_TIME] < (today + '100000') or first_tic[self.customType.TIGHTENING_TIME] > (today + '150000'):
+        if first_tic[self.customType.TIGHTENING_TIME] < (today + '094000') or first_tic[self.customType.TIGHTENING_TIME] > (today + '151000'):
             return ''
         if first_tic["ma20"] == '':
             return ''
