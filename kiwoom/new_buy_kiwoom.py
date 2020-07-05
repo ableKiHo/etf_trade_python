@@ -360,7 +360,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def get_sell_point(self, last_row):
-        if last_row[self.customType.CURRENT_PRICE] < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+        if last_row[self.customType.CURRENT_PRICE] < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] and last_row[self.customType.CURRENT_PRICE] < last_row["ma20"]:
             return 'RealRegCase'
         if last_row[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] and last_row[self.customType.HIGHEST_PRICE] < last_row["ma20"]:
             return 'SellCase'
