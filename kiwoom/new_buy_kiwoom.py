@@ -192,10 +192,6 @@ class NewBuyKiwoom(ParentKiwoom):
                     if order_success == 0:
                         self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
 
-
-
-        # 매도 용
-
     def comm_real_data(self, sCode, sRealType, sRealData):
         target_etf_stock_dict = {sCode: {}}
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])  # 출력 : +(-)2520
