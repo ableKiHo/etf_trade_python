@@ -103,11 +103,11 @@ class ParentKiwoom(QAxWidget):
             stock_name = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_NAME])
             meme_gubun = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.SELL_BUY_CLASSIFICATOIN])
             meme_gubun = self.realType.REALTYPE[self.customType.SELLING_CATEGORY][meme_gubun]
-            stock_quan = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.HOLDING_QUANTITY])
-            stock_quan = int(stock_quan)
+            holding_quantity = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.HOLDING_QUANTITY])
+            holding_quantity = int(holding_quantity)
 
-            like_quan = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.AVAILABLE_QUANTITY])
-            like_quan = int(like_quan)
+            available_quantity = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.AVAILABLE_QUANTITY])
+            available_quantity = int(available_quantity)
             buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PURCHASE_UNIT_PRICE])
             buy_price = abs(int(buy_price))
             total_buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.TOTAL_PURCHASE_PRICE])
@@ -120,10 +120,10 @@ class ParentKiwoom(QAxWidget):
             if sCode in self.second_order_stock_dict.keys():
                 self.second_order_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price})
 
-            self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, stock_quan, like_quan, buy_price, total_buy_price, income_rate))
-            self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, stock_quan, like_quan, buy_price, total_buy_price, income_rate))
+            self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
+            self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
-            if meme_gubun == '매도':
+            if meme_gubun == '매도' and holding_quantity == 0:
                 self.purchased_deposit = self.purchased_deposit + total_buy_price
                 if sCode in self.priority_order_stock_dict.keys():
                     del self.priority_order_stock_dict[sCode]

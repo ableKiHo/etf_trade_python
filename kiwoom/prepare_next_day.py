@@ -98,7 +98,9 @@ class PrepareNextDay(ParentKiwoom):
             volume = volume.strip()
             code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_CODE)
             code = code.strip()
-            if int(volume) >= 50000:
+            last_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
+            last_price = last_price.strip()
+            if int(volume) >= 50000 and int(last_price) <= 50000:
                 code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NAME)
                 code_nm = code_nm.strip()
 

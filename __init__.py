@@ -23,8 +23,8 @@ class Main():
         if auto_type == 'sell':
             self.sellKiwoom = SellKiwoom()
         elif auto_type == 'buy':
-            self.kiwoom = BuyKiwoom()
-            # self.kiwoom = NewBuyKiwoom()
+            # self.kiwoom = BuyKiwoom()
+            self.kiwoom = NewBuyKiwoom()
         elif auto_type == 'prepare':
             self.prepareNextDay = PrepareNextDay()
         else:

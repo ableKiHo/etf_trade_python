@@ -45,6 +45,10 @@ def get_max_plus_sell_std_price(purchase_price):
     return purchase_price + round(purchase_price * (max_sell_std_per / 100))
 
 
+def get_max_plus_sell_std_price_by_std_per(purchase_price, max_sell_std_per):
+    return purchase_price + round(purchase_price * (max_sell_std_per / 100))
+
+
 def is_second_rank_plus_sell_price(purchase_price, sell_std_highest_price, current_price):
     max_plus_purchase_start_price = purchase_price + round(purchase_price * 2.05 / 100)
     max_plus_purchase_end_price = purchase_price + round(purchase_price * 1.95 / 100)
@@ -61,9 +65,13 @@ def is_second_rank_plus_sell_price(purchase_price, sell_std_highest_price, curre
         return False
 
 
-def createAnalysisEtfFile(sCode, sRealData, target_path):
+def get_today_by_format(date_format):
     now = datetime.datetime.now()
-    nowDate = now.strftime('%Y-%m-%d')
+    return now.strftime(date_format)
+
+
+def createAnalysisEtfFile(sCode, sRealData, target_path):
+    nowDate = get_today_by_format('%Y-%m-%d')
     parent_path = target_path + nowDate
     if not os.path.isdir(parent_path):
         os.mkdir(parent_path)
