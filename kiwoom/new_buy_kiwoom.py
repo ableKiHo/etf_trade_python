@@ -184,8 +184,16 @@ class NewBuyKiwoom(ParentKiwoom):
             if self.customType.HOLDING_QUANTITY in self.buy_point_dict and self.buy_point_dict[self.customType.HOLDING_QUANTITY] > 0:
                 target_etf_stock_dict = self.comm_real_data(sCode, sRealType, sRealData)
                 minus_sell_std_price = get_minus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE])
+                if target_etf_stock_dict[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+                    self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
+                    self.search_buy_etf()
                 if target_etf_stock_dict[self.customType.CURRENT_PRICE] < minus_sell_std_price:
-                    self.sell_send_order(sCode, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                    order_success = self.sell_send_order(sCode, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                    if order_success == 0:
+                        self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
+
+
+
         # 매도 용
 
     def comm_real_data(self, sCode, sRealType, sRealData):
