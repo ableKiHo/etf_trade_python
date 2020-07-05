@@ -138,7 +138,7 @@ class NewBuyKiwoom(ParentKiwoom):
         rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
         for i in range(rows):
             volume = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.VOLUME)
-            volume = volume.strip()
+            volume = int(volume.strip())
             code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_CODE)
             code = code.strip()
             code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NAME)
