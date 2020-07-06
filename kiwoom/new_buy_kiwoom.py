@@ -126,7 +126,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.all_etc_info_event_loop.exec_()
 
     def get_top10_etf_stock(self):
-        return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:10]
+        return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:20]
 
     def detail_account_info(self, sPrevNext="0"):
         QTest.qWait(5000)
@@ -380,19 +380,25 @@ class NewBuyKiwoom(ParentKiwoom):
         rows = self.analysis_etf_target_dict[code]["row"]
         if len(rows) < 5:
             return ''
-        analysis_rows = rows[:5]
-        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
         today = get_today_by_format('%Y%m%d')
+        analysis_rows = rows[:5]
+        self.logging.logger.info("analysis_rows > [%s][%s] >> %s " % (code, today, analysis_rows))
+
         first_tic = analysis_rows[0]
         other_tics = analysis_rows[1:]
         if first_tic[self.customType.TIGHTENING_TIME] < (today + '094000') or first_tic[self.customType.TIGHTENING_TIME] > (today + '151000'):
+            self.logging.logger.info("time_check > [%s] >> %s / %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], (today + '094000'), (today + '151000')))
             return ''
         if first_tic["ma20"] == '':
+            self.logging.logger.info("ma20_check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic["ma20"]))
             return ''
         if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
+            self.logging.logger.info("LOWEST_PRICE_check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.LOWEST_PRICE], first_tic["ma20"]))
             return ''
         higher_ma20_list = [x for x in other_tics if x[self.customType.LOWEST_PRICE] > x["ma20"]]
         if len(higher_ma20_list) > 0:
+            self.logging.logger.info("LOWEST_PRICE_LIST_check > [%s] >> %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], higher_ma20_list))
             return ''
 
         return first_tic
