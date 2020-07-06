@@ -101,9 +101,9 @@ class NewBuyKiwoom(ParentKiwoom):
                 self.search_buy_etf()
 
     def screen_number_setting(self, code, stock_dict):
-        stock_dict[code].update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
-        stock_dict[code].update({self.customType.MEME_SCREEN_NUMBER: self.buy_screen_meme_stock})
-        stock_dict[code].update({self.customType.SELL_MEME_SCREEN_NUMBER: self.sell_screen_meme_stock})
+        stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
+        stock_dict.update({self.customType.MEME_SCREEN_NUMBER: self.buy_screen_meme_stock})
+        stock_dict.update({self.customType.SELL_MEME_SCREEN_NUMBER: self.sell_screen_meme_stock})
 
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         # self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
