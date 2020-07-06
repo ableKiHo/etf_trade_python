@@ -336,7 +336,6 @@ class NewBuyKiwoom(ParentKiwoom):
                         self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                     break
             else:
-                self.all_etf_stock_list = []
                 self.get_all_etf_stock()
                 QTest.qWait(5000)
                 top_10_etf_stock_list = self.get_top10_etf_stock()
