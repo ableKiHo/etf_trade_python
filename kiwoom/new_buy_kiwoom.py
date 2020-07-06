@@ -336,7 +336,7 @@ class NewBuyKiwoom(ParentKiwoom):
             else:
                 self.all_etf_stock_list = []
                 self.get_all_etf_stock()
-                QTest.qWait(5000)
+                # QTest.qWait(5000)
                 top_10_etf_stock_list = self.get_top10_etf_stock()
                 self.logging.logger.info("top_10_etf_stock_list > %s " % top_10_etf_stock_list)
                 for item in top_10_etf_stock_list:
