@@ -106,7 +106,7 @@ class NewBuyKiwoom(ParentKiwoom):
         stock_dict[code].update({self.customType.SELL_MEME_SCREEN_NUMBER: self.sell_screen_meme_stock})
 
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-        self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
+        # self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
         if sRQName == self.customType.OPW00001:
             self.trdata_slot_opw00001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10079":
@@ -115,6 +115,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
     def get_all_etf_stock(self, sPrevNext="0"):
+        QTest.qWait(5000)
         self.logging.logger.info("get_all_etf_stock %s " % sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
@@ -137,7 +138,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop.exec_()
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-        self.logging.logger.info("trdata_slot_opt40004 %s / %s" % (sScrNo, sPrevNext))
+        # self.logging.logger.info("trdata_slot_opt40004 %s / %s" % (sScrNo, sPrevNext))
         rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
         for i in range(rows):
             volume = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.VOLUME)
@@ -242,7 +243,7 @@ class NewBuyKiwoom(ParentKiwoom):
         return target_etf_stock_dict
 
     def get_opt10079_info(self, code):
-        self.logging.logger.info('get_opt10079_info > [%s]' % code)
+        # self.logging.logger.info('get_opt10079_info > [%s]' % code)
         QTest.qWait(5000)
         self.tr_opt10079_info(code)
 
