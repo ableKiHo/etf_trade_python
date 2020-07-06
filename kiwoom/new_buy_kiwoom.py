@@ -406,7 +406,7 @@ class NewBuyKiwoom(ParentKiwoom):
     def send_order_limit_stock_price(self, code, quantity, limit_stock_price, stock_dict):
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_PURCHASE, stock_dict[code][self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, code, quantity, limit_stock_price,
+            [self.customType.NEW_PURCHASE, stock_dict[self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, code, quantity, limit_stock_price,
              self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
 
         if order_success == 0:
