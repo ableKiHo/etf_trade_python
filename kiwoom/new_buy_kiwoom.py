@@ -197,7 +197,7 @@ class NewBuyKiwoom(ParentKiwoom):
                         self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
 
     def comm_real_data(self, sCode, sRealType, sRealData):
-        target_etf_stock_dict = {sCode: {}}
+        target_etf_stock_dict = {}
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])  # 출력 : +(-)2520
         b = abs(int(b.strip()))
         e = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.SELLING_QUOTE])  # 출력 : +(-)2520
@@ -228,17 +228,17 @@ class NewBuyKiwoom(ParentKiwoom):
         k = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.LOWEST_PRICE])  # 출력 : +(-)2530
         k = abs(int(k.strip()))
 
-        target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: a})
-        target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: b})
-        target_etf_stock_dict[sCode].update({self.customType.THE_DAY_BEFORE: c})
-        target_etf_stock_dict[sCode].update({self.customType.SELLING_QUOTE: e})
-        target_etf_stock_dict[sCode].update({self.customType.BID: f})
-        target_etf_stock_dict[sCode].update({self.customType.VOLUME: g})
-        target_etf_stock_dict[sCode].update({self.customType.CUMULATIVE_VOLUME: h})
-        target_etf_stock_dict[sCode].update({self.customType.HIGHEST_PRICE: i})
-        target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
-        target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
-        target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: target_etf_stock_dict[sCode][self.customType.START_PRICE]})
+        target_etf_stock_dict.update({self.customType.TIGHTENING_TIME: a})
+        target_etf_stock_dict.update({self.customType.CURRENT_PRICE: b})
+        target_etf_stock_dict.update({self.customType.THE_DAY_BEFORE: c})
+        target_etf_stock_dict.update({self.customType.SELLING_QUOTE: e})
+        target_etf_stock_dict.update({self.customType.BID: f})
+        target_etf_stock_dict.update({self.customType.VOLUME: g})
+        target_etf_stock_dict.update({self.customType.CUMULATIVE_VOLUME: h})
+        target_etf_stock_dict.update({self.customType.HIGHEST_PRICE: i})
+        target_etf_stock_dict.update({self.customType.START_PRICE: j})
+        target_etf_stock_dict.update({self.customType.LOWEST_PRICE: k})
+        target_etf_stock_dict.update({self.customType.CURRENT_START_PRICE: target_etf_stock_dict[self.customType.START_PRICE]})
 
         return target_etf_stock_dict
 
