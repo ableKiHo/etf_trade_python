@@ -114,6 +114,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
     def get_all_etf_stock(self, sPrevNext="0"):
+        self.all_etf_stock_list = []
         self.logging.logger.info("get_all_etf_stock")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
@@ -149,7 +150,7 @@ class NewBuyKiwoom(ParentKiwoom):
         if sPrevNext == "2":
             self.get_all_etf_stock(sPrevNext="2")
         else:
-            self.stop_screen_cancel(self.screen_all_etf_stock)
+            # self.stop_screen_cancel(self.screen_all_etf_stock)
             self.all_etc_info_event_loop.exit()
 
     def trdata_slot_opw00001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
@@ -239,6 +240,7 @@ class NewBuyKiwoom(ParentKiwoom):
         return target_etf_stock_dict
 
     def get_opt10079_info(self, code):
+        self.logging.logger.info('get_opt10079_info > [%s]' % code)
         QTest.qWait(5000)
         self.tr_opt10079_info(code)
 
@@ -288,7 +290,7 @@ class NewBuyKiwoom(ParentKiwoom):
         else:
             rows = sorted(new_rows, key=itemgetter(self.customType.TIGHTENING_TIME), reverse=True)
         self.analysis_etf_target_dict[stock_code].update({"row": rows})
-        self.logging.logger.info("analysis_etf_target_dict > [%s] > %s" % (stock_code, self.analysis_etf_target_dict[stock_code]))
+        # self.logging.logger.info("analysis_etf_target_dict > [%s] > %s" % (stock_code, self.analysis_etf_target_dict[stock_code]))
 
         self.stop_screen_cancel(self.screen_opt10079_info)
         self.tr_opt10079_info_event_loop.exit()
@@ -334,6 +336,7 @@ class NewBuyKiwoom(ParentKiwoom):
                 self.get_all_etf_stock()
                 QTest.qWait(5000)
                 top_10_etf_stock_list = self.get_top10_etf_stock()
+                self.logging.logger.info("top_10_etf_stock_list > %s " % top_10_etf_stock_list)
                 for item in top_10_etf_stock_list:
                     code = item[self.customType.STOCK_CODE]
                     QTest.qWait(5000)
