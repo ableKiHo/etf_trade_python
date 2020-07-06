@@ -120,7 +120,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT40004, "opt40004", sPrevNext, self.screen_all_etf_stock)
 
-        if sPrevNext != "2":
+        if sPrevNext == "0":
             self.all_etc_info_event_loop.exec_()
 
     def get_top10_etf_stock(self):
