@@ -374,6 +374,7 @@ class NewBuyKiwoom(ParentKiwoom):
         if len(rows) < 5:
             return ''
         analysis_rows = rows[:5]
+        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
         today = get_today_by_format('%Y%m%d')
         first_tic = analysis_rows[0]
         other_tics = analysis_rows[1:]
