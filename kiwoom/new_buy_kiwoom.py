@@ -106,6 +106,7 @@ class NewBuyKiwoom(ParentKiwoom):
         stock_dict[code].update({self.customType.SELL_MEME_SCREEN_NUMBER: self.sell_screen_meme_stock})
 
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
         if sRQName == self.customType.OPW00001:
             self.trdata_slot_opw00001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10079":
@@ -336,7 +337,7 @@ class NewBuyKiwoom(ParentKiwoom):
             else:
                 self.all_etf_stock_list = []
                 self.get_all_etf_stock()
-                # QTest.qWait(5000)
+                QTest.qWait(5000)
                 top_10_etf_stock_list = self.get_top10_etf_stock()
                 self.logging.logger.info("top_10_etf_stock_list > %s " % top_10_etf_stock_list)
                 for item in top_10_etf_stock_list:
