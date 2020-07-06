@@ -72,7 +72,7 @@ class ParentKiwoom(QAxWidget):
         self.login_event_loop.exit()
 
     def stop_screen_cancel(self, sScrNo=None):
-        self.logging.logger.info("stop_screen_cancel")
+        self.logging.logger.info("stop_screen_cancel >> %s" % sScrNo)
         self.dynamicCall("DisconnectRealData(QString)", sScrNo)
 
     def msg_slot(self, sScrNo, sRQName, sTrCode, msg):
