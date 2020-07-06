@@ -114,7 +114,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
     def get_all_etf_stock(self, sPrevNext="0"):
-        self.logging.logger.info("get_all_etf_stock")
+        self.logging.logger.info("get_all_etf_stock %s " % sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
@@ -136,6 +136,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop.exec_()
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        self.logging.logger.info("trdata_slot_opt40004 %s / %s" % (sScrNo, sPrevNext))
         rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
         for i in range(rows):
             volume = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.VOLUME)
