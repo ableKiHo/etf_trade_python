@@ -341,12 +341,14 @@ class NewBuyKiwoom(ParentKiwoom):
 
         while True:
             if bool(self.buy_point_dict):
+                self.logging.logger.info('search_buy_etf buy info %s' % self.buy_point_dict)
                 QTest.qWait(5000)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
                 self.get_opt10079_info(code)
                 self.create_moving_average_20_line(code)
                 rows = self.analysis_etf_target_dict[code]["row"]
                 result = self.get_sell_point(rows[0])
+                self.logging.logger.info('sell point info >> %s / %s' % (rows[0], result))
                 if result is None:
                     continue
                 else:
@@ -367,13 +369,16 @@ class NewBuyKiwoom(ParentKiwoom):
                         self.get_etf_stock_info(code)
 
                     QTest.qWait(5000)
+                    if not bool(self.buy_point_dict):
+                        pass
+
                     self.get_opt10079_info(code)
                     self.create_moving_average_20_line(code)
                     buy_point = self.get_buy_point(code)
                     if buy_point != '':
                         buy_point.update({self.customType.STOCK_CODE: code})
                         self.logging.logger.info("buy_point > %s " % buy_point)
-                        self.buy_point_dict = buy_point
+                        self.buy_point_dict = copy.deepcopy(buy_point)
                         self.screen_number_setting(code, self.buy_point_dict)
                         limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
                         result = self.use_money / limit_stock_price
