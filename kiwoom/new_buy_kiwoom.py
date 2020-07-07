@@ -370,7 +370,7 @@ class NewBuyKiwoom(ParentKiwoom):
 
                     QTest.qWait(5000)
                     if not bool(self.buy_point_dict):
-                        pass
+                        continue
 
                     self.get_opt10079_info(code)
                     self.create_moving_average_20_line(code)
