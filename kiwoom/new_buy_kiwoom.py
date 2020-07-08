@@ -288,13 +288,9 @@ class NewBuyKiwoom(ParentKiwoom):
             e = int(e.strip())
             f = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             f = int(f.strip())
-            g = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
 
             row = {self.customType.CURRENT_PRICE: a, self.customType.VOLUME: b, self.customType.TIGHTENING_TIME: c, self.customType.START_PRICE: d, self.customType.HIGHEST_PRICE: e,
                    self.customType.LOWEST_PRICE: f, "ma20": ''}
-            if g != '':
-                g = int(g.strip())
-                row.update({self.customType.LAST_PRICE: g})
             new_rows.insert(0, row)
 
         if len(rows) > 0:
@@ -438,7 +434,7 @@ class NewBuyKiwoom(ParentKiwoom):
         if len(empty_ma20_list) > 0:
             self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
             return {}
-        if first_tic[self.customType.START_PRICE] < secode_tic[self.customType.LAST_PRICE]:
+        if first_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.START_PRICE], secode_tic[self.customType.LAST_PRICE]))
             return {}
         if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
