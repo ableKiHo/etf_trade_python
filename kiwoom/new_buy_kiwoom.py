@@ -40,6 +40,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.line.notification("ETF NEW BUY TRADE START")
         self.etf_info_event_loop = QEventLoop()
         self.tr_opt10079_info_event_loop = QEventLoop()
+        self.all_etf_info_event_loop = QEventLoop()
 
         self.detail_account_info()
         QTest.qWait(5000)
@@ -130,8 +131,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT40004, "opt40004", sPrevNext, self.screen_all_etf_stock)
 
-        if sPrevNext == "0":
-            self.all_etc_info_event_loop.exec_()
+        self.all_etf_info_event_loop.exec_()
 
     def get_top_rank_etf_stock(self):
         return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:7]
@@ -162,7 +162,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.get_all_etf_stock(sPrevNext="2")
         else:
             self.stop_screen_cancel(self.screen_all_etf_stock)
-            self.all_etc_info_event_loop.exit()
+            self.all_etf_info_event_loop.exit()
 
     def trdata_slot_opw00001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.DEPOSIT)

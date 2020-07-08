@@ -35,7 +35,6 @@ class ParentKiwoom(QAxWidget):
         self.screen_my_info = "2000"  # 계좌 관련한 스크린 번호
         self.login_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()  # 예수금 요청용 이벤트 루프
-        self.all_etc_info_event_loop = QEventLoop()
 
         self.target_etf_file_path = self.property.targetEtfFilePath
         self.account_num = self.property.account  # 계좌번호
