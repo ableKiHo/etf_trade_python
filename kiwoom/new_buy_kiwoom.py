@@ -488,3 +488,14 @@ class NewBuyKiwoom(ParentKiwoom):
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
         self.etf_info_event_loop.exec_()
 
+    def sell_send_order(self, sCode, screen_number, quantity):
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_PRICE], ""]
+        )
+        if order_success == 0:
+            self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
+        else:
+            self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
+
+        return order_success
