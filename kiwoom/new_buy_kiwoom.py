@@ -101,8 +101,8 @@ class NewBuyKiwoom(ParentKiwoom):
 
             if meme_gubun == '매도' and holding_quantity == 0:
                 self.buy_point_dict = {}
-                self.logging.logger.info("call search_buy_etf()  %s", self.buy_point_dict)
 
+            self.logging.logger.info("call SetRealRemove and search_buy_etf() at new_chejan_slot()  %s", self.buy_point_dict)
             self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
             self.search_buy_etf()
 
@@ -200,12 +200,12 @@ class NewBuyKiwoom(ParentKiwoom):
                 minus_sell_std_price = get_minus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE])
                 if target_etf_stock_dict[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
-                    self.logging.logger.info("call search_buy_etf() [%s] >> %s / %s" % (sCode, target_etf_stock_dict[self.customType.CURRENT_PRICE], self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]))
+                    self.logging.logger.info("call search_buy_etf() at realdata_slot() [%s] >> %s / %s" % (sCode, target_etf_stock_dict[self.customType.CURRENT_PRICE], self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]))
                     self.search_buy_etf()
                 elif target_etf_stock_dict[self.customType.CURRENT_PRICE] < minus_sell_std_price:
-                    self.logging.logger.info("sell_send_order [%s] > %s / %s" % (sCode, target_etf_stock_dict[self.customType.CURRENT_PRICE], minus_sell_std_price))
+                    self.logging.logger.info("sell_send_order at realdata_slot() [%s] > %s / %s" % (sCode, target_etf_stock_dict[self.customType.CURRENT_PRICE], minus_sell_std_price))
                     self.sell_send_order(sCode, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                    self.search_buy_etf()
+                    # self.search_buy_etf()
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         target_etf_stock_dict = {}
@@ -362,8 +362,10 @@ class NewBuyKiwoom(ParentKiwoom):
                 if result is None:
                     continue
                 else:
+                    self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, result))
                     self.stock_real_reg(code, self.buy_point_dict)
                     if result == 'SellCase':
+                        self.logging.logger.info("SellCase call sell_send_order [%s]>  %s " % (code, result))
                         self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                     break
             else:
@@ -396,9 +398,7 @@ class NewBuyKiwoom(ParentKiwoom):
                         quantity = int(result)
                         if quantity >= 1:
                             self.stock_real_reg(code, self.buy_point_dict)
-                            order_success = self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
-                            if order_success == 0:
-                                self.logging.logger.info("SetRealRemove_order_success > %s " % code)
+                            self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
 
                         break
 
