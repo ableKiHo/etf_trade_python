@@ -102,7 +102,8 @@ class NewBuyKiwoom(ParentKiwoom):
             if meme_gubun == '매도' and holding_quantity == 0:
                 self.buy_point_dict = {}
                 self.logging.logger.info("call search_buy_etf()  %s", self.buy_point_dict)
-                self.search_buy_etf()
+
+            self.search_buy_etf()
 
     def screen_number_setting(self, code, stock_dict):
         stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
@@ -132,7 +133,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.all_etc_info_event_loop.exec_()
 
     def get_top_rank_etf_stock(self):
-        return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:15]
+        return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:7]
 
     def detail_account_info(self, sPrevNext="0"):
         QTest.qWait(5000)
@@ -205,6 +206,7 @@ class NewBuyKiwoom(ParentKiwoom):
                     order_success = self.sell_send_order(sCode, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                     if order_success == 0:
                         self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
+                    self.search_buy_etf()
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         target_etf_stock_dict = {}
