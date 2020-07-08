@@ -435,7 +435,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
             return {}
         if first_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.START_PRICE], secode_tic[self.customType.LAST_PRICE]))
+            self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.START_PRICE], secode_tic[self.customType.CURRENT_PRICE]))
             return {}
         if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
             self.logging.logger.info("LOWEST_PRICE_check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.LOWEST_PRICE], first_tic["ma20"]))
