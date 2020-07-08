@@ -26,7 +26,7 @@ def is_current_price_compare_history(current_stock_price, price_history_list):
 
 
 def get_minus_sell_std_price(purchase_price):
-    sell_std_per = 1
+    sell_std_per = 0.65
     return purchase_price - round(purchase_price * (sell_std_per / 100))
 
 
