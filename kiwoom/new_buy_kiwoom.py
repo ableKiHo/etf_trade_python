@@ -103,6 +103,7 @@ class NewBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict = {}
                 self.logging.logger.info("call search_buy_etf()  %s", self.buy_point_dict)
 
+            self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
             self.search_buy_etf()
 
     def screen_number_setting(self, code, stock_dict):
@@ -203,9 +204,7 @@ class NewBuyKiwoom(ParentKiwoom):
                     self.search_buy_etf()
                 elif target_etf_stock_dict[self.customType.CURRENT_PRICE] < minus_sell_std_price:
                     self.logging.logger.info("sell_send_order [%s] > %s / %s" % (sCode, target_etf_stock_dict[self.customType.CURRENT_PRICE], minus_sell_std_price))
-                    order_success = self.sell_send_order(sCode, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                    if order_success == 0:
-                        self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
+                    self.sell_send_order(sCode, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                     self.search_buy_etf()
 
     def comm_real_data(self, sCode, sRealType, sRealData):
@@ -401,7 +400,6 @@ class NewBuyKiwoom(ParentKiwoom):
                             if order_success == 0:
                                 self.logging.logger.info("SetRealRemove_order_success > %s " % code)
 
-                                self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], code)
                         break
 
     def stock_real_reg(self, code, stock_dict):
