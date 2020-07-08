@@ -94,6 +94,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.buy_point_dict.update({self.customType.PURCHASE_UNIT_PRICE: buy_price})
             self.buy_point_dict.update({self.customType.TOTAL_PURCHASE_PRICE: total_buy_price})
             self.buy_point_dict.update({self.customType.HOLDING_QUANTITY: holding_quantity})
+            self.buy_point_dict.update({self.customType.ORDER_EXECUTION: True})
 
             self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
             self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
@@ -346,6 +347,9 @@ class NewBuyKiwoom(ParentKiwoom):
         today = get_today_by_format('%Y%m%d')
         while True:
             if bool(self.buy_point_dict):
+                if self.customType.ORDER_EXECUTION not in self.buy_point_dict.keys():
+                    continue
+
                 self.logging.logger.info('search_buy_etf buy info %s' % self.buy_point_dict)
                 QTest.qWait(5000)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
@@ -394,6 +398,7 @@ class NewBuyKiwoom(ParentKiwoom):
                             order_success = self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
                             if order_success == 0:
                                 self.logging.logger.info("SetRealRemove_order_success > %s " % code)
+
                                 self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], code)
                         break
 
