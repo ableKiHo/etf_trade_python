@@ -288,9 +288,11 @@ class NewBuyKiwoom(ParentKiwoom):
             e = int(e.strip())
             f = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             f = int(f.strip())
+            g = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
+            g = int(g.strip())
 
             row = {self.customType.CURRENT_PRICE: a, self.customType.VOLUME: b, self.customType.TIGHTENING_TIME: c, self.customType.START_PRICE: d, self.customType.HIGHEST_PRICE: e,
-                   self.customType.LOWEST_PRICE: f, "ma20": ''}
+                   self.customType.LAST_PRICE: g, self.customType.LOWEST_PRICE: f, "ma20": ''}
             new_rows.insert(0, row)
 
         if len(rows) > 0:
