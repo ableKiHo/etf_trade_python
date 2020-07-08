@@ -381,7 +381,7 @@ class NewBuyKiwoom(ParentKiwoom):
                     self.get_opt10079_info(code)
                     self.create_moving_average_20_line(code)
                     buy_point = self.get_buy_point(code)
-                    if not bool(buy_point):
+                    if bool(buy_point):
                         buy_point.update({self.customType.STOCK_CODE: code})
                         self.logging.logger.info("buy_point > %s " % buy_point)
                         self.buy_point_dict = copy.deepcopy(buy_point)
