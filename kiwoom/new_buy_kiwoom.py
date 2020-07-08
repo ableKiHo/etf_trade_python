@@ -23,6 +23,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.all_etf_stock_list = []
         self.buy_point_dict = {}
         self.target_etf_stock_dict = {}
+        self.top_rank_etf_stock_list = []
 
         self.screen_start_stop_real = "1000"  # 장 시작/종료 실시간 스크린 번호
         self.buy_screen_meme_stock = "3000"  # 종목별 할당할 주문용 스크린 번호
@@ -45,7 +46,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.detail_account_info()
         QTest.qWait(5000)
 
-        self.search_buy_etf()
+        self.prepare_search_buy_etf()
 
     def event_slots(self):
         self.OnReceiveTrData.connect(self.trdata_slot)
@@ -105,7 +106,7 @@ class NewBuyKiwoom(ParentKiwoom):
 
             self.logging.logger.info("call SetRealRemove and search_buy_etf() at new_chejan_slot()  %s", self.buy_point_dict)
             self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
-            self.search_buy_etf()
+            self.prepare_search_buy_etf()
 
     def screen_number_setting(self, code, stock_dict):
         stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
@@ -120,8 +121,6 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opt10079(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPT40004:
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-        """elif sRQName == self.customType.OPT10001:
-            self.trdata_slot_opt10001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)"""
 
     def get_all_etf_stock(self, sPrevNext="0"):
         QTest.qWait(5000)
@@ -134,7 +133,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.all_etf_info_event_loop.exec_()
 
     def get_top_rank_etf_stock(self):
-        return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:7]
+        return sorted(self.all_etf_stock_list, key=itemgetter(self.customType.VOLUME), reverse=True)[:5]
 
     def detail_account_info(self, sPrevNext="0"):
         QTest.qWait(5000)
@@ -193,10 +192,10 @@ class NewBuyKiwoom(ParentKiwoom):
                 self.line.notification("시스템 종료")
                 sys.exit()
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            self.logging.logger.info("realdata_slot [%s]>> %s" % (sCode, self.buy_point_dict))
+            self.logging.logger.info("realdata_slot_buy_point_dict [%s]>> %s" % (sCode, self.buy_point_dict))
             if self.customType.HOLDING_QUANTITY in self.buy_point_dict and self.buy_point_dict[self.customType.HOLDING_QUANTITY] > 0:
                 target_etf_stock_dict = self.comm_real_data(sCode, sRealType, sRealData)
-                self.logging.logger.info("realdata_slot [%s]>> %s" % (sCode, target_etf_stock_dict))
+                self.logging.logger.info("realdata_slot_target_etf_stock_dict [%s]>> %s" % (sCode, target_etf_stock_dict))
                 minus_sell_std_price = get_minus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE])
                 if target_etf_stock_dict[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
@@ -343,6 +342,13 @@ class NewBuyKiwoom(ParentKiwoom):
             row = rows[i]
             row["ma20"] = round(ma_20_value / gap, max_decimal_point)
 
+    def prepare_search_buy_etf(self):
+        self.logging.logger.info('prepare_search_buy_etf')
+        self.all_etf_stock_list = []
+        self.get_all_etf_stock()
+        self.top_rank_etf_stock_list = self.get_top_rank_etf_stock()
+        self.search_buy_etf()
+
     def search_buy_etf(self):
         self.logging.logger.info('search_buy_etf')
         today = get_today_by_format('%Y%m%d')
@@ -357,7 +363,7 @@ class NewBuyKiwoom(ParentKiwoom):
                 self.get_opt10079_info(code)
                 self.create_moving_average_20_line(code)
                 rows = self.analysis_etf_target_dict[code]["row"]
-                result = self.get_sell_point(rows[0])
+                result = self.get_sell_point(rows[0], rows[1])
                 self.logging.logger.info('sell point info >> %s / %s' % (rows[0], result))
                 if result is None:
                     continue
@@ -372,17 +378,12 @@ class NewBuyKiwoom(ParentKiwoom):
                 currentDate = get_today_by_format('%Y%m%d%H%M%S')
                 if (today + '143000') <= currentDate:
                     break
-                self.all_etf_stock_list = []
-                self.get_all_etf_stock()
+
                 QTest.qWait(5000)
-                top_rank_etf_stock_list = self.get_top_rank_etf_stock()
-                self.logging.logger.info("top_rank_etf_stock_list > %s " % top_rank_etf_stock_list)
-                for item in top_rank_etf_stock_list:
+                self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
+                for item in self.top_rank_etf_stock_list:
                     code = item[self.customType.STOCK_CODE]
                     self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
-                    """if code not in self.target_etf_stock_dict.keys():
-                        QTest.qWait(5000)
-                        self.get_etf_stock_info(code)"""
 
                     QTest.qWait(5000)
                     self.get_opt10079_info(code)
@@ -408,14 +409,14 @@ class NewBuyKiwoom(ParentKiwoom):
         fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
-    def get_sell_point(self, last_row):
-        if last_row[self.customType.CURRENT_PRICE] < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
-            if last_row[self.customType.CURRENT_PRICE] < last_row["ma20"]:
+    def get_sell_point(self, first_low, second_low):
+        if first_low[self.customType.CURRENT_PRICE] < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+            if first_low[self.customType.CURRENT_PRICE] < first_low["ma20"]:
                 return 'RealRegCase'
-        if last_row[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
-            if last_row[self.customType.CURRENT_PRICE] <= last_row["ma20"] <= last_row[self.customType.HIGHEST_PRICE]:
+        if first_low[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+            if first_low[self.customType.CURRENT_PRICE] <= first_low["ma20"] or second_low[self.customType.CURRENT_PRICE] <= second_low["ma20"]:
                 return 'SellCase'
-        if last_row[self.customType.CURRENT_PRICE] > get_max_plus_sell_std_price_by_std_per(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.max_plus_sell_std_percent):
+        if first_low[self.customType.CURRENT_PRICE] > get_max_plus_sell_std_price_by_std_per(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.max_plus_sell_std_percent):
             return 'SellCase'
 
         return None
@@ -448,8 +449,8 @@ class NewBuyKiwoom(ParentKiwoom):
         if secode_tic[self.customType.LOWEST_PRICE] >= secode_tic["ma20"] or secode_tic["ma20"] >= secode_tic[self.customType.HIGHEST_PRICE]:
             self.logging.logger.info("secode_tic range check > [%s] >> %s / %s / %s / %s" % (code, first_tic[self.customType.TIGHTENING_TIME], secode_tic[self.customType.LOWEST_PRICE] , secode_tic["ma20"] , secode_tic[self.customType.HIGHEST_PRICE]))
             return {}
-        if first_tic[self.customType.LOWEST_PRICE] < secode_tic[self.customType.LOWEST_PRICE] or first_tic[self.customType.HIGHEST_PRICE] < secode_tic[self.customType.HIGHEST_PRICE]:
-            self.logging.logger.info("SECOND_PRICE_check > [%s] >> %s / %s / %s / %s / %s" % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.LOWEST_PRICE], secode_tic[self.customType.LOWEST_PRICE] , first_tic[self.customType.HIGHEST_PRICE] , secode_tic[self.customType.HIGHEST_PRICE]))
+        if first_tic[self.customType.CURRENT_PRICE] < secode_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic CURRENT_PRICE_check > [%s] >> %s / %s / %s" % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.CURRENT_PRICE], secode_tic[self.customType.CURRENT_PRICE] ))
             return {}
         higher_ma20_list = [x for x in some_tics if x[self.customType.HIGHEST_PRICE] > x["ma20"]]
         if len(higher_ma20_list) > 0:
