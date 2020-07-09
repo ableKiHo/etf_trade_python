@@ -353,12 +353,13 @@ class NewBuyKiwoom(ParentKiwoom):
     def search_buy_etf(self):
         self.logging.logger.info('search_buy_etf')
         today = get_today_by_format('%Y%m%d')
+        breaker = False
         while True:
             if bool(self.buy_point_dict):
+                self.logging.logger.info('search_buy_etf buy info %s' % self.buy_point_dict)
                 if self.customType.ORDER_EXECUTION not in self.buy_point_dict.keys():
                     continue
 
-                self.logging.logger.info('search_buy_etf buy info %s' % self.buy_point_dict)
                 QTest.qWait(5000)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
                 self.get_opt10079_info(code)
@@ -401,8 +402,11 @@ class NewBuyKiwoom(ParentKiwoom):
                         if quantity >= 1:
                             self.stock_real_reg(code, self.buy_point_dict)
                             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
-
+                        breaker = True
                         break
+                if breaker:
+                    self.logging.logger.info("break search_buy_etf()")
+                    break
 
     def stock_real_reg(self, code, stock_dict):
         self.logging.logger.info("stock_real_reg > %s " % code)
