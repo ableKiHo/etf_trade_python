@@ -57,6 +57,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.OnReceiveChejanData.connect(self.new_chejan_slot)
 
     def new_chejan_slot(self, sGubun, nItemCnt, sFidList):
+        self.logging.logger.info("new_chejan_slot  %s", sGubun)
         if int(sGubun) == 0:
             sCode = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_CODE])[1:]
             stock_name = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_NAME])
@@ -464,7 +465,7 @@ class NewBuyKiwoom(ParentKiwoom):
         return copy.deepcopy(first_tic)
 
     def send_order_limit_stock_price(self, code, quantity, limit_stock_price, stock_dict):
-        self.logging.logger.info("send_order_limit_stock_price > %s " % code)
+        self.logging.logger.info("send_order_limit_stock_price > %s / %s" % (code, stock_dict))
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
             [self.customType.NEW_PURCHASE, stock_dict[self.customType.MEME_SCREEN_NUMBER], self.account_num, 1, code, quantity, limit_stock_price,
@@ -477,7 +478,6 @@ class NewBuyKiwoom(ParentKiwoom):
                 self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity, limit_stock_price, self.purchased_deposit))
         else:
             self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
-        return order_success
 
     def get_etf_stock_info(self, code):
         self.logging.logger.info("get_etf_stock_info")
@@ -496,5 +496,3 @@ class NewBuyKiwoom(ParentKiwoom):
             self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
         else:
             self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
-
-        return order_success
