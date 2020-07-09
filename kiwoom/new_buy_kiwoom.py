@@ -407,6 +407,22 @@ class NewBuyKiwoom(ParentKiwoom):
                             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
                         breaker = True
                         break
+                    if not bool(buy_point):
+                        buy_point = self.get_conform_first_buy_case(code)
+                        if bool(buy_point):
+                            buy_point.update({self.customType.STOCK_CODE: code})
+                            self.logging.logger.info("buy_point > %s " % buy_point)
+                            self.buy_point_dict = copy.deepcopy(buy_point)
+                            self.screen_number_setting(code, self.buy_point_dict)
+                            limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
+                            result = self.use_money / limit_stock_price
+                            quantity = int(result)
+                            if quantity >= 1:
+                                self.stock_real_reg(code, self.buy_point_dict)
+                                self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
+                            breaker = True
+                            break
+
                 if breaker:
                     self.logging.logger.info("break search_buy_etf()")
                     break
@@ -435,9 +451,8 @@ class NewBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
             return {}
 
-        today = get_today_by_format('%Y%m%d')
         analysis_rows = rows[:5]
-        self.logging.logger.info("analysis_rows > [%s][%s] >> %s " % (code, today, analysis_rows))
+        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
         secode_tic = analysis_rows[1]
@@ -470,6 +485,43 @@ class NewBuyKiwoom(ParentKiwoom):
             return {}
 
         return copy.deepcopy(first_tic)
+
+    def get_conform_first_buy_case(self, code):
+
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 5:
+            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
+            return {}
+
+        analysis_rows = rows[:5]
+        self.logging.logger.info("first_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        """첫번째 틱 ma20 위 , 두번째 틱은 ma20에 걸쳐 있고 세번째 틱은 ma20에 걸쳐 있거나 아래 네번째, 다섯번쨰는 ma20 아래 and 다섯번째부터 첫번째까지 상승중...(현재가 또는 시작가) and 양봉"""
+        first_tic = analysis_rows[0]
+        secode_tic = analysis_rows[1]
+        third_tic = analysis_rows[2]
+        forth_tic = analysis_rows[3]
+        fifth_tic = analysis_rows[4]
+        other_tics = analysis_rows[1:]
+
+        empty_ma20_list = [x for x in analysis_rows if x["ma20"] == '']
+        if len(empty_ma20_list) > 0:
+            self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
+            return {}
+
+        if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"]:
+            if secode_tic[self.customType.LOWEST_PRICE] < secode_tic["ma20"] < secode_tic[self.customType.HIGHEST_PRICE]:
+                if third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.HIGHEST_PRICE] <= third_tic["ma20"]:
+                    if forth_tic[self.customType.HIGHEST_PRICE] < forth_tic["ma20"] and fifth_tic[self.customType.HIGHEST_PRICE] < fifth_tic["ma20"]:
+                        if fifth_tic[self.customType.CURRENT_PRICE] <= forth_tic[self.customType.CURRENT_PRICE] <= third_tic[self.customType.CURRENT_PRICE] <= secode_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.START_PRICE]:
+                            if fifth_tic[self.customType.START_PRICE] < fifth_tic[self.customType.CURRENT_PRICE] and forth_tic[self.customType.START_PRICE] < forth_tic[self.customType.CURRENT_PRICE] and third_tic[self.customType.START_PRICE] < third_tic[self.customType.CURRENT_PRICE] and secode_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE] and first_tic[self.customType.START_PRICE] < first_tic[self.customType.CURRENT_PRICE]:
+                                lower_ma20_list = [x for x in other_tics if x["ma20"] > first_tic["ma20"]]
+                                if len(lower_ma20_list) > 0:
+                                    pass
+                                else:
+                                    return first_tic
+
+        return {}
 
     def send_order_limit_stock_price(self, code, quantity, limit_stock_price, stock_dict):
         self.logging.logger.info("send_order_limit_stock_price > %s / %s" % (code, stock_dict))
