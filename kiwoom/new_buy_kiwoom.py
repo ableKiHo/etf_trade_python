@@ -194,6 +194,9 @@ class NewBuyKiwoom(ParentKiwoom):
                 sys.exit()
         elif sRealType == self.customType.STOCK_CONCLUSION:
             self.logging.logger.info("realdata_slot_buy_point_dict [%s]>> %s" % (sCode, self.buy_point_dict))
+            if not bool(self.buy_point_dict):
+                self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_real_stock, sCode)
+
             if self.customType.HOLDING_QUANTITY in self.buy_point_dict and self.buy_point_dict[self.customType.HOLDING_QUANTITY] > 0:
                 target_etf_stock_dict = self.comm_real_data(sCode, sRealType, sRealData)
                 self.logging.logger.info("realdata_slot_target_etf_stock_dict [%s]>> %s" % (sCode, target_etf_stock_dict))
