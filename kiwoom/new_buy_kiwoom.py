@@ -121,7 +121,7 @@ class NewBuyKiwoom(ParentKiwoom):
         stock_dict.update({self.customType.SELL_MEME_SCREEN_NUMBER: self.sell_screen_meme_stock})
 
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-        # self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
+        self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
         if sRQName == self.customType.OPW00001:
             self.trdata_slot_opw00001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10079":
@@ -263,7 +263,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.tr_opt10079_info_event_loop.exec_()
 
     def trdata_slot_opt10079(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-
+        self.logging.logger.info('trdata_slot_opt10079 > [%s][%s]' % (sScrNo, sRQName))
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         stock_code = stock_code.strip()
 
