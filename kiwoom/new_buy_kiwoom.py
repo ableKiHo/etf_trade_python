@@ -44,6 +44,8 @@ class NewBuyKiwoom(ParentKiwoom):
         self.tr_opt10079_info_event_loop = QEventLoop()
         self.all_etf_info_event_loop = QEventLoop()
 
+        self.timer2 = QTimer(self)
+
         self.detail_account_info()
         QTest.qWait(5000)
         self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
@@ -342,7 +344,9 @@ class NewBuyKiwoom(ParentKiwoom):
         self.all_etf_stock_list = []
         self.get_all_etf_stock()
         self.top_rank_etf_stock_list = self.get_top_rank_etf_stock()
+        self.loop_search_buy_etf()
 
+    def loop_search_buy_etf(self):
         self.timer2 = QTimer(self)
         self.timer2.start(1000 * 5)
         self.timer2.timeout.connect(self.search_buy_etf)
