@@ -3,7 +3,7 @@ import math
 import sys
 from operator import itemgetter
 
-from PyQt5.QtCore import QEventLoop
+from PyQt5.QtCore import QEventLoop, QTimer
 from PyQt5.QtTest import QTest
 
 from kiwoom.parent_kiwoom import ParentKiwoom
@@ -130,7 +130,6 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
     def get_all_etf_stock(self, sPrevNext="0"):
-        QTest.qWait(5000)
         self.logging.logger.info("get_all_etf_stock %s " % sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
@@ -194,7 +193,6 @@ class NewBuyKiwoom(ParentKiwoom):
             if value == '4':
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
-                QTest.qWait(5000)
 
                 for code in self.analysis_etf_target_dict.keys():
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_real_stock, code)
@@ -250,7 +248,6 @@ class NewBuyKiwoom(ParentKiwoom):
 
     def get_opt10079_info(self, code):
         self.logging.logger.info('get_opt10079_info > [%s]' % code)
-        QTest.qWait(5000)
         self.tr_opt10079_info(code)
 
     def tr_opt10079_info(self, code, sPrevNext="0"):
@@ -342,7 +339,7 @@ class NewBuyKiwoom(ParentKiwoom):
     def prepare_search_buy_etf(self):
         self.logging.logger.info('prepare_search_buy_etf')
         self.all_etf_stock_list = []
-        self.get_all_etf_stock()
+        QTimer.singleShot(5000, self.get_all_etf_stock())
         self.top_rank_etf_stock_list = self.get_top_rank_etf_stock()
         self.search_buy_etf()
 
@@ -358,7 +355,7 @@ class NewBuyKiwoom(ParentKiwoom):
                     continue
 
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
-                self.get_opt10079_info(code)
+                QTimer.singleShot(5000, self.get_opt10079_info(code))
                 self.create_moving_average_20_line(code)
                 rows = self.analysis_etf_target_dict[code]["row"]
                 prepare = self.prepare_sell_send_order(code, rows[0])
@@ -377,14 +374,12 @@ class NewBuyKiwoom(ParentKiwoom):
                 if (today + '143000') <= currentDate and not bool(self.buy_point_dict):
                     break
 
-                QTest.qWait(5000)
                 self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
                 for item in self.top_rank_etf_stock_list:
                     code = item[self.customType.STOCK_CODE]
                     self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
 
-                    QTest.qWait(5000)
-                    self.get_opt10079_info(code)
+                    QTimer.singleShot(5000, self.get_opt10079_info(code))
                     self.create_moving_average_20_line(code)
                     buy_point = self.get_buy_point(code)
                     if bool(buy_point):
