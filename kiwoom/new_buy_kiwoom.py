@@ -35,7 +35,6 @@ class NewBuyKiwoom(ParentKiwoom):
         self.screen_etf_stock = "5000"
 
         self.max_plus_sell_std_percent = 3
-        self.current_code = ''
 
         self.event_slots()  # 키움과 연결하기 위한 시그널 / 슬롯 모음
         self.real_event_slot()  # 실시간 이벤트 시그널 / 슬롯 연결
@@ -194,6 +193,7 @@ class NewBuyKiwoom(ParentKiwoom):
             if value == '4':
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
+                QTest.qWait(5000)
 
                 for code in self.analysis_etf_target_dict.keys():
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_real_stock, code)
@@ -247,9 +247,9 @@ class NewBuyKiwoom(ParentKiwoom):
 
         return target_etf_stock_dict """
 
-    def get_opt10079_info(self):
-        self.logging.logger.info('get_opt10079_info > [%s]' % self.current_code)
-        self.tr_opt10079_info(self.current_code)
+    def get_opt10079_info(self, code):
+        self.logging.logger.info('get_opt10079_info > [%s]' % code)
+        self.tr_opt10079_info(code)
 
     def tr_opt10079_info(self, code, sPrevNext="0"):
         self.logging.logger.info('tr_opt10079_info > [%s]' % code)
@@ -340,79 +340,73 @@ class NewBuyKiwoom(ParentKiwoom):
     def prepare_search_buy_etf(self):
         self.logging.logger.info('prepare_search_buy_etf')
         self.all_etf_stock_list = []
-        QTimer.singleShot(5000, self.get_all_etf_stock)
+        self.get_all_etf_stock()
         self.top_rank_etf_stock_list = self.get_top_rank_etf_stock()
-        self.search_buy_etf()
+
+        self.timer2 = QTimer(self)
+        self.timer2.start(1000 * 5)
+        self.timer2.timeout.connect(self.search_buy_etf)
 
     def search_buy_etf(self):
         self.logging.logger.info('search_buy_etf')
         today = get_today_by_format('%Y%m%d')
         breaker = False
-        while True:
-            self.logging.logger.info('search_buy_etf while start %s' % self.buy_point_dict)
-            if bool(self.buy_point_dict):
-                self.logging.logger.info('search_buy_etf buy info %s' % self.buy_point_dict)
-                if self.customType.ORDER_EXECUTION not in self.buy_point_dict.keys():
-                    continue
+        self.logging.logger.info('search_buy_etf while start %s' % self.buy_point_dict)
+        if bool(self.buy_point_dict):
+            self.logging.logger.info('search_buy_etf buy info %s' % self.buy_point_dict)
+            if self.customType.ORDER_EXECUTION not in self.buy_point_dict.keys():
+                return
+            code = self.buy_point_dict[self.customType.STOCK_CODE]
 
-                self.current_code = self.buy_point_dict[self.customType.STOCK_CODE]
-                QTimer.singleShot(5000, self.get_opt10079_info)
-                self.create_moving_average_20_line(self.current_code)
-                rows = self.analysis_etf_target_dict[code]["row"]
-                prepare = self.prepare_sell_send_order(code, rows[0])
-                if prepare == 'SellCase':
-                    self.logging.logger.info("SellCase prepare_sell_send_order [%s]>  %s " % (code, prepare))
-                    self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                    break
-                result = self.get_sell_point(rows[:4])
-                self.logging.logger.info('sell point info >> %s / %s' % (rows, result))
-                if result == 'SellCase':
-                    self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, result))
-                    self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                    break
-            else:
-                currentDate = get_today_by_format('%Y%m%d%H%M%S')
-                if (today + '145000') <= currentDate and not bool(self.buy_point_dict):
-                    break
+            self.get_opt10079_info(code, 'sell')
+            self.create_moving_average_20_line(code)
+            rows = self.analysis_etf_target_dict[code]["row"]
+            prepare = self.prepare_sell_send_order(code, rows[0])
+            if prepare == 'SellCase':
+                self.logging.logger.info("SellCase prepare_sell_send_order [%s]>  %s " % (code, prepare))
+                self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                return
+            result = self.get_sell_point(rows[:4])
+            self.logging.logger.info('sell point info >> %s / %s' % (rows, result))
+            if result == 'SellCase':
+                self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, result))
+                self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                return
+        else:
+            currentDate = get_today_by_format('%Y%m%d%H%M%S')
+            if (today + '145000') <= currentDate and not bool(self.buy_point_dict):
+                return
 
-                self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
-                for item in self.top_rank_etf_stock_list:
-                    self.current_code = item[self.customType.STOCK_CODE]
-                    code = self.current_code
-                    self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
+            self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
+            for item in self.top_rank_etf_stock_list:
+                code = item[self.customType.STOCK_CODE]
+                self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
 
-                    QTimer.singleShot(5000, self.get_opt10079_info)
-                    self.create_moving_average_20_line(code)
-                    buy_point = self.get_buy_point(code)
-                    if bool(buy_point):
-                        self.prepare_send_order(code, buy_point)
-                        breaker = True
-                        self.logging.logger.info("buy_point break")
-                        break
+                self.get_opt10079_info(code)
+                self.create_moving_average_20_line(code)
+                buy_point = self.get_buy_point(code)
+                if bool(buy_point):
+                    self.prepare_send_order(code, buy_point)
+                    self.logging.logger.info("buy_point break")
+                    return
 
-                    first_buy_point = self.get_conform_first_buy_case(code)
-                    if bool(first_buy_point):
-                        self.prepare_send_order(code, first_buy_point)
-                        breaker = True
-                        self.logging.logger.info("first_buy_point break")
-                        break
-                    seconf_buy_point = self.get_conform_second_buy_case(code)
-                    if bool(seconf_buy_point):
-                        self.prepare_send_order(code, seconf_buy_point)
-                        breaker = True
-                        self.logging.logger.info("second_buy_point break")
-                        break
-                    third_buy_point = self.get_conform_third_buy_case(code)
-                    if bool(third_buy_point):
-                        self.prepare_send_order(code, third_buy_point)
-                        breaker = True
-                        self.logging.logger.info("third_buy_point break")
-                        break
+                first_buy_point = self.get_conform_first_buy_case(code)
+                if bool(first_buy_point):
+                    self.prepare_send_order(code, first_buy_point)
+                    self.logging.logger.info("first_buy_point break")
+                    return
+                seconf_buy_point = self.get_conform_second_buy_case(code)
+                if bool(seconf_buy_point):
+                    self.prepare_send_order(code, seconf_buy_point)
+                    self.logging.logger.info("second_buy_point break")
+                    return
+                third_buy_point = self.get_conform_third_buy_case(code)
+                if bool(third_buy_point):
+                    self.prepare_send_order(code, third_buy_point)
+                    self.logging.logger.info("third_buy_point break")
+                    return
 
-                if breaker:
-                    self.logging.logger.info("break search_buy_etf()")
-                    break
-            self.logging.logger.info('search_buy_etf while end %s' % self.buy_point_dict)
+        self.logging.logger.info('search_buy_etf while end %s' % self.buy_point_dict)
 
     def prepare_sell_send_order(self, code, current_dict):
         result = ''
