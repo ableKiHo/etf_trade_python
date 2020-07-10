@@ -378,7 +378,7 @@ class NewBuyKiwoom(ParentKiwoom):
                 return
         else:
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
-            if (today + '151000') <= currentDate and not bool(self.buy_point_dict):
+            if (today + '150000') < currentDate:
                 return
 
             self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
@@ -414,10 +414,16 @@ class NewBuyKiwoom(ParentKiwoom):
 
     def prepare_sell_send_order(self, code, current_dict):
         result = ''
+        today = get_today_by_format('%Y%m%d')
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
         self.logging.logger.info("prepare_sell_send_order [%s]>> %s" % (code, current_dict))
+        if (today + '151000') < currentDate:
+            self.logging.logger.info("sell_send_order by currentDate() [%s] > %s " % (code, current_dict[self.customType.CURRENT_PRICE]))
+            result = "SellCase"
+
         minus_sell_std_price = get_minus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE])
         if current_dict[self.customType.CURRENT_PRICE] < minus_sell_std_price:
-            self.logging.logger.info("sell_send_order at realdata_slot() [%s] > %s / %s" % (code, current_dict[self.customType.CURRENT_PRICE], minus_sell_std_price))
+            self.logging.logger.info("sell_send_order by minus_sell_std_price() [%s] > %s / %s" % (code, current_dict[self.customType.CURRENT_PRICE], minus_sell_std_price))
             result = "SellCase"
 
         return result
