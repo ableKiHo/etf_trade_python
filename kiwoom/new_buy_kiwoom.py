@@ -108,11 +108,11 @@ class NewBuyKiwoom(ParentKiwoom):
             if meme_gubun == '매도' and holding_quantity == 0:
                 self.buy_point_dict = {}
                 self.logging.logger.info("call prepare_search_buy_etf at new_chejan_slot")
-                self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_real_stock, sCode)
+                self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
                 self.prepare_search_buy_etf()
             else:
                 self.logging.logger.info("call search_buy_etf at new_chejan_slot")
-                self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_real_stock, sCode)
+                self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
                 self.search_buy_etf()
 
     def screen_number_setting(self, code, stock_dict):
@@ -254,6 +254,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.tr_opt10079_info(code)
 
     def tr_opt10079_info(self, code, sPrevNext="0"):
+        self.logging.logger.info('tr_opt10079_info > [%s]' % code)
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
         self.dynamicCall("SetInputValue(QString, QString)", "틱범위", "120틱")
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
