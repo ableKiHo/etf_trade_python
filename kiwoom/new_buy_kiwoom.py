@@ -115,7 +115,7 @@ class NewBuyKiwoom(ParentKiwoom):
             else:
                 self.logging.logger.info("call search_buy_etf at new_chejan_slot")
                 self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
-                self.search_buy_etf()
+                self.loop_search_buy_etf()
 
     def screen_number_setting(self, code, stock_dict):
         stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
@@ -348,7 +348,7 @@ class NewBuyKiwoom(ParentKiwoom):
 
     def loop_search_buy_etf(self):
         self.timer2 = QTimer(self)
-        self.timer2.start(1000 * 5)
+        self.timer2.start(1000 * 8)
         self.timer2.timeout.connect(self.search_buy_etf)
 
     def search_buy_etf(self):
