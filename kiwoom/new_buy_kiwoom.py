@@ -378,7 +378,7 @@ class NewBuyKiwoom(ParentKiwoom):
                 return
         else:
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
-            if (today + '145000') <= currentDate and not bool(self.buy_point_dict):
+            if (today + '151000') <= currentDate and not bool(self.buy_point_dict):
                 return
 
             self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
