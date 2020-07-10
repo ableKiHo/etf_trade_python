@@ -35,6 +35,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.screen_etf_stock = "5000"
 
         self.max_plus_sell_std_percent = 3
+        self.current_code = ''
 
         self.event_slots()  # 키움과 연결하기 위한 시그널 / 슬롯 모음
         self.real_event_slot()  # 실시간 이벤트 시그널 / 슬롯 연결
@@ -246,9 +247,9 @@ class NewBuyKiwoom(ParentKiwoom):
 
         return target_etf_stock_dict """
 
-    def get_opt10079_info(self, code):
-        self.logging.logger.info('get_opt10079_info > [%s]' % code)
-        self.tr_opt10079_info(code)
+    def get_opt10079_info(self):
+        self.logging.logger.info('get_opt10079_info > [%s]' % self.current_code)
+        self.tr_opt10079_info(self.current_code)
 
     def tr_opt10079_info(self, code, sPrevNext="0"):
         self.logging.logger.info('tr_opt10079_info > [%s]' % code)
@@ -339,7 +340,7 @@ class NewBuyKiwoom(ParentKiwoom):
     def prepare_search_buy_etf(self):
         self.logging.logger.info('prepare_search_buy_etf')
         self.all_etf_stock_list = []
-        QTimer.singleShot(5000, self.get_all_etf_stock())
+        QTimer.singleShot(5000, self.get_all_etf_stock)
         self.top_rank_etf_stock_list = self.get_top_rank_etf_stock()
         self.search_buy_etf()
 
@@ -354,9 +355,9 @@ class NewBuyKiwoom(ParentKiwoom):
                 if self.customType.ORDER_EXECUTION not in self.buy_point_dict.keys():
                     continue
 
-                code = self.buy_point_dict[self.customType.STOCK_CODE]
-                QTimer.singleShot(5000, self.get_opt10079_info(code))
-                self.create_moving_average_20_line(code)
+                self.current_code = self.buy_point_dict[self.customType.STOCK_CODE]
+                QTimer.singleShot(5000, self.get_opt10079_info)
+                self.create_moving_average_20_line(self.current_code)
                 rows = self.analysis_etf_target_dict[code]["row"]
                 prepare = self.prepare_sell_send_order(code, rows[0])
                 if prepare == 'SellCase':
@@ -376,10 +377,11 @@ class NewBuyKiwoom(ParentKiwoom):
 
                 self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
                 for item in self.top_rank_etf_stock_list:
-                    code = item[self.customType.STOCK_CODE]
+                    self.current_code = item[self.customType.STOCK_CODE]
+                    code = self.current_code
                     self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
 
-                    QTimer.singleShot(5000, self.get_opt10079_info(code))
+                    QTimer.singleShot(5000, self.get_opt10079_info)
                     self.create_moving_average_20_line(code)
                     buy_point = self.get_buy_point(code)
                     if bool(buy_point):
