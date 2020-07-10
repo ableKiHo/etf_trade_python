@@ -45,7 +45,7 @@ class NewBuyKiwoom(ParentKiwoom):
 
         self.detail_account_info()
         QTest.qWait(5000)
-        self.dynamicCall("SetRealRemove(QString, QString)","ALL", "ALL")
+        self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
 
         self.prepare_search_buy_etf()
 
@@ -110,7 +110,6 @@ class NewBuyKiwoom(ParentKiwoom):
             else:
                 self.logging.logger.info("call [%s] search_buy_etf() at new_chejan_slot()  %s", (meme_gubun, self.buy_point_dict))
                 self.search_buy_etf()
-
 
     def screen_number_setting(self, code, stock_dict):
         stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
@@ -411,7 +410,6 @@ class NewBuyKiwoom(ParentKiwoom):
 
         return result
 
-
     def prepare_send_order(self, code, buy_point):
         buy_point.update({self.customType.STOCK_CODE: code})
         self.logging.logger.info("buy_point > %s " % buy_point)
@@ -440,11 +438,13 @@ class NewBuyKiwoom(ParentKiwoom):
         if first_low[self.customType.CURRENT_PRICE] > self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
             if second_low[self.customType.LOWEST_PRICE] < second_low["ma20"] < second_low[self.customType.HIGHEST_PRICE]:
                 return 'SellCase'
-            if  second_low[self.customType.CURRENT_PRICE] <= second_low["ma20"] and second_low[self.customType.START_PRICE] > second_low[self.customType.CURRENT_PRICE]:
+            if second_low[self.customType.CURRENT_PRICE] <= second_low["ma20"] and second_low[self.customType.START_PRICE] > second_low[self.customType.CURRENT_PRICE]:
                 return 'SellCase'
-            if  forth_low[self.customType.START_PRICE] > forth_low[self.customType.CURRENT_PRICE] and third_low[self.customType.START_PRICE] > third_low[self.customType.CURRENT_PRICE] and second_low[self.customType.START_PRICE] > second_low[self.customType.CURRENT_PRICE]:
+            if forth_low[self.customType.START_PRICE] > forth_low[self.customType.CURRENT_PRICE] and third_low[self.customType.START_PRICE] > third_low[self.customType.CURRENT_PRICE] and second_low[
+                self.customType.START_PRICE] > second_low[self.customType.CURRENT_PRICE]:
                 return 'SellCase'
-            if first_low[self.customType.LOWEST_PRICE] <= first_low["ma20"] <= first_low[self.customType.HIGHEST_PRICE] and first_low[self.customType.START_PRICE] > first_low[self.customType.CURRENT_PRICE]:
+            if first_low[self.customType.LOWEST_PRICE] <= first_low["ma20"] <= first_low[self.customType.HIGHEST_PRICE] and first_low[self.customType.START_PRICE] > first_low[
+                self.customType.CURRENT_PRICE]:
                 return 'SellCase'
         return None
 
@@ -467,16 +467,19 @@ class NewBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
             return {}
         if first_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.START_PRICE], secode_tic[self.customType.CURRENT_PRICE]))
+            self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s / %s / %s " % (
+                code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.START_PRICE], secode_tic[self.customType.CURRENT_PRICE]))
             return {}
         if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
             self.logging.logger.info("LOWEST_PRICE_check > [%s] >> %s / %s / %s " % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.LOWEST_PRICE], first_tic["ma20"]))
             return {}
         if secode_tic[self.customType.LOWEST_PRICE] >= secode_tic["ma20"] or secode_tic["ma20"] >= secode_tic[self.customType.HIGHEST_PRICE]:
-            self.logging.logger.info("secode_tic range check > [%s] >> %s / %s / %s / %s" % (code, first_tic[self.customType.TIGHTENING_TIME], secode_tic[self.customType.LOWEST_PRICE] , secode_tic["ma20"] , secode_tic[self.customType.HIGHEST_PRICE]))
+            self.logging.logger.info("secode_tic range check > [%s] >> %s / %s / %s / %s" % (
+                code, first_tic[self.customType.TIGHTENING_TIME], secode_tic[self.customType.LOWEST_PRICE], secode_tic["ma20"], secode_tic[self.customType.HIGHEST_PRICE]))
             return {}
         if first_tic[self.customType.CURRENT_PRICE] < secode_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic CURRENT_PRICE_check > [%s] >> %s / %s / %s" % (code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.CURRENT_PRICE], secode_tic[self.customType.CURRENT_PRICE] ))
+            self.logging.logger.info("first_tic CURRENT_PRICE_check > [%s] >> %s / %s / %s" % (
+                code, first_tic[self.customType.TIGHTENING_TIME], first_tic[self.customType.CURRENT_PRICE], secode_tic[self.customType.CURRENT_PRICE]))
             return {}
         higher_ma20_list = [x for x in some_tics if x[self.customType.HIGHEST_PRICE] > x["ma20"]]
         if len(higher_ma20_list) > 0:
@@ -516,11 +519,9 @@ class NewBuyKiwoom(ParentKiwoom):
                 if third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.HIGHEST_PRICE] <= third_tic["ma20"]:
                     if forth_tic[self.customType.HIGHEST_PRICE] < forth_tic["ma20"] and fifth_tic[self.customType.HIGHEST_PRICE] < fifth_tic["ma20"]:
                         if fifth_tic[self.customType.CURRENT_PRICE] <= forth_tic[self.customType.CURRENT_PRICE] <= third_tic[self.customType.CURRENT_PRICE] <= secode_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.START_PRICE]:
-                            if fifth_tic[self.customType.START_PRICE] < fifth_tic[self.customType.CURRENT_PRICE] and forth_tic[self.customType.START_PRICE] < forth_tic[self.customType.CURRENT_PRICE] and third_tic[self.customType.START_PRICE] < third_tic[self.customType.CURRENT_PRICE] and secode_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE] and first_tic[self.customType.START_PRICE] < first_tic[self.customType.CURRENT_PRICE]:
-                                lower_ma20_list = [x for x in other_tics if x["ma20"] > first_tic["ma20"]]
-                                if len(lower_ma20_list) > 0:
-                                    pass
-                                else:
+                            if fifth_tic[self.customType.START_PRICE] < fifth_tic[self.customType.CURRENT_PRICE] and forth_tic[self.customType.START_PRICE] < forth_tic[
+                                self.customType.CURRENT_PRICE] and third_tic[self.customType.START_PRICE] < third_tic[self.customType.CURRENT_PRICE] and secode_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE] and first_tic[self.customType.START_PRICE] < first_tic[self.customType.CURRENT_PRICE]:
+                                if first_tic["ma20"] >= secode_tic["ma20"]:
                                     return copy.deepcopy(first_tic)
 
         return {}
@@ -551,7 +552,8 @@ class NewBuyKiwoom(ParentKiwoom):
     def sell_send_order(self, sCode, screen_number, quantity):
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_PRICE], ""]
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_PRICE],
+             ""]
         )
         if order_success == 0:
             self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
