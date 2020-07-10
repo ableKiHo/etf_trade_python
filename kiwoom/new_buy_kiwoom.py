@@ -1,4 +1,5 @@
 import copy
+import math
 import sys
 from operator import itemgetter
 
@@ -394,6 +395,18 @@ class NewBuyKiwoom(ParentKiwoom):
                         breaker = True
                         self.logging.logger.info("first_buy_point break")
                         break
+                    seconf_buy_point = self.get_conform_second_buy_case(code)
+                    if bool(seconf_buy_point):
+                        self.prepare_send_order(code, seconf_buy_point)
+                        breaker = True
+                        self.logging.logger.info("second_buy_point break")
+                        break
+                    third_buy_point = self.get_conform_third_buy_case(code)
+                    if bool(third_buy_point):
+                        self.prepare_send_order(code, third_buy_point)
+                        breaker = True
+                        self.logging.logger.info("third_buy_point break")
+                        break
 
                 if breaker:
                     self.logging.logger.info("break search_buy_etf()")
@@ -493,14 +506,14 @@ class NewBuyKiwoom(ParentKiwoom):
         return copy.deepcopy(first_tic)
 
     def get_conform_first_buy_case(self, code):
-
+        self.logging.logger.info("first_buy_case analysis_rows > [%s]" % code)
         rows = self.analysis_etf_target_dict[code]["row"]
         if len(rows) < 5:
             self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
             return {}
 
         analysis_rows = rows[:5]
-        self.logging.logger.info("first_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        #self.logging.logger.info("first_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
         secode_tic = analysis_rows[1]
@@ -523,6 +536,89 @@ class NewBuyKiwoom(ParentKiwoom):
                                 if first_tic["ma20"] >= secode_tic["ma20"]:
                                     return copy.deepcopy(first_tic)
 
+        return {}
+
+    def get_conform_second_buy_case(self, code):
+        # self.logging.logger.info("get_conform_second_buy_case analysis_rows > [%s] " % code)
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 8:
+            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
+            return {}
+
+        analysis_rows = rows[:8]
+        self.logging.logger.info("second_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        compare_rows = analysis_rows[1:]
+        first_tic = analysis_rows[0]
+        compare_tic = copy.deepcopy(first_tic)
+        breaker = False
+        for x in compare_rows:
+            if math.trunc(compare_tic["ma20"]) < math.trunc(x["ma20"]):
+                breaker = True
+                break
+            compare_tic = copy.deepcopy(x)
+        if not breaker:
+            second_tic = analysis_rows[1]
+            if second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"]:
+                breaker = True
+        if not breaker:
+            compare_rows = analysis_rows[2:]
+            for x in compare_rows:
+                if x[self.customType.LOWEST_PRICE] > x["ma20"]:
+                    breaker = True
+                    break
+        if not breaker:
+            first_tic = analysis_rows[0]
+            second_tic = analysis_rows[1]
+            if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
+                breaker = True
+            elif first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
+                breaker = True
+
+        if not breaker:
+            return first_tic
+        return {}
+
+    def get_conform_third_buy_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 8:
+            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
+            return {}
+
+        analysis_rows = rows[:6]
+        self.logging.logger.info("third_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        compare_rows = analysis_rows[1:]
+        first_tic = analysis_rows[0]
+        compare_tic = copy.deepcopy(first_tic)
+        breaker = False
+        for x in compare_rows:
+            if math.trunc(compare_tic["ma20"]) < math.trunc(x["ma20"]):
+                breaker = True
+                break
+            compare_tic = copy.deepcopy(x)
+
+        if not breaker:
+            first_tic = analysis_rows[0]
+            second_tic = analysis_rows[1]
+            if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
+                breaker = True
+            elif first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
+                breaker = True
+        if not breaker:
+            for x in compare_rows:
+                if x[self.customType.START_PRICE] > x[self.customType.CURRENT_PRICE]:
+                    breaker = True
+                    break
+        if not breaker:
+            compare_rows = analysis_rows[2:]
+            compare_tic1 = copy.deepcopy(copy.deepcopy(analysis_rows[1]))
+            for x in compare_rows:
+                if math.trunc(compare_tic1[self.customType.CURRENT_PRICE]) < math.trunc(x[self.customType.CURRENT_PRICE]):
+                    breaker = True
+                    break
+                compare_tic1 = copy.deepcopy(x)
+
+        if not breaker:
+            return first_tic
         return {}
 
     def send_order_limit_stock_price(self, code, quantity, limit_stock_price, stock_dict):
