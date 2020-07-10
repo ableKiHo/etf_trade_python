@@ -518,9 +518,8 @@ class NewBuyKiwoom(ParentKiwoom):
             if secode_tic[self.customType.LOWEST_PRICE] < secode_tic["ma20"] < secode_tic[self.customType.HIGHEST_PRICE] or secode_tic[self.customType.LOWEST_PRICE] >= secode_tic["ma20"]:
                 if third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.HIGHEST_PRICE] <= third_tic["ma20"]:
                     if forth_tic[self.customType.HIGHEST_PRICE] < forth_tic["ma20"] and fifth_tic[self.customType.HIGHEST_PRICE] < fifth_tic["ma20"]:
-                        if fifth_tic[self.customType.CURRENT_PRICE] <= forth_tic[self.customType.CURRENT_PRICE] <= third_tic[self.customType.CURRENT_PRICE] <= secode_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.START_PRICE]:
-                            if fifth_tic[self.customType.START_PRICE] < fifth_tic[self.customType.CURRENT_PRICE] and forth_tic[self.customType.START_PRICE] < forth_tic[
-                                self.customType.CURRENT_PRICE] and third_tic[self.customType.START_PRICE] < third_tic[self.customType.CURRENT_PRICE] and secode_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE] and first_tic[self.customType.START_PRICE] < first_tic[self.customType.CURRENT_PRICE]:
+                        if forth_tic[self.customType.CURRENT_PRICE] <= third_tic[self.customType.CURRENT_PRICE] <= secode_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.START_PRICE]:
+                            if third_tic[self.customType.START_PRICE] < third_tic[self.customType.CURRENT_PRICE] and secode_tic[self.customType.START_PRICE] < secode_tic[self.customType.CURRENT_PRICE] and first_tic[self.customType.START_PRICE] < first_tic[self.customType.CURRENT_PRICE]:
                                 if first_tic["ma20"] >= secode_tic["ma20"]:
                                     return copy.deepcopy(first_tic)
 
