@@ -362,7 +362,7 @@ class NewBuyKiwoom(ParentKiwoom):
                 return
             code = self.buy_point_dict[self.customType.STOCK_CODE]
 
-            self.get_opt10079_info(code, 'sell')
+            self.get_opt10079_info(code)
             self.create_moving_average_20_line(code)
             rows = self.analysis_etf_target_dict[code]["row"]
             prepare = self.prepare_sell_send_order(code, rows[0])
