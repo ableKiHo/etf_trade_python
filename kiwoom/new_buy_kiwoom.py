@@ -304,6 +304,21 @@ class NewBuyKiwoom(ParentKiwoom):
             return
         self.logging.logger.info('sell_search_etf end')
 
+    def get_next_stock_code(self):
+        if self.buy_search_stock_code == '':
+            item = self.top_rank_etf_stock_list[0]
+        else:
+            index = next((index for (index, d) in enumerate(self.top_rank_etf_stock_list) if d[self.customType.STOCK_CODE] == self.buy_search_stock_code), None)
+            if index < 0 or index > 4:
+                self.logging.logger.info("not found next stock code > index:[%s] " % index)
+                sys.exit()
+
+            if index == len(self.top_rank_etf_stock_list) - 1:
+                index = -1
+            item = self.top_rank_etf_stock_list[index + 1]
+
+        self.buy_search_stock_code = item[self.customType.STOCK_CODE]
+
     def buy_search_etf(self):
         today = get_today_by_format('%Y%m%d')
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
@@ -314,19 +329,7 @@ class NewBuyKiwoom(ParentKiwoom):
         if (today + '150000') < currentDate:
             return
 
-        if self.buy_search_stock_code == '':
-            item = self.top_rank_etf_stock_list[0]
-            self.buy_search_stock_code = item[self.customType.STOCK_CODE]
-        else:
-            index = next((index for (index, d) in enumerate(self.top_rank_etf_stock_list) if d[self.customType.STOCK_CODE] == self.buy_search_stock_code), None)
-            if index < 0 or index > 4:
-                self.logging.logger.info("not found next stock code > index:[%s] " % index)
-                sys.exit()
-
-            if index == len(self.top_rank_etf_stock_list) - 1:
-                index = -1
-            item = self.top_rank_etf_stock_list[index + 1]
-            self.buy_search_stock_code = item[self.customType.STOCK_CODE]
+        self.get_next_stock_code()
 
         code = self.buy_search_stock_code
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
@@ -335,26 +338,22 @@ class NewBuyKiwoom(ParentKiwoom):
         create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
         buy_point = self.get_buy_point(code)
         if bool(buy_point):
-            self.timer2.stop()
             self.prepare_send_order(code, buy_point)
             self.logging.logger.info("buy_point break")
             return
 
         first_buy_point = self.get_conform_first_buy_case(code)
         if bool(first_buy_point):
-            self.timer2.stop()
             self.prepare_send_order(code, first_buy_point)
             self.logging.logger.info("first_buy_point break")
             return
         seconf_buy_point = self.get_conform_second_buy_case(code)
         if bool(seconf_buy_point):
-            self.timer2.stop()
             self.prepare_send_order(code, seconf_buy_point)
             self.logging.logger.info("second_buy_point break")
             return
         third_buy_point = self.get_conform_third_buy_case(code)
         if bool(third_buy_point):
-            self.timer2.stop()
             self.prepare_send_order(code, third_buy_point)
             self.logging.logger.info("third_buy_point break")
             return
@@ -377,6 +376,10 @@ class NewBuyKiwoom(ParentKiwoom):
 
         return result
 
+    def init_search_info(self):
+        self.timer2.stop()
+        self.buy_search_stock_code = ''
+
     def prepare_send_order(self, code, buy_point):
         buy_point.update({self.customType.STOCK_CODE: code})
         self.logging.logger.info("buy_point > %s " % buy_point)
@@ -387,6 +390,7 @@ class NewBuyKiwoom(ParentKiwoom):
         quantity = int(result)
         if quantity >= 1:
             self.logging.logger.info("quantity > %s " % quantity)
+            self.init_search_info()
             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
 
     def get_sell_point(self, rows):
