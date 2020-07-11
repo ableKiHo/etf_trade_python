@@ -1,5 +1,7 @@
+import copy
 import datetime
 import os
+from operator import itemgetter
 
 
 def get_tic_price(target_price):
@@ -101,3 +103,27 @@ def cal_goal_stock_price(start_stock_price, last_stock_price, highest_stock_pric
         return goal_stock_price
     else:
         return 0
+
+
+def get_top_rank_etf_stock(target_list, field, max_rank):
+    return sorted(target_list, key=itemgetter(field), reverse=True)[:max_rank]
+
+
+def create_moving_average_20_line(code, target_dict, origin_field, source_field, target_field):
+    rows = target_dict[code][origin_field]
+    gap = 20
+    max_decimal_point = 3
+    for i in range(len(rows)):
+        max_ma_20_len = i + gap
+        if len(rows) < max_ma_20_len:
+            max_ma_20_len = len(rows)
+        ma_20_list = copy.deepcopy(rows[i: max_ma_20_len])
+        if len(ma_20_list) < gap:
+            break
+        ma_20_value = 0
+        for sub_i in range(len(ma_20_list)):
+            sub_row = ma_20_list[sub_i]
+            ma_20_value = ma_20_value + sub_row[source_field]
+
+        row = rows[i]
+        row[target_field] = round(ma_20_value / gap, max_decimal_point)
