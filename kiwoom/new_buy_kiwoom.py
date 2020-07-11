@@ -20,6 +20,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.buy_point_dict = {}
         self.target_etf_stock_dict = {}
         self.top_rank_etf_stock_list = []
+        self.buy_search_stock_code = ''
 
         self.buy_screen_meme_stock = "3000"  # 종목별 할당할 주문용 스크린 번호
         self.buy_screen_real_stock = "6000"  # 종별별 할당할 스크린 번호
@@ -38,7 +39,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.all_etf_info_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()
 
-        self.timer2 = QTimer(self)
+        self.timer2 = QTimer()
 
         self.detail_account_info()
         QTest.qWait(5000)
@@ -102,7 +103,7 @@ class NewBuyKiwoom(ParentKiwoom):
             else:
                 self.logging.logger.info("call search_buy_etf at new_chejan_slot")
                 self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
-                self.loop_search_buy_etf()
+                self.loop_sell_search_etf()
 
     def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
 
@@ -258,18 +259,26 @@ class NewBuyKiwoom(ParentKiwoom):
         if not bool(self.buy_point_dict):
             self.get_all_etf_stock()
             self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 5)
+            self.loop_buy_search_etf()
         else:
             self.screen_number_setting(self.buy_point_dict)
-        self.loop_search_buy_etf()
+            self.loop_sell_search_etf()
+        # self.loop_search_buy_etf()
 
-    def loop_search_buy_etf(self):
-        self.timer2 = QTimer(self)
-        if bool(self.buy_point_dict):
-            self.timer2.start(1000 * 5)
-            self.timer2.timeout.connect(self.sell_search_etf)
-        else:
-            self.timer2.start(1000 * 8)
-            self.timer2.timeout.connect(self.buy_search_etf)
+    def default_q_timer_setting(self):
+        timer2 = QTimer()
+        timer2.start(1000 * 5)
+        return timer2
+
+    def loop_sell_search_etf(self):
+        self.logging.logger.info('loop_sell_search_etf')
+        self.timer2 = self.default_q_timer_setting()
+        self.timer2.timeout.connect(self.sell_search_etf)
+
+    def loop_buy_search_etf(self):
+        self.logging.logger.info('loop_buy_search_etf')
+        self.timer2 = self.default_q_timer_setting()
+        self.timer2.timeout.connect(self.buy_search_etf)
 
     def sell_search_etf(self):
         self.logging.logger.info('sell_search_etf info %s' % self.buy_point_dict)
@@ -282,12 +291,14 @@ class NewBuyKiwoom(ParentKiwoom):
         rows = self.analysis_etf_target_dict[code]["row"]
         prepare = self.prepare_sell_send_order(code, rows[0])
         if prepare == 'SellCase':
+            self.timer2.stop()
             self.logging.logger.info("SellCase prepare_sell_send_order [%s]>  %s " % (code, prepare))
             self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
             return
         result = self.get_sell_point(rows[:4])
         self.logging.logger.info('sell point info >> %s / %s' % (rows, result))
         if result == 'SellCase':
+            self.timer2.stop()
             self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, result))
             self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
             return
@@ -303,34 +314,51 @@ class NewBuyKiwoom(ParentKiwoom):
         if (today + '150000') < currentDate:
             return
 
-        self.logging.logger.info("top_rank_etf_stock_list > %s " % self.top_rank_etf_stock_list)
-        for item in self.top_rank_etf_stock_list:
-            code = item[self.customType.STOCK_CODE]
-            self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
+        if self.buy_search_stock_code == '':
+            item = self.top_rank_etf_stock_list[0]
+            self.buy_search_stock_code = item[self.customType.STOCK_CODE]
+        else:
+            index = next((index for (index, d) in enumerate(self.top_rank_etf_stock_list) if d[self.customType.STOCK_CODE] == self.buy_search_stock_code), None)
+            if index < 0 or index > 4:
+                self.logging.logger.info("not found next stock code > index:[%s] " % index)
+                sys.exit()
 
-            self.get_opt10079_info(code)
-            create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
-            buy_point = self.get_buy_point(code)
-            if bool(buy_point):
-                self.prepare_send_order(code, buy_point)
-                self.logging.logger.info("buy_point break")
-                return
+            if index == len(self.top_rank_etf_stock_list) - 1:
+                index = -1
+            item = self.top_rank_etf_stock_list[index + 1]
+            self.buy_search_stock_code = item[self.customType.STOCK_CODE]
 
-            first_buy_point = self.get_conform_first_buy_case(code)
-            if bool(first_buy_point):
-                self.prepare_send_order(code, first_buy_point)
-                self.logging.logger.info("first_buy_point break")
-                return
-            seconf_buy_point = self.get_conform_second_buy_case(code)
-            if bool(seconf_buy_point):
-                self.prepare_send_order(code, seconf_buy_point)
-                self.logging.logger.info("second_buy_point break")
-                return
-            third_buy_point = self.get_conform_third_buy_case(code)
-            if bool(third_buy_point):
-                self.prepare_send_order(code, third_buy_point)
-                self.logging.logger.info("third_buy_point break")
-                return
+        code = self.buy_search_stock_code
+        self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
+
+        self.get_opt10079_info(code)
+        create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
+        buy_point = self.get_buy_point(code)
+        if bool(buy_point):
+            self.timer2.stop()
+            self.prepare_send_order(code, buy_point)
+            self.logging.logger.info("buy_point break")
+            return
+
+        first_buy_point = self.get_conform_first_buy_case(code)
+        if bool(first_buy_point):
+            self.timer2.stop()
+            self.prepare_send_order(code, first_buy_point)
+            self.logging.logger.info("first_buy_point break")
+            return
+        seconf_buy_point = self.get_conform_second_buy_case(code)
+        if bool(seconf_buy_point):
+            self.timer2.stop()
+            self.prepare_send_order(code, seconf_buy_point)
+            self.logging.logger.info("second_buy_point break")
+            return
+        third_buy_point = self.get_conform_third_buy_case(code)
+        if bool(third_buy_point):
+            self.timer2.stop()
+            self.prepare_send_order(code, third_buy_point)
+            self.logging.logger.info("third_buy_point break")
+            return
+
         self.logging.logger.info('buy_search_etf end')
 
     def prepare_sell_send_order(self, code, current_dict):
@@ -624,7 +652,6 @@ class NewBuyKiwoom(ParentKiwoom):
         stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
         stock_dict.update({self.customType.MEME_SCREEN_NUMBER: self.buy_screen_meme_stock})
 
-
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
         if sRQName == self.customType.OPW00001:
@@ -635,7 +662,6 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPW00018:
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-
 
     def get_all_etf_stock(self, sPrevNext="0"):
         self.logging.logger.info("get_all_etf_stock %s " % sPrevNext)
