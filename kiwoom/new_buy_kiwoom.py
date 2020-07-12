@@ -292,14 +292,14 @@ class NewBuyKiwoom(ParentKiwoom):
         prepare = self.prepare_sell_send_order(code, rows[0])
         if prepare == 'SellCase':
             self.timer2.stop()
-            self.logging.logger.info("SellCase prepare_sell_send_order [%s]>  %s " % (code, prepare))
+            self.logging.logger.info("SellCase prepare_sell_send_order [%s]>  %s " % (code, rows[0]))
             self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
             return
         result = self.get_sell_point(rows[:4])
         self.logging.logger.info('sell point info >> %s / %s' % (rows, result))
         if result == 'SellCase':
             self.timer2.stop()
-            self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, result))
+            self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, rows[:4]))
             self.sell_send_order(code, self.buy_point_dict[self.customType.SELL_MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
             return
         self.logging.logger.info('sell_search_etf end')
@@ -320,12 +320,12 @@ class NewBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_code = item[self.customType.STOCK_CODE]
 
     def buy_search_etf(self):
+        self.logging.logger.info('buy_search_etf')
         today = get_today_by_format('%Y%m%d')
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (today + '153000') < currentDate:
             sys.exit()
 
-        self.logging.logger.info('buy_search_etf')
         if (today + '150000') < currentDate:
             return
 
@@ -415,15 +415,20 @@ class NewBuyKiwoom(ParentKiwoom):
         forth_current_price = forth_low[self.customType.CURRENT_PRICE]
 
         if first_current_price > get_max_plus_sell_std_price_by_std_per(purchase_unit_price, self.max_plus_sell_std_percent):
+            self.logging.logger.info("max_plus_sell_std_price_by_std_per")
             return 'SellCase'
         if first_current_price > (purchase_unit_price + (get_tic_price(purchase_unit_price) * 2)):
             if second_lowest_price < second_ma20 < second_highest_price:
+                self.logging.logger.info("second range")
                 return 'SellCase'
             if second_current_price <= second_ma20 and second_start_price > second_current_price:
+                self.logging.logger.info("second price")
                 return 'SellCase'
             if forth_start_price > forth_current_price and third_start_price > third_current_price and second_start_price > second_current_price:
+                self.logging.logger.info("increase price")
                 return 'SellCase'
             if first_lowest_price <= first_ma20 <= first_highest_price and first_start_price > first_current_price:
+                self.logging.logger.info("first price")
                 return 'SellCase'
         return None
 
@@ -674,7 +679,8 @@ class NewBuyKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT40004, "opt40004", sPrevNext, self.screen_all_etf_stock)
 
-        self.all_etf_info_event_loop.exec_()
+        if sPrevNext == "0":
+            self.all_etf_info_event_loop.exec_()
 
     def detail_account_info(self, sPrevNext="0"):
         QTest.qWait(5000)
