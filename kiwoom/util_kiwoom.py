@@ -5,7 +5,7 @@ from operator import itemgetter
 
 
 def get_tic_price(target_price):
-    if target_price < 1000:
+    '''if target_price < 1000:
         return 1
     elif 1000 <= target_price < 5000:
         return 5
@@ -16,7 +16,8 @@ def get_tic_price(target_price):
     elif 50000 <= target_price < 100000:
         return 100
     else:
-        return 500
+        return 500'''
+    return 5
 
 
 def is_current_price_compare_history(current_stock_price, price_history_list):
