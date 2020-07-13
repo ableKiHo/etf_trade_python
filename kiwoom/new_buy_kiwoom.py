@@ -95,12 +95,14 @@ class NewBuyKiwoom(ParentKiwoom):
             self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
             self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
-            if meme_gubun == '매도' and holding_quantity == 0:
-                self.timer2.stop()
-                self.buy_point_dict = {}
-                self.logging.logger.info("call prepare_search_buy_etf at new_chejan_slot")
-                self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
-                self.prepare_search_buy_etf()
+            self.logging.logger.info("new_chejan_slot meme_gubun [%s]" % meme_gubun)
+            if meme_gubun == '매도':
+                if holding_quantity == 0:
+                    self.timer2.stop()
+                    self.buy_point_dict = {}
+                    self.logging.logger.info("call prepare_search_buy_etf at new_chejan_slot")
+                    self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
+                    self.prepare_search_buy_etf()
             else:
                 self.timer2.stop()
                 self.logging.logger.info("call search_buy_etf at new_chejan_slot")
