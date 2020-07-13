@@ -2,7 +2,6 @@ import math
 import sys
 
 from PyQt5.QtCore import QEventLoop, QTimer
-from PyQt5.QtTest import QTest
 
 from kiwoom.parent_kiwoom import ParentKiwoom
 from kiwoom.util_kiwoom import *
@@ -42,12 +41,9 @@ class NewBuyKiwoom(ParentKiwoom):
         self.timer2 = QTimer()
 
         self.detail_account_info()
-        #QTest.qWait(5000)
-        self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
         self.detail_account_mystock()
-        #QTest.qWait(5000)
 
-        self.prepare_search_buy_etf()
+        self.loop_all_etf_stock()
 
     def new_chejan_slot(self, sGubun, nItemCnt, sFidList):
         self.logging.logger.info("new_chejan_slot  %s", sGubun)
@@ -100,13 +96,11 @@ class NewBuyKiwoom(ParentKiwoom):
                 if holding_quantity == 0:
                     self.timer2.stop()
                     self.buy_point_dict = {}
-                    self.logging.logger.info("call prepare_search_buy_etf at new_chejan_slot")
-                    self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
-                    self.prepare_search_buy_etf()
+                    self.logging.logger.info("call loop_all_etf_stock at new_chejan_slot")
+                    self.loop_all_etf_stock()
             else:
                 self.timer2.stop()
                 self.logging.logger.info("call search_buy_etf at new_chejan_slot")
-                self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
                 self.loop_sell_search_etf()
 
     def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
@@ -171,21 +165,6 @@ class NewBuyKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop.exit()
         self.logging.logger.info(self.logType.PURCHASED_DEPOSIT_LOG % self.purchased_deposit)
         self.line.notification(self.logType.PURCHASED_DEPOSIT_LOG % self.purchased_deposit)
-
-    def realdata_slot(self, sCode, sRealType, sRealData):
-        if sRealType == self.customType.MARKET_START_TIME:
-            fid = self.realType.REALTYPE[sRealType][self.customType.MARKET_OPERATION]
-            value = self.dynamicCall("GetCommRealData(QString, int)", sCode, fid)
-            if value == '4':
-                self.logging.logger.info(self.logType.MARKET_END_LOG)
-                self.line.notification(self.logType.MARKET_END_LOG)
-                QTest.qWait(5000)
-
-                for code in self.analysis_etf_target_dict.keys():
-                    self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_real_stock, code)
-
-                self.line.notification("시스템 종료")
-                sys.exit()
 
     def get_opt10079_info(self, code):
         self.logging.logger.info('get_opt10079_info > [%s]' % code)
@@ -257,12 +236,24 @@ class NewBuyKiwoom(ParentKiwoom):
 
         self.etf_info_event_loop.exit()
 
+    def prepare_all_etf_stock(self):
+        self.logging.logger.info('prepare_all_etf_stock')
+        self.all_etf_stock_list = []
+        self.get_all_etf_stock()
+        self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 5)
+        self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
+        self.timer2.stop()
+        self.prepare_search_buy_etf()
+
+    def loop_all_etf_stock(self):
+        self.logging.logger.info('loop_all_etf_stock')
+        self.timer2 = self.default_q_timer_setting()
+        self.timer2.timeout.connect(self.prepare_all_etf_stock)
+
     def prepare_search_buy_etf(self):
         self.logging.logger.info('prepare_search_buy_etf %s' % self.buy_point_dict)
-        self.all_etf_stock_list = []
+
         if not bool(self.buy_point_dict):
-            self.get_all_etf_stock()
-            self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 5)
             self.loop_buy_search_etf()
         else:
             self.screen_number_setting(self.buy_point_dict)
@@ -647,7 +638,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.OnReceiveMsg.connect(self.msg_slot)
 
     def real_event_slot(self):
-        self.OnReceiveRealData.connect(self.realdata_slot)
+        # self.OnReceiveRealData.connect(self.realdata_slot)
         self.OnReceiveChejanData.connect(self.new_chejan_slot)
 
     def detail_account_mystock(self, sPrevNext="0"):
@@ -676,12 +667,12 @@ class NewBuyKiwoom(ParentKiwoom):
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
     def get_all_etf_stock(self, sPrevNext="0"):
-        self.logging.logger.info("get_all_etf_stock %s " % sPrevNext)
+        self.logging.logger.info("get_all_etf_stock_1 %s " % sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT40004, "opt40004", sPrevNext, self.screen_all_etf_stock)
-
+        self.logging.logger.info("get_all_etf_stock_2 %s %s" % (sPrevNext, self.customType.OPT40004))
         self.all_etf_info_event_loop.exec_()
 
 
