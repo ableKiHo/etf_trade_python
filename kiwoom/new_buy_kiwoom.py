@@ -42,10 +42,10 @@ class NewBuyKiwoom(ParentKiwoom):
         self.timer2 = QTimer()
 
         self.detail_account_info()
-        QTest.qWait(5000)
+        #QTest.qWait(5000)
         self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
         self.detail_account_mystock()
-        QTest.qWait(5000)
+        #QTest.qWait(5000)
 
         self.prepare_search_buy_etf()
 
@@ -258,7 +258,7 @@ class NewBuyKiwoom(ParentKiwoom):
         self.etf_info_event_loop.exit()
 
     def prepare_search_buy_etf(self):
-        self.logging.logger.info('prepare_search_buy_etf')
+        self.logging.logger.info('prepare_search_buy_etf %s' % self.buy_point_dict)
         self.all_etf_stock_list = []
         if not bool(self.buy_point_dict):
             self.get_all_etf_stock()
@@ -682,11 +682,11 @@ class NewBuyKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT40004, "opt40004", sPrevNext, self.screen_all_etf_stock)
 
-        if sPrevNext == "0":
-            self.all_etf_info_event_loop.exec_()
+        self.all_etf_info_event_loop.exec_()
+
 
     def detail_account_info(self, sPrevNext="0"):
-        QTest.qWait(5000)
+        #QTest.qWait(5000)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.ACCOUNT_NUMBER, self.account_num)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.PASSWORD, self.account_pw)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.CLASSIFICATION_OF_PASSWORD_INPUT_MEDIA, "00")
