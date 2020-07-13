@@ -296,7 +296,6 @@ class NewBuyKiwoom(ParentKiwoom):
             self.sell_send_order(code, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
             return
         result = self.get_sell_point(rows[:4])
-        self.logging.logger.info('sell point info >> %s / %s' % (rows, result))
         if result == 'SellCase':
             self.timer2.stop()
             self.logging.logger.info("get_sell_point call stock_real_reg [%s]>  %s " % (code, rows[:4]))
