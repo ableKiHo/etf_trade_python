@@ -245,6 +245,7 @@ class NewBuyKiwoom(ParentKiwoom):
         if not bool(self.buy_point_dict):
             self.get_all_etf_stock()
             self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 5)
+            self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if x[self.customType.STOCK_CODE] != '114800']
             self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
             self.timer2.stop()
         self.prepare_search_buy_etf()
@@ -401,6 +402,7 @@ class NewBuyKiwoom(ParentKiwoom):
     def get_loss_cut_point(self, rows):
         self.logging.logger.info("get_loss_cut_point >  %s " % rows)
         purchase_unit_price = self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
+        first_low = rows[0]
         second_low = rows[1]
         third_low = rows[2]
         forth_low = rows[3]
@@ -414,9 +416,10 @@ class NewBuyKiwoom(ParentKiwoom):
                         if forth_low[self.customType.CURRENT_PRICE] >= third_low[self.customType.CURRENT_PRICE]:
                             if third_low[self.customType.CURRENT_PRICE] >= second_low[self.customType.CURRENT_PRICE]:
 
-                                if second_low[self.customType.CURRENT_PRICE] < second_low["ma20"]:
-                                    if second_low[self.customType.CURRENT_PRICE] < (purchase_unit_price - (get_tic_price(purchase_unit_price) * 2)):
-                                        return 'SellCase'
+                                if second_low["ma20"] > second_low[self.customType.CURRENT_PRICE] >= first_low[self.customType.START_PRICE]:
+                                    if first_low[self.customType.START_PRICE] >= first_low[self.customType.CURRENT_PRICE]:
+                                        if first_low[self.customType.CURRENT_PRICE] < (purchase_unit_price - (get_tic_price(purchase_unit_price) * 2)):
+                                            return 'SellCase'
 
         return None
 
