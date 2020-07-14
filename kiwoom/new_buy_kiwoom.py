@@ -420,7 +420,7 @@ class NewBuyKiwoom(ParentKiwoom):
 
 
     def get_sell_point(self, rows):
-        self.logging.logger.info("get_sell_point [%s]>  %s " % rows)
+        self.logging.logger.info("get_sell_point >  %s " % rows)
         purchase_unit_price = self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
         first_low = rows[0]
         first_current_price = first_low[self.customType.CURRENT_PRICE]
