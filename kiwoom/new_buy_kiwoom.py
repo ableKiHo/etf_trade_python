@@ -172,8 +172,11 @@ class NewBuyKiwoom(ParentKiwoom):
 
     def tr_opt10079_info(self, code, sPrevNext="0"):
         self.logging.logger.info('tr_opt10079_info > [%s]' % code)
+        tic = "120틱"
+        if code == "114800":
+            tic = "60틱"
         self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
-        self.dynamicCall("SetInputValue(QString, QString)", "틱범위", "120틱")
+        self.dynamicCall("SetInputValue(QString, QString)", "틱범위", tic)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10079", "opt10079", sPrevNext, self.screen_opt10079_info)
 
@@ -239,10 +242,11 @@ class NewBuyKiwoom(ParentKiwoom):
     def prepare_all_etf_stock(self):
         self.logging.logger.info('prepare_all_etf_stock')
         self.all_etf_stock_list = []
-        self.get_all_etf_stock()
-        self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 5)
-        self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
-        self.timer2.stop()
+        if not bool(self.buy_point_dict):
+            self.get_all_etf_stock()
+            self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 5)
+            self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
+            self.timer2.stop()
         self.prepare_search_buy_etf()
 
     def loop_all_etf_stock(self):
