@@ -395,7 +395,7 @@ class NewBuyKiwoom(ParentKiwoom):
             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
 
     def get_loss_cut_point(self, rows):
-        self.logging.logger.info("get_loss_cut_point [%s]>  %s " % rows)
+        self.logging.logger.info("get_loss_cut_point >  %s " % rows)
         purchase_unit_price = self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
         second_low = rows[1]
         third_low = rows[2]
