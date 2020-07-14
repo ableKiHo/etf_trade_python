@@ -43,9 +43,11 @@ class GoalKiwoom(ParentKiwoom):
         code = code.strip()
         start_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.START_PRICE)
         current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
+        highest_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.HIGHEST_PRICE)
 
         self.cal_target_etf_stock_dict[code].update({self.customType.START_PRICE: abs(int(start_price.strip()))})
         self.cal_target_etf_stock_dict[code].update({self.customType.LAST_PRICE: abs(int(current_price.strip()))})
+        self.cal_target_etf_stock_dict[code].update({self.customType.HIGHEST_PRICE: abs(int(highest_price.strip()))})
 
         self.etf_info_event_loop.exit()
 

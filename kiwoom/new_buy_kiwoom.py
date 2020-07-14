@@ -407,24 +407,17 @@ class NewBuyKiwoom(ParentKiwoom):
         third_low = rows[2]
         forth_low = rows[3]
         fifth_low = rows[4]
+        last_lows = [second_low, third_low, forth_low]
 
-        if forth_low[self.customType.START_PRICE] >= forth_low[self.customType.CURRENT_PRICE]:
-            if third_low[self.customType.START_PRICE] >= third_low[self.customType.CURRENT_PRICE]:
-                if second_low[self.customType.START_PRICE] >= second_low[self.customType.CURRENT_PRICE]:
-
-                    if fifth_low[self.customType.CURRENT_PRICE] >= forth_low[self.customType.CURRENT_PRICE]:
-                        if forth_low[self.customType.CURRENT_PRICE] >= third_low[self.customType.CURRENT_PRICE]:
-                            if third_low[self.customType.CURRENT_PRICE] >= second_low[self.customType.CURRENT_PRICE]:
-
-                                if second_low["ma20"] > second_low[self.customType.CURRENT_PRICE] >= first_low[self.customType.START_PRICE]:
-                                    if first_low[self.customType.START_PRICE] >= first_low[self.customType.CURRENT_PRICE]:
-                                        if first_low[self.customType.CURRENT_PRICE] < (purchase_unit_price - (get_tic_price(purchase_unit_price) * 2)):
-                                            return 'SellCase'
+        black_candle = [x for x in last_lows if x[self.customType.START_PRICE] >= x[self.customType.CURRENT_PRICE]]
+        if len(black_candle) >= 2:
+            if fifth_low[self.customType.CURRENT_PRICE] >= forth_low[self.customType.CURRENT_PRICE] >= third_low[self.customType.CURRENT_PRICE] >= second_low[self.customType.CURRENT_PRICE]:
+                if math.trunc(second_low["ma20"]) >= second_low[self.customType.CURRENT_PRICE] >= first_low[self.customType.START_PRICE]:
+                    if first_low[self.customType.START_PRICE] >= first_low[self.customType.CURRENT_PRICE]:
+                        if first_low[self.customType.CURRENT_PRICE] < (purchase_unit_price - (get_tic_price(purchase_unit_price) * 2)):
+                            return 'SellCase'
 
         return None
-
-
-
 
     def get_sell_point(self, rows):
         self.logging.logger.info("get_sell_point >  %s " % rows)
