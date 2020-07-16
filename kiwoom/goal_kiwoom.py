@@ -57,14 +57,14 @@ class GoalKiwoom(ParentKiwoom):
             value = self.cal_target_etf_stock_dict[code]
             goal_stock_price = cal_goal_stock_price(value[self.customType.START_PRICE], value[self.customType.LAST_DAY_LAST_PRICE], value[self.customType.LAST_DAY_HIGHEST_PRICE],
                                                     value[self.customType.LAST_DAY_LOWEST_PRICE])
-            self.logging.logger.info("get_goal_price_etf [%s] > %s" % (code, goal_stock_price))
+            if goal_stock_price > 0:
+                self.logging.logger.info("get_goal_price_etf [%s] > %s" % (code, goal_stock_price))
             self.cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
 
     def logging_reach_goal_price_etf(self):
         self.logging.logger.info("logging_reach_goal_price_etf")
         for code in self.cal_target_etf_stock_dict.keys():
             value = self.cal_target_etf_stock_dict[code]
-            self.logging.logger.info("logging_reach_goal_price_etf [%s] > %s" % (code, value))
             if 0 < value[self.customType.GOAL_PRICE] <= value[self.customType.LAST_PRICE] or 0 < value[self.customType.GOAL_PRICE] <= value[self.customType.HIGHEST_PRICE]:
                 self.logging.logger.info("reach_goal_price_etf [%s] > GOAL_PRICE : %s / LAST_PRICE: %s / HIGHEST_PRICE: %s" % (code, value[self.customType.GOAL_PRICE], value[self.customType.LAST_PRICE], value[self.customType.HIGHEST_PRICE]))
 
@@ -73,7 +73,6 @@ class GoalKiwoom(ParentKiwoom):
 
         for sCode in self.cal_target_etf_stock_dict.keys():
             QTest.qWait(4000)
-            self.logging.logger.info("get_etf_stock_info [%s]" % sCode)
             self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
             self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
             self.etf_info_event_loop.exec_()
