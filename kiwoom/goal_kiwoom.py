@@ -65,7 +65,7 @@ class GoalKiwoom(ParentKiwoom):
         for code in self.cal_target_etf_stock_dict.keys():
             value = self.cal_target_etf_stock_dict[code]
             self.logging.logger.info("logging_reach_goal_price_etf [%s] > %s" % (code, value))
-            if 0 < value[self.customType.GOAL_PRICE] <= value[self.customType.LAST_PRICE] or value[self.customType.GOAL_PRICE] <= value[self.customType.HIGHEST_PRICE]:
+            if 0 < value[self.customType.GOAL_PRICE] <= value[self.customType.LAST_PRICE] or 0 < value[self.customType.GOAL_PRICE] <= value[self.customType.HIGHEST_PRICE]:
                 self.logging.logger.info("reach_goal_price_etf [%s] > GOAL_PRICE : %s / LAST_PRICE: %s / HIGHEST_PRICE: %s" % (code, value[self.customType.GOAL_PRICE], value[self.customType.LAST_PRICE], value[self.customType.HIGHEST_PRICE]))
 
     def get_etf_stock_info(self):
