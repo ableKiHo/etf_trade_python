@@ -521,27 +521,41 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         if not breaker:
             second_tic = analysis_rows[1]
-            if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
-                breaker = True
-                self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+            if second_tic[self.customType.HIGHEST_PRICE] - second_tic[self.customType.LOWEST_PRICE] > 5:
+                if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
+                    breaker = True
+                    self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
 
-        if not breaker:
-            second_tic = analysis_rows[1]
-            if second_tic[self.customType.CURRENT_PRICE] - second_tic[self.customType.START_PRICE] > 20:
-                self.logging.logger.info("second_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
+                if not breaker:
+                    if second_tic[self.customType.CURRENT_PRICE] - second_tic[self.customType.START_PRICE] > 20:
+                        self.logging.logger.info("second_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        breaker = True
+                if not breaker:
+                    if second_tic[self.customType.START_PRICE] > second_tic[self.customType.CURRENT_PRICE]:
+                        self.logging.logger.info("second_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        breaker = True
+
+            else:
+                third_tic = analysis_rows[2]
+                if third_tic[self.customType.LOWEST_PRICE] > third_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < third_tic["ma20"]:
+                    breaker = True
+                    self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
+                if not breaker:
+                    if third_tic[self.customType.CURRENT_PRICE] - third_tic[self.customType.START_PRICE] > 20:
+                        self.logging.logger.info("third_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        breaker = True
+
+                if not breaker:
+                    if third_tic[self.customType.START_PRICE] > third_tic[self.customType.CURRENT_PRICE]:
+                        self.logging.logger.info("third_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        breaker = True
 
         if not breaker:
             compare_rows = analysis_rows[2:]
             big_change_tic_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] - x[self.customType.START_PRICE] > 15]
             if len(big_change_tic_list) == 0:
                 self.logging.logger.info("big_change_tic_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-
-        if not breaker:
-            second_tic = analysis_rows[1]
-            if second_tic[self.customType.START_PRICE] > second_tic[self.customType.CURRENT_PRICE]:
-                self.logging.logger.info("second_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
         if not breaker:
