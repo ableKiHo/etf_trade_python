@@ -41,7 +41,7 @@ class ParentKiwoom(QAxWidget):
         self.account_pw = self.property.accountPw
 
         self.use_money = 0  # 실제 투자에 사용할 금액
-        self.use_money_percent = 0.5  # 예수금에서 실제 사용할 비율
+        self.use_money_percent = 0.3  # 예수금에서 실제 사용할 비율
         self.deposit = 0  # 예수금
         self.buy_possible_deposit = 0  # 주문가능 금액
         self.purchased_deposit = 0  # 구매한 금액

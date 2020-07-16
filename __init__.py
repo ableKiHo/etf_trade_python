@@ -6,6 +6,7 @@ from kiwoom.buy_kiwoom import *
 from kiwoom.goal_kiwoom import GoalKiwoom
 from kiwoom.new_buy_kiwoom import NewBuyKiwoom
 from kiwoom.prepare_next_day import PrepareNextDay
+from kiwoom.renewal_buy_kiwoom import RenewalBuyKiwoom
 from kiwoom.sell_kiwoom import SellKiwoom
 
 sys.path.append("D:/PycharmProjects/etf/")
@@ -25,7 +26,8 @@ class Main():
             self.sellKiwoom = SellKiwoom()
         elif auto_type == 'buy':
             # self.kiwoom = BuyKiwoom()
-            self.kiwoom = NewBuyKiwoom()
+            # self.kiwoom = NewBuyKiwoom()
+            self.kiwoom = RenewalBuyKiwoom()
         elif auto_type == 'prepare':
             self.prepareNextDay = PrepareNextDay()
         elif auto_type == 'goal':

@@ -1,11 +1,18 @@
 import copy
 import datetime
+import math
 import os
 from operator import itemgetter
 
 
+
+def get_etf_tic_price():
+
+    return 5
+
+
 def get_tic_price(target_price):
-    '''if target_price < 1000:
+    if target_price < 1000:
         return 1
     elif 1000 <= target_price < 5000:
         return 5
@@ -16,8 +23,7 @@ def get_tic_price(target_price):
     elif 50000 <= target_price < 100000:
         return 100
     else:
-        return 500'''
-    return 5
+        return 500
 
 
 def is_current_price_compare_history(current_stock_price, price_history_list):
@@ -28,8 +34,7 @@ def is_current_price_compare_history(current_stock_price, price_history_list):
     return len(filter_list) == 0
 
 
-def get_minus_sell_std_price(purchase_price):
-    sell_std_per = 0.65
+def get_minus_sell_std_price(purchase_price, sell_std_per=0.65):
     return purchase_price - round(purchase_price * (sell_std_per / 100))
 
 
@@ -39,13 +44,20 @@ def get_plus_sell_std_price(purchase_price, sell_std_highest_price):
 
 def is_target_stock_price_range(target_stock_price, current_stock_price):
     max_range = 2
-    maxPrice = target_stock_price + (get_tic_price(target_stock_price) * max_range)
+    maxPrice = target_stock_price + (get_etf_tic_price() * max_range)
     return current_stock_price <= maxPrice
 
 
-def get_max_plus_sell_std_price(purchase_price):
-    max_sell_std_per = 2
+def get_max_plus_sell_std_price(purchase_price, max_sell_std_per=3):
     return purchase_price + round(purchase_price * (max_sell_std_per / 100))
+
+
+def get_plus_sell_std_price_by_tic(highest_price, minus_tic=3):
+    return highest_price - (get_etf_tic_price() * minus_tic)
+
+
+def get_plus_sell_std_price_by_half(highest_price, purchase_price):
+    return purchase_price + math.trunc((highest_price - purchase_price) / 2)
 
 
 def get_max_plus_sell_std_price_by_std_per(purchase_price, max_sell_std_per):
