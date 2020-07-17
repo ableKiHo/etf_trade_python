@@ -105,7 +105,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({self.customType.TOTAL_PURCHASE_PRICE: total_buy_price})
                 self.buy_point_dict.update({self.customType.HOLDING_QUANTITY: holding_quantity})
                 self.buy_point_dict.update({self.customType.PURCHASE_UNIT_PRICE: buy_price})
-                self.buy_point_dict.update({self.ORDER_STATUS: self.customType.CONCLUSION})
+                self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.CONCLUSION})
                 if "add_sell_std_price" not in self.buy_point_dict.keys():
                     self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
                     self.buy_point_dict.update({"add_sell_std_price": get_minus_sell_std_price(buy_price, 0.5)})
@@ -263,7 +263,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
             self.buy_point_dict.update({"max_plus_std_price": get_max_plus_sell_std_price(buy_price)})
             self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: get_max_plus_sell_std_price(buy_price)})
-            self.buy_point_dict.update({self.ORDER_STATUS: self.customType.CONCLUSION})
+            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.CONCLUSION})
             self.screen_number_setting(self.buy_point_dict)
             self.buy_stock_real_reg(self.buy_point_dict)
 
