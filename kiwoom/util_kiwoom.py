@@ -48,7 +48,7 @@ def is_target_stock_price_range(target_stock_price, current_stock_price):
     return current_stock_price <= maxPrice
 
 
-def get_max_plus_sell_std_price(purchase_price, max_sell_std_per=3):
+def get_max_plus_sell_std_price(purchase_price, max_sell_std_per=1.5):
     return purchase_price + round(purchase_price * (max_sell_std_per / 100))
 
 
