@@ -48,7 +48,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.detail_account_info()
         self.detail_account_mystock()
 
-        self.loop_all_etf_stock()
+        if not bool(self.buy_point_dict):
+            self.loop_all_etf_stock()
 
     def new_chejan_slot(self, sGubun, nItemCnt, sFidList):
         self.logging.logger.info("new_chejan_slot  %s", sGubun)
@@ -267,10 +268,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: get_max_plus_sell_std_price(buy_price)})
             self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.CONCLUSION})
             self.screen_number_setting(self.buy_point_dict)
-            self.buy_stock_real_reg(self.buy_point_dict)
 
         self.stop_screen_cancel(self.screen_my_info)
         self.detail_account_info_event_loop.exit()
+        self.buy_stock_real_reg(self.buy_point_dict)
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
