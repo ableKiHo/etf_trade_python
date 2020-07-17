@@ -155,8 +155,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.logging.logger.info("sell_send_order max_plus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_plus_std_price"]))
                         self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
-                    if current_stock_price < self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]:
-                        half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE])
+                    if current_stock_price < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
+                        half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE])
                         if current_stock_price <= half_plus_price:
                             if self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] + (get_etf_tic_price() * 2) < current_stock_price:
                                 self.logging.logger.info("sell_send_order second best case >> %s / %s" % (current_stock_price, half_plus_price))
@@ -237,6 +237,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
         else:
             self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+        self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]})
 
     def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
 
@@ -261,6 +262,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({"add_sell_std_price": 0})
             self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
             self.buy_point_dict.update({"max_plus_std_price": get_max_plus_sell_std_price(buy_price)})
+            self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: get_max_plus_sell_std_price(buy_price)})
             self.buy_point_dict.update({self.ORDER_STATUS: self.customType.CONCLUSION})
             self.screen_number_setting(self.buy_point_dict)
             self.buy_stock_real_reg(self.buy_point_dict)
