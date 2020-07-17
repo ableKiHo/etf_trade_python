@@ -105,6 +105,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({self.customType.TOTAL_PURCHASE_PRICE: total_buy_price})
                 self.buy_point_dict.update({self.customType.HOLDING_QUANTITY: holding_quantity})
                 self.buy_point_dict.update({self.customType.PURCHASE_UNIT_PRICE: buy_price})
+                self.buy_point_dict.update({self.ORDER_STATUS: self.customType.CONCLUSION})
                 if "add_sell_std_price" not in self.buy_point_dict.keys():
                     self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
                     self.buy_point_dict.update({"add_sell_std_price": get_minus_sell_std_price(buy_price, 0.5)})
@@ -135,7 +136,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 sys.exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            if bool(self.buy_point_dict):
+            if bool(self.buy_point_dict) and self.ORDER_STATUS in self.buy_point_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
                 createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
@@ -260,7 +261,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({"add_sell_std_price": 0})
             self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
             self.buy_point_dict.update({"max_plus_std_price": get_max_plus_sell_std_price(buy_price)})
+            self.buy_point_dict.update({self.ORDER_STATUS: self.customType.CONCLUSION})
             self.screen_number_setting(self.buy_point_dict)
+            self.buy_stock_real_reg(self.buy_point_dict)
 
         self.stop_screen_cancel(self.screen_my_info)
         self.detail_account_info_event_loop.exit()
