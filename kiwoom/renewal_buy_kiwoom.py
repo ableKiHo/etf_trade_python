@@ -141,9 +141,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.comm_real_data(sCode, sRealType, sRealData)
                 createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
+
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
-
+                    self.logging.logger.info("[%s] analysis >> %s / %s / %s" % (code, self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], current_stock_price, self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]))
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
                         self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
                         self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
@@ -273,7 +274,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop.exit()
         if bool(self.buy_point_dict):
             self.buy_stock_real_reg(self.buy_point_dict)
-
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
