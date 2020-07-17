@@ -5,9 +5,7 @@ import os
 from operator import itemgetter
 
 
-
 def get_etf_tic_price():
-
     return 5
 
 
@@ -34,7 +32,7 @@ def is_current_price_compare_history(current_stock_price, price_history_list):
     return len(filter_list) == 0
 
 
-def get_minus_sell_std_price(purchase_price, sell_std_per=0.65):
+def get_minus_sell_std_price(purchase_price, sell_std_per=0.5):
     return purchase_price - round(purchase_price * (sell_std_per / 100))
 
 

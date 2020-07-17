@@ -1,7 +1,6 @@
 import sys
 
 from PyQt5.QtCore import *
-from pandas import np
 
 from kiwoom.parent_kiwoom import ParentKiwoom
 from kiwoom.util_kiwoom import *
@@ -109,17 +108,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.CONCLUSION})
                 if "add_sell_std_price" not in self.buy_point_dict.keys():
                     self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
-                    self.buy_point_dict.update({"add_sell_std_price": get_minus_sell_std_price(buy_price, 0.5)})
+                    self.buy_point_dict.update({"add_sell_std_price": get_minus_sell_std_price(buy_price, 0.2)})
                     self.buy_point_dict.update({"max_plus_std_price": get_max_plus_sell_std_price(buy_price)})
-                    self.timer2.stop()
-                    self.logging.logger.info("call SetRealReg by buy_point_dict")
-
-                    self.buy_stock_real_reg(self.buy_point_dict)
 
     def buy_stock_real_reg(self, stock_dict):
         screen_num = stock_dict[self.customType.SCREEN_NUMBER]
         fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
-        self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, stock_dict[self.customType.STOCK_CODE], fids, "1")
+        self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, stock_dict[self.customType.STOCK_CODE], fids, "0")
 
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
@@ -139,12 +134,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
         elif sRealType == self.customType.STOCK_CONCLUSION:
             if bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
-                createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
+                # createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
 
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
-                    self.logging.logger.info("[%s] analysis >> %s / %s / %s" % (code, self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], current_stock_price, self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]))
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
                         self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
                         self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
@@ -163,6 +157,17 @@ class RenewalBuyKiwoom(ParentKiwoom):
                             if self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] + (get_etf_tic_price() * 2) < current_stock_price:
                                 self.logging.logger.info("sell_send_order second best case >> %s / %s" % (current_stock_price, half_plus_price))
                                 self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+
+            elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS not in self.buy_point_dict.keys():
+                self.comm_real_data(sCode, sRealType, sRealData)
+                code = self.buy_point_dict[self.customType.STOCK_CODE]
+
+                if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
+                    limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
+                    current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
+                    if limit_stock_price > current_stock_price:
+                        limit_stock_price = current_stock_price
+                    self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price)
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
@@ -198,9 +203,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
         if sCode not in self.total_cal_target_etf_stock_dict.keys():
             self.total_cal_target_etf_stock_dict.update({sCode: {}})
 
-        current_price_list = []
-        tic_price_list = []
-
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: a})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: b})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.THE_DAY_BEFORE: c})
@@ -212,26 +214,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
-        if self.customType.TIC_120_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
-            tic_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]
-        else:
-            self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
-
-        if self.customType.CURRENT_PRICE_LIST in self.total_cal_target_etf_stock_dict[sCode]:
-            current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
-            current_price_list.insert(0, b)
-            if len(current_price_list) >= 120:
-                if len(tic_price_list) > 0:
-                    tic_price_list.insert(0, np.mean(current_price_list))
-                    if len(tic_price_list) >= 6:
-                        del tic_price_list[6:]
-                else:
-                    tic_price_list.append(np.mean(current_price_list))
-                current_price_list.clear()
-        else:
-            current_price_list.append(b)
-        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
-        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
 
         current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
@@ -444,14 +426,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info("buy_point > %s " % buy_point)
         self.buy_point_dict = copy.deepcopy(buy_point)
         self.screen_number_setting(self.buy_point_dict)
-
-        """limit_stock_price = int(self.buy_point_dict["second"])
-        if int(self.buy_point_dict["second"]) > int(self.buy_point_dict[self.customType.LOWEST_PRICE]):
-            limit_stock_price = int(self.buy_point_dict[self.customType.LOWEST_PRICE])
-        if limit_stock_price < int(self.buy_point_dict["ma20"]):
-            limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])"""
-        limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
-        self.add_send_order(code, limit_stock_price)
+        self.init_search_info()
+        self.buy_stock_real_reg(self.buy_point_dict)
 
     def add_send_order(self, code, limit_stock_price):
         self.logging.logger.info("[%s]add_send_order > %s " % (code, limit_stock_price))
@@ -459,7 +435,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
         quantity = int(result)
         if quantity >= 1:
             self.logging.logger.info("quantity > %s " % quantity)
-            self.init_search_info()
             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
 
     def get_conform_first_buy_case(self, code):
