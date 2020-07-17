@@ -7,9 +7,9 @@ from kiwoom.parent_kiwoom import ParentKiwoom
 from kiwoom.util_kiwoom import *
 
 
-def default_q_timer_setting():
+def default_q_timer_setting(second=5):
     timer2 = QTimer()
-    timer2.start(1000 * 5)
+    timer2.start(1000 * second)
     return timer2
 
 
@@ -136,7 +136,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 sys.exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            if bool(self.buy_point_dict) and self.ORDER_STATUS in self.buy_point_dict.keys():
+            if bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
                 createAnalysisEtfFile(sCode, self.total_cal_target_etf_stock_dict[sCode], self.analysis_etf_file_path)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
@@ -522,6 +522,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
             return {}
 
+        # TODO 거래량 정보 조건 추가 검토
         breaker = False
 
         if not breaker:
