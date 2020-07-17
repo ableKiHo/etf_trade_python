@@ -260,6 +260,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.buy_point_dict.update({self.customType.TOTAL_PURCHASE_PRICE: total_chegual_price})
             if total_chegual_price > self.use_money:
                 self.buy_point_dict.update({"add_sell_std_price": 0})
+            else:
+                self.buy_point_dict.update({"add_sell_std_price": get_minus_sell_std_price(buy_price, 0.5)})
             self.buy_point_dict.update({"max_minus_std_price": get_minus_sell_std_price(buy_price)})
             self.buy_point_dict.update({"max_plus_std_price": get_max_plus_sell_std_price(buy_price)})
             self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: get_max_plus_sell_std_price(buy_price)})
