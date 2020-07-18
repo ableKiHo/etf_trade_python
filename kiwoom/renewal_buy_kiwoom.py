@@ -502,15 +502,17 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
             return {}
 
-        # TODO 거래량 정보 조건 추가 검토
         breaker = False
 
         if not breaker:
             second_tic = analysis_rows[1]
             if second_tic[self.customType.HIGHEST_PRICE] - second_tic[self.customType.LOWEST_PRICE] > 5:
-                if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
-                    breaker = True
-                    self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] and second_tic[self.customType.LOWEST_PRICE] - second_tic["ma20"] < 5:
+                    pass
+                else:
+                    if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
+                        breaker = True
+                        self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
 
                 if not breaker:
                     if second_tic[self.customType.CURRENT_PRICE] - second_tic[self.customType.START_PRICE] > 20:
