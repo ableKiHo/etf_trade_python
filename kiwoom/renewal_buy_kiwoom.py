@@ -146,6 +146,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
                     if current_stock_price <= self.buy_point_dict["add_sell_std_price"]:
                         self.logging.logger.info("add_sell_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["add_sell_std_price"]))
+                        self.buy_point_dict.update({"add_sell_std_price": 0})
                         self.add_send_order(sCode, current_stock_price)
 
                     if current_stock_price >= self.buy_point_dict["max_plus_std_price"]:
