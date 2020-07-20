@@ -105,6 +105,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.logging.logger.info("call loop_all_etf_stock at new_chejan_slot")
                     self.loop_all_etf_stock()
             else:
+                self.total_cal_target_etf_stock_dict = {}
                 self.buy_point_dict.update({self.customType.TOTAL_PURCHASE_PRICE: total_buy_price})
                 self.buy_point_dict.update({self.customType.HOLDING_QUANTITY: holding_quantity})
                 self.buy_point_dict.update({self.customType.PURCHASE_UNIT_PRICE: buy_price})
@@ -150,6 +151,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
                     if current_stock_price <= self.buy_point_dict["add_sell_std_price"]:
+                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
                         self.logging.logger.info("add_sell_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["add_sell_std_price"]))
                         self.buy_point_dict.update({"add_sell_std_price": 0})
                         self.add_send_order(sCode, current_stock_price)
@@ -169,6 +171,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         elif len(self.buy_point_dict[self.customType.TIC_120_PRICE]) >= 15:
                             self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
                             self.logging.logger.info("sell_send_order not change highest price until 120 * 15 >> %s" % current_stock_price)
+                            self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+
+                    if get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.15) < current_stock_price:
+                        if len(self.buy_point_dict[self.customType.TIC_120_PRICE]) >= 20:
+                            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
+                            self.logging.logger.info("sell_send_order not change highest price until 120 * 20 >> %s" % current_stock_price)
                             self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.NEW_PURCHASE:
