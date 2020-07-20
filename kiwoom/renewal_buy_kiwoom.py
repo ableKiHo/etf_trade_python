@@ -254,6 +254,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
             if current_stock_price > self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]:
+                self.logging.logger.info("changed sell std highest price >> %s" % current_stock_price)
                 self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
                 self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: []})
                 self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: []})
