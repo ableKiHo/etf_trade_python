@@ -1,6 +1,7 @@
 import sys
 
 from PyQt5.QtCore import *
+from pandas import np
 
 from kiwoom.parent_kiwoom import ParentKiwoom
 from kiwoom.util_kiwoom import *
@@ -100,6 +101,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 if holding_quantity == 0:
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
                     self.buy_point_dict = {}
+                    self.total_cal_target_etf_stock_dict = {}
                     self.logging.logger.info("call loop_all_etf_stock at new_chejan_slot")
                     self.loop_all_etf_stock()
             else:
@@ -164,7 +166,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
                                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
                                 self.logging.logger.info("sell_send_order second best case >> %s / %s" % (current_stock_price, half_plus_price))
                                 self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-
+                        elif len(self.buy_point_dict[self.customType.TIC_120_PRICE]) >= 15:
+                            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
+                            self.logging.logger.info("sell_send_order not change highest price until 120 * 15 >> %s" % current_stock_price)
+                            self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.NEW_PURCHASE:
                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BUY_RECEIPT})
@@ -212,6 +217,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
         if sCode not in self.total_cal_target_etf_stock_dict.keys():
             self.total_cal_target_etf_stock_dict.update({sCode: {}})
 
+        current_price_list = []
+        tic_price_list = []
+
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: a})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: b})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.THE_DAY_BEFORE: c})
@@ -224,17 +232,39 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_START_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]})
 
+        if self.customType.TIC_120_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
+            tic_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]
+        else:
+            self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
+
+        if self.customType.CURRENT_PRICE_LIST in self.total_cal_target_etf_stock_dict[sCode]:
+            current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
+            current_price_list.insert(0, b)
+            if len(current_price_list) >= 120:
+                if len(tic_price_list) > 0:
+                    tic_price_list.insert(0, np.mean(current_price_list))
+                else:
+                    tic_price_list.append(np.mean(current_price_list))
+                current_price_list.clear()
+        else:
+            current_price_list.append(b)
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
+
         current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
             if current_stock_price > self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]:
                 self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: []})
+                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: []})
         else:
             self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
         self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]})
+        self.buy_point_dict.update({self.customType.TIC_120_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]})
 
     def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
 
-        rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)  # 최대 20개 카운트
+        rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
         for i in range(rows):
             code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NUMBER)
             code = code.strip()[1:]
