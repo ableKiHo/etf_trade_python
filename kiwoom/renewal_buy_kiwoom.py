@@ -132,8 +132,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], self.buy_point_dict[self.customType.STOCK_CODE])
                     self.sell_send_order_market_off_time(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
-                self.line.notification("시스템 종료")
-                sys.exit()
+                self.loop_call_exit()
+                #sys.exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
             if bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.BALANCE:
@@ -385,6 +385,18 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         self.stop_screen_cancel(self.screen_opt10079_info)
         self.tr_opt10079_info_event_loop.exit()
+
+    def loop_call_exit(self):
+        self.timer2 = default_q_timer_setting()
+        self.timer2.timeout.connect(self.call_exit)
+
+    def call_exit(self):
+        today = get_today_by_format('%Y%m%d')
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (today + '154000') < currentDate:
+            self.logging.logger.info("시스템 종료")
+            self.timer2.stop()
+            sys.exit()
 
     def loop_all_etf_stock(self):
         self.logging.logger.info('loop_all_etf_stock')
