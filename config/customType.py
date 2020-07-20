@@ -78,4 +78,5 @@ class CustomType():
         self.LAST_PRICE = '종가'
         self.LAST_TIC_COUNT = '마지막틱갯수'
         self.MARKET_OFF_TIME_LAST_PRICE = '장후시간외종가'
+        self.RECEIPT = '접수'
         

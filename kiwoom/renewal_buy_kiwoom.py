@@ -113,6 +113,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.buy_point_dict.update({"max_plus_std_price": get_max_plus_sell_std_price(buy_price)})
 
     def buy_stock_real_reg(self, stock_dict):
+        self.logging.logger.info("buy_stock_real_reg")
         screen_num = stock_dict[self.customType.SCREEN_NUMBER]
         fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, stock_dict[self.customType.STOCK_CODE], fids, "0")
@@ -161,6 +162,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                                 self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.NEW_PURCHASE:
+                self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.RECEIPT})
                 self.comm_real_data(sCode, sRealType, sRealData)
                 code = self.buy_point_dict[self.customType.STOCK_CODE]
 
