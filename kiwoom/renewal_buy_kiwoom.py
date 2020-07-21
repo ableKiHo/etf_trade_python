@@ -185,7 +185,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
                     start_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]
-                    if current_stock_price <= get_max_plus_sell_std_price(start_stock_price, 0.85):
+                    if current_stock_price <= get_max_plus_sell_std_price(start_stock_price, 0.9):
                         if limit_stock_price > current_stock_price:
                             limit_stock_price = current_stock_price
                         self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price)
@@ -193,7 +193,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
                         self.buy_point_dict = {}
                         self.total_cal_target_etf_stock_dict = {}
-                        self.logging.logger.info("call loop_all_etf_stock at max current price(0.85) %s / %s" % (current_stock_price, get_max_plus_sell_std_price(start_stock_price, 0.85)))
+                        self.logging.logger.info("call loop_all_etf_stock at max current price(0.9) %s / %s" % (current_stock_price, get_max_plus_sell_std_price(start_stock_price, 0.9)))
                         self.loop_all_etf_stock()
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.RECEIPT:
