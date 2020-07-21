@@ -29,6 +29,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_code = ''
         self.total_cal_target_etf_stock_dict = {}
         self.not_account_stock_dict = {}
+        self.nav_buy_point_dict = {}
+        self.nav_buy_dict = {}
+        self.search_end = False
 
         self.buy_screen_meme_stock = "3000"
         self.buy_screen_real_stock = "6000"
@@ -135,6 +138,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 if bool(self.buy_point_dict):
                     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], self.buy_point_dict[self.customType.STOCK_CODE])
                     self.sell_send_order_market_off_time(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                elif bool(self.nav_buy_dict):
+                    self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
+                    quantity = self.use_money / self.nav_buy_dict[self.customType.CURRENT_PRICE]
+                    if quantity > 1:
+                        self.buy_send_order_market_off_time(sCode, self.nav_buy_dict[self.customType.MEME_SCREEN_NUMBER], quantity)
 
                 self.loop_call_exit()
 
@@ -207,6 +215,26 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.CANCLE_RECEIPT})
                         self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], self.buy_point_dict[self.customType.STOCK_CODE])
                         self.not_concluded_account()
+
+        elif sRealType == "ETF NAV" and self.search_end:
+            current_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])  # 출력 : +(-)2520
+            current_price = abs(int(current_price.strip()))
+
+            nav = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType]["NAV"])
+            nav = abs(float(nav.strip()))
+
+            if nav - current_price > 100:
+
+                if "nav_gap" not in self.nav_buy_dict.keys():
+                    self.nav_buy_dict.update({"nav_gap": nav - current_price})
+                    self.nav_buy_dict.update({self.customType.STOCK_CODE: sCode})
+                    self.nav_buy_dict.update({self.customType.CURRENT_PRICE: current_price})
+                else:
+                    nav_gap_value = self.nav_buy_dict["nav_gap"]
+                    if nav_gap_value < (nav - current_price):
+                        self.nav_buy_dict.update({"nav_gap": nav - current_price})
+                        self.nav_buy_dict.update({self.customType.STOCK_CODE: sCode})
+                        self.nav_buy_dict.update({self.customType.CURRENT_PRICE: current_price})
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
@@ -444,7 +472,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
     def call_exit(self):
         today = get_today_by_format('%Y%m%d')
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (today + '154000') < currentDate:
+        if (today + '160000') < currentDate:
             self.logging.logger.info("시스템 종료")
             self.timer2.stop()
             sys.exit()
@@ -478,6 +506,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         if (today + '151000') < currentDate:
             self.timer2.stop()
+            self.total_cal_target_etf_stock_dict = {}
+            self.buy_point_dict = {}
+            self.get_max_nav_stock_code()
             return
 
         self.logging.logger.info('buy_search_etf')
@@ -501,6 +532,25 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.prepare_send_order(code, seconf_buy_point)
 
         self.logging.logger.info('buy_search_etf end')
+
+    def get_max_nav_stock_code(self):
+        self.get_all_etf_stock()
+        filtered_etf_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 20)
+        for item in filtered_etf_list:
+            code = item[self.customType.STOCK_CODE]
+            if code not in self.nav_buy_point_dict.keys():
+                self.nav_buy_point_dict.update({code: {}})
+                self.nav_buy_point_dict[code].update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
+                self.nav_buy_point_dict[code].update({self.customType.MEME_SCREEN_NUMBER: self.buy_screen_meme_stock})
+        self.search_end = True
+        self.nav_buy_stock_real_reg(self.nav_buy_point_dict)
+
+    def nav_buy_stock_real_reg(self, stock_dict):
+        self.logging.logger.info('nav_buy_stock_real_reg')
+        for code in stock_dict:
+            screen_num = stock_dict[code][self.customType.SCREEN_NUMBER]
+            fids = self.realType.REALTYPE["ETF NAV"]["NAV"]
+            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def get_next_stock_code(self):
         if self.buy_search_stock_code == '':
@@ -737,6 +787,19 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
         else:
             self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
+
+    def buy_send_order_market_off_time(self, sCode, screen_number, quantity):
+        self.logging.logger.info("buy_send_order_market_off_time > %s " % sCode)
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_PURCHASE, screen_number, self.account_num, 2, sCode, quantity, 0,
+             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_OFF_TIME_LAST_PRICE],
+             ""]
+        )
+        if order_success == 0:
+            self.logging.logger.info(self.logType.ORDER_BUY_SUCCESS_LOG % sCode)
+        else:
+            self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG % sCode)
 
     def event_slots(self):
         self.OnReceiveTrData.connect(self.trdata_slot)
