@@ -189,6 +189,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         if limit_stock_price > current_stock_price:
                             limit_stock_price = current_stock_price
                         self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price)
+                    else:
+                        self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
+                        self.buy_point_dict = {}
+                        self.total_cal_target_etf_stock_dict = {}
+                        self.logging.logger.info("call loop_all_etf_stock at new_chejan_slot")
+                        self.loop_all_etf_stock()
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.RECEIPT:
                 self.comm_real_data(sCode, sRealType, sRealData)
@@ -486,16 +492,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
         if bool(first_buy_point):
             self.logging.logger.info("first_buy_point break")
             self.prepare_send_order(code, first_buy_point)
-            self.init_search_info()
-            return
 
         if not bool(first_buy_point):
             seconf_buy_point = self.get_conform_second_buy_case(code)
             if bool(seconf_buy_point):
                 self.logging.logger.info("second_buy_point break")
                 self.prepare_send_order(code, seconf_buy_point)
-                self.init_search_info()
-                return
 
         self.logging.logger.info('buy_search_etf end')
 
@@ -524,7 +526,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info("buy_point > %s " % buy_point)
         self.buy_point_dict = copy.deepcopy(buy_point)
         self.screen_number_setting(self.buy_point_dict)
-
+        self.init_search_info()
         self.buy_stock_real_reg(self.buy_point_dict)
 
     def add_send_order(self, code, limit_stock_price):
