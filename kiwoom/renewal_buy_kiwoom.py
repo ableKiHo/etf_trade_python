@@ -75,7 +75,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
                 self.line.notification(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
 
-            # TODO 주문 체결 실패시... 대안 필요
+            # TODO 주문 체결 실패시... 대안 필요 잔고로 넘어가지 않으면 동작 안함.
 
         elif int(sGubun) == 1:  # 잔고
             sCode = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_CODE])[1:]
@@ -146,7 +146,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
-                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
+                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
                         self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
@@ -158,7 +158,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                             self.add_send_order(sCode, current_stock_price)
 
                     if current_stock_price >= self.buy_point_dict["max_plus_std_price"]:
-                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
+                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order max_plus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_plus_std_price"]))
                         self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
@@ -166,11 +166,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE])
                         if current_stock_price <= half_plus_price:
                             if get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.15) < current_stock_price:
-                                self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
+                                self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                                 self.logging.logger.info("sell_send_order second best case >> %s / %s" % (current_stock_price, half_plus_price))
                                 self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                         elif len(self.buy_point_dict[self.customType.TIC_120_PRICE]) >= 15:
-                            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEIPT})
+                            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                             self.logging.logger.info("sell_send_order not change highest price until 120 * 15 >> %s" % current_stock_price)
                             self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
