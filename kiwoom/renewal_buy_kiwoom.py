@@ -43,7 +43,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.tr_opt10079_info_event_loop = QEventLoop()
         self.all_etf_info_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()
-        self.detail_account_info_event_loop = QEventLoop()
+        self.not_account_info_event_loop = QEventLoop()
 
         self.timer2 = QTimer()
 
@@ -205,6 +205,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     purchase_unit_price = self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
                     if current_stock_price >= purchase_unit_price:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.CANCLE_RECEIPT})
+                        self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], self.buy_point_dict[self.customType.STOCK_CODE])
                         self.not_concluded_account()
 
     def comm_real_data(self, sCode, sRealType, sRealData):
@@ -433,7 +434,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
             self.logging.logger.debug("not_account_stock_dict : %s " % self.not_account_stock_dict[order_no])
 
-        self.detail_account_info_event_loop.exit()
+        self.not_account_info_event_loop.exit()
         self.send_cancel_order()
 
     def loop_call_exit(self):
@@ -709,6 +710,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.logging.logger.debug(self.logType.CANCLE_ORDER_BUY_FAIL_LOG)
 
         self.not_account_stock_dict = {}
+        if bool(self.buy_point_dict):
+            self.buy_stock_real_reg(self.buy_point_dict)
 
     def sell_send_order(self, sCode, screen_number, quantity):
         self.logging.logger.info("sell_send_order > %s / %s" % (sCode, quantity))
@@ -760,7 +763,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", "매매구분", "0")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "실시간미체결요청", "opt10075", sPrevNext, self.screen_etf_stock)
 
-        self.detail_account_info_event_loop.exec_()
+        self.not_account_info_event_loop.exec_()
 
     def screen_number_setting(self, stock_dict):
         stock_dict.update({self.customType.SCREEN_NUMBER: self.buy_screen_real_stock})
