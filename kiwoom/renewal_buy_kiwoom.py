@@ -185,7 +185,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
                     start_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]
-                    if current_stock_price <= get_max_plus_sell_std_price(start_stock_price, 0.85):
+                    if current_stock_price <= get_max_plus_sell_std_price(start_stock_price, 0.85) and self.total_cal_target_etf_stock_dict[self.customType.TIGHTENING_TIME] < '140000':
                         if limit_stock_price > current_stock_price:
                             limit_stock_price = current_stock_price
                         self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price)
