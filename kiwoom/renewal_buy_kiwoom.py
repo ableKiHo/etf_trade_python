@@ -486,12 +486,16 @@ class RenewalBuyKiwoom(ParentKiwoom):
         if bool(first_buy_point):
             self.logging.logger.info("first_buy_point break")
             self.prepare_send_order(code, first_buy_point)
+            self.init_search_info()
+            return
 
         if not bool(first_buy_point):
             seconf_buy_point = self.get_conform_second_buy_case(code)
             if bool(seconf_buy_point):
                 self.logging.logger.info("second_buy_point break")
                 self.prepare_send_order(code, seconf_buy_point)
+                self.init_search_info()
+                return
 
         self.logging.logger.info('buy_search_etf end')
 
@@ -520,7 +524,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info("buy_point > %s " % buy_point)
         self.buy_point_dict = copy.deepcopy(buy_point)
         self.screen_number_setting(self.buy_point_dict)
-        self.init_search_info()
+
         self.buy_stock_real_reg(self.buy_point_dict)
 
     def add_send_order(self, code, limit_stock_price):
