@@ -142,6 +142,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
                     quantity = self.use_money / self.nav_buy_dict[self.customType.CURRENT_PRICE]
                     if quantity > 1:
+                        self.logging.logger.info("nav gap buy info > [%s] / current:%s / nav:%s" % (self.nav_buy_dict[self.customType.STOCK_CODE], self.nav_buy_dict[self.customType.CURRENT_PRICE], self.nav_buy_dict["NAV"]))
                         self.buy_send_order_market_off_time(sCode, self.nav_buy_dict[self.customType.MEME_SCREEN_NUMBER], quantity)
 
                 self.loop_call_exit()
@@ -229,12 +230,14 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.nav_buy_dict.update({"nav_gap": nav - current_price})
                     self.nav_buy_dict.update({self.customType.STOCK_CODE: sCode})
                     self.nav_buy_dict.update({self.customType.CURRENT_PRICE: current_price})
+                    self.nav_buy_dict.update({"NAV": nav})
                 else:
                     nav_gap_value = self.nav_buy_dict["nav_gap"]
                     if nav_gap_value < (nav - current_price):
                         self.nav_buy_dict.update({"nav_gap": nav - current_price})
                         self.nav_buy_dict.update({self.customType.STOCK_CODE: sCode})
                         self.nav_buy_dict.update({self.customType.CURRENT_PRICE: current_price})
+                        self.nav_buy_dict.update({"NAV": nav})
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
