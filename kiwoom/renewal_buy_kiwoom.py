@@ -193,7 +193,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], sCode)
                         self.buy_point_dict = {}
                         self.total_cal_target_etf_stock_dict = {}
-                        self.logging.logger.info("call loop_all_etf_stock at new_chejan_slot")
+                        self.logging.logger.info("call loop_all_etf_stock at max current price(0.85) %s / %s" % (current_stock_price, get_max_plus_sell_std_price(start_stock_price, 0.85)))
                         self.loop_all_etf_stock()
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.RECEIPT:
