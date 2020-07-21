@@ -26,3 +26,5 @@ class LogType():
         self.SELL_MINUS_STD_PRICE_LOG = "-1퍼센트 손절 대상 종목번호: %s / : 매입가 : %s / 손절기준가 : %s / 현재가 : %s"
         self.SELL_PLUS_STD_PRICE_LOG = "고점 대비 50퍼센트 익절 대상 종목번호: %s / 매입가 : %s / 익절기준고가 : %s / 현재가 : %s"
         self.SELL_MAX_PLUS_STD_PRICE_LOG = "고점 대비 50퍼센트 익절 대상 종목번호: %s / 매입가 : %s / 현재가 : %s"
+        self.CANCLE_ORDER_BUY_SUCCESS_LOG = "매수취소 전달 성공"
+        self.CANCLE_ORDER_BUY_FAIL_LOG = "매수취소 전달 실패"
