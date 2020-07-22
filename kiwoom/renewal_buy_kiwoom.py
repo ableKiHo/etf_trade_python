@@ -27,6 +27,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_point_dict = {}
         self.top_rank_etf_stock_list = []
         self.buy_search_stock_code = ''
+        self.buy_search_stock_name = ''
         self.total_cal_target_etf_stock_dict = {}
         self.nav_buy_point_dict = {}
         self.nav_buy_dict = {}
@@ -570,10 +571,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
             item = self.top_rank_etf_stock_list[index + 1]
 
         self.buy_search_stock_code = item[self.customType.STOCK_CODE]
+        self.buy_search_stock_name = item[self.customType.STOCK_NAME]
 
     def init_search_info(self):
         self.timer2.stop()
         self.buy_search_stock_code = ''
+        self.buy_search_stock_name = ''
 
     def prepare_send_order(self, code, buy_point):
         buy_point.update({self.customType.STOCK_CODE: code})
@@ -696,7 +699,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         if not breaker:
             compare_rows = analysis_rows[2:]
-            big_change_tic_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] - x[self.customType.START_PRICE] > 15]
+            max_change_limit = 15
+            if self.buy_search_stock_name.find("인버스2X") >= 0:
+                max_change_limit = 5
+            big_change_tic_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] - x[self.customType.START_PRICE] > max_change_limit]
             if len(big_change_tic_list) == 0:
                 self.logging.logger.info("big_change_tic_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
