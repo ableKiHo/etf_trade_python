@@ -468,10 +468,15 @@ class RenewalBuyKiwoom(ParentKiwoom):
             sys.exit()
 
     def loop_all_etf_stock(self):
-        self.not_concluded_account()
+        self.loop_not_concluded_account()
         self.logging.logger.info('loop_all_etf_stock')
         self.timer2 = default_q_timer_setting()
         self.timer2.timeout.connect(self.prepare_all_etf_stock)
+
+    def loop_not_concluded_account(self):
+        self.logging.logger.info('loop_not_concluded_account')
+        self.timer2 = default_q_timer_setting()
+        self.timer2.timeout.connect(self.not_concluded_account)
 
     def prepare_all_etf_stock(self):
         self.logging.logger.info('prepare_all_etf_stock')
@@ -793,7 +798,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop.exec_()
 
     def not_concluded_account(self, sPrevNext="0"):
-
+        self.logging.logger.info("not_concluded_account")
+        self.timer2.stop()
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.ACCOUNT_NUMBER, self.account_num)
         self.dynamicCall("SetInputValue(QString, QString)", "체결구분", "1")
         self.dynamicCall("SetInputValue(QString, QString)", "매매구분", "0")
