@@ -509,7 +509,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.timer2.stop()
             self.total_cal_target_etf_stock_dict = {}
             self.buy_point_dict = {}
-            self.get_max_nav_stock_code()
+            # self.get_max_nav_stock_code()
             return
 
         self.logging.logger.info('buy_search_etf')
