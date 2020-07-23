@@ -41,6 +41,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.screen_all_etf_stock = "8000"
         self.screen_etf_stock = "5000"
 
+        self.today = get_today_by_format('%Y%m%d')
+
         self.event_slots()
         self.real_event_slot()
 
@@ -143,15 +145,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
 
-                if bool(self.buy_point_dict):
-                    self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], self.buy_point_dict[self.customType.STOCK_CODE])
-                    self.sell_send_order_market_off_time(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                # elif bool(self.nav_buy_dict):
-                #     self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL")
-                #     quantity = self.use_money / self.nav_buy_dict[self.customType.CURRENT_PRICE]
-                #     if quantity > 1:
-                #         self.logging.logger.info("nav gap buy info > [%s] / current:%s / nav:%s" % (self.nav_buy_dict[self.customType.STOCK_CODE], self.nav_buy_dict[self.customType.CURRENT_PRICE], self.nav_buy_dict["NAV"]))
-                #         self.buy_send_order_market_off_time(sCode, self.nav_buy_dict[self.customType.MEME_SCREEN_NUMBER], quantity)
+                # if bool(self.buy_point_dict):
+                #     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_point_dict[self.customType.SCREEN_NUMBER], self.buy_point_dict[self.customType.STOCK_CODE])
+                #     self.sell_send_order_market_off_time(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                # elif bool(self.nav_buy_dict): self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL") quantity = self.use_money / self.nav_buy_dict[self.customType.CURRENT_PRICE] if
+                # quantity > 1: self.logging.logger.info("nav gap buy info > [%s] / current:%s / nav:%s" % (self.nav_buy_dict[self.customType.STOCK_CODE], self.nav_buy_dict[
+                # self.customType.CURRENT_PRICE], self.nav_buy_dict["NAV"])) self.buy_send_order_market_off_time(sCode, self.nav_buy_dict[self.customType.MEME_SCREEN_NUMBER], quantity)
 
                 self.loop_call_exit()
 
@@ -164,6 +163,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
+                    currentDate = get_today_by_format('%Y%m%d%H%M%S')
+                    if (self.today + '160000') < currentDate:
+                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
+                        self.logging.logger.info("sell_send_order market off time >> %s / %s" % (current_stock_price, currentDate))
+                        self.sell_send_order(sCode, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
@@ -501,9 +506,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.timer2.timeout.connect(self.call_exit)
 
     def call_exit(self):
-        today = get_today_by_format('%Y%m%d')
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (today + '160000') < currentDate:
+        if (self.today + '153400') > currentDate:
+            if bool(self.buy_point_dict):
+                self.sell_send_order_market_off_time(self.buy_point_dict[self.customType.STOCK_CODE], self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+
+        if (self.today + '160000') < currentDate:
             self.logging.logger.info("시스템 종료")
             self.timer2.stop()
             sys.exit()
@@ -543,10 +551,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def buy_search_etf(self):
 
-        today = get_today_by_format('%Y%m%d')
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        if (today + '150500') < currentDate:
+        if (self.today + '150500') < currentDate:
             self.timer2.stop()
             self.buy_search_stock_code = ''
             self.analysis_etf_target_dict = {}
