@@ -712,6 +712,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("lower_gap_list check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], lower_gap_list))
             return {}
 
+        last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+        if not is_increase_trend(last_price_list):
+            self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], last_price_list))
+            return {}
+
+        return first_tic
+
     def get_conform_first_buy_case(self, code):
         self.logging.logger.info("first_buy_case analysis_rows > [%s]" % code)
         rows = self.analysis_etf_target_dict[code]["row"]

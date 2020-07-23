@@ -2,6 +2,7 @@ import copy
 import datetime
 import math
 import os
+import numpy as np
 from operator import itemgetter
 
 
@@ -139,6 +140,7 @@ def create_moving_average_20_line(code, target_dict, origin_field, source_field,
         row = rows[i]
         row[target_field] = round(ma_20_value / gap, max_decimal_point)
 
+
 def create_moving_average_gap_line(code, target_dict, origin_field, source_field, target_field, gap):
     rows = target_dict[code][origin_field]
     max_decimal_point = 3
@@ -156,3 +158,14 @@ def create_moving_average_gap_line(code, target_dict, origin_field, source_field
 
         row = rows[i]
         row[target_field] = round(ma_gap_value / gap, max_decimal_point)
+
+
+def trendline(data, order=1):
+    index = list(range(1, len(data) + 1))
+    coeffs = np.polyfit(index, list(data), order)
+    slope = coeffs[-2]
+    return float(slope)
+
+
+def is_increase_trend(data):
+    return trendline(data) > 0
