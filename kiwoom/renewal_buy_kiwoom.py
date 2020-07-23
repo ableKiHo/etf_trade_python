@@ -212,7 +212,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.logging.logger.info("call loop_all_etf_stock at max current price(1 per over) %s / %s" % (current_stock_price, max_start_stock_price))
                         if limit_stock_price > current_stock_price:
                             limit_stock_price = current_stock_price
-                        self.add_buy_etf_flag = True
                         self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price, half_flag=True)
 
         # elif sRealType == "ETF NAV" and self.search_end:
