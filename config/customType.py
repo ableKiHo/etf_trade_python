@@ -84,3 +84,6 @@ class CustomType():
         self.CANCLE_RECEIPT = '취소접수'
         self.BUY_CANCLE = '매수취소'
         self.ORDER_NO = '주문번호'
+        self.LEVERAGE = '레버리지'
+        self.INVERSE = '인버스'
+        self.SELL = '매도'

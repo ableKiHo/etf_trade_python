@@ -138,3 +138,21 @@ def create_moving_average_20_line(code, target_dict, origin_field, source_field,
 
         row = rows[i]
         row[target_field] = round(ma_20_value / gap, max_decimal_point)
+
+def create_moving_average_gap_line(code, target_dict, origin_field, source_field, target_field, gap):
+    rows = target_dict[code][origin_field]
+    max_decimal_point = 3
+    for i in range(len(rows)):
+        max_ma_gap_len = i + gap
+        if len(rows) < max_ma_gap_len:
+            max_ma_gap_len = len(rows)
+        ma_gap_list = copy.deepcopy(rows[i: max_ma_gap_len])
+        if len(ma_gap_list) < gap:
+            break
+        ma_gap_value = 0
+        for sub_i in range(len(ma_gap_list)):
+            sub_row = ma_gap_list[sub_i]
+            ma_gap_value = ma_gap_value + sub_row[source_field]
+
+        row = rows[i]
+        row[target_field] = round(ma_gap_value / gap, max_decimal_point)
