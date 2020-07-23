@@ -614,6 +614,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         last_price_buy_point = self.get_conform_last_price_buy_case(code)
         if bool(last_price_buy_point):
+            self.timer2.stop()
             self.logging.logger.info("last_price_buy_point break")
             self.market_price_send_order(self.code, last_price_buy_point[self.customType.CURRENT_PRICE])
             return
