@@ -203,14 +203,16 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
                     start_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]
-                    max_start_stock_price = get_max_plus_sell_std_price(start_stock_price, 0.9)
+                    max_start_stock_price = get_max_plus_sell_std_price(start_stock_price, 1)
                     if current_stock_price <= max_start_stock_price:
                         if limit_stock_price > current_stock_price:
                             limit_stock_price = current_stock_price
                         self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price)
                     else:
-                        self.logging.logger.info("call loop_all_etf_stock at max current price(0.9 over) %s / %s" % (current_stock_price, max_start_stock_price))
-                        self.prepare_loop_all_etf_stock(sCode)
+                        self.logging.logger.info("call loop_all_etf_stock at max current price(1 per over) %s / %s" % (current_stock_price, max_start_stock_price))
+                        if limit_stock_price > current_stock_price:
+                            limit_stock_price = current_stock_price
+                        self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price, half_flag=True)
 
         # elif sRealType == "ETF NAV" and self.search_end:
         #     current_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
@@ -651,10 +653,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.init_search_info()
         self.buy_stock_real_reg(self.buy_point_dict)
 
-    def add_send_order(self, code, limit_stock_price):
+    def add_send_order(self, code, limit_stock_price, half_flag=False):
         self.logging.logger.info("[%s]add_send_order > %s " % (code, limit_stock_price))
         result = self.use_money / limit_stock_price
         quantity = int(result)
+        if half_flag is True:
+            quantity = math.trunc(quantity / 2)
         if quantity >= 1:
             self.logging.logger.info("quantity > %s " % quantity)
             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
