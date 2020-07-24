@@ -63,12 +63,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.detail_account_mystock()
 
         if not bool(self.buy_point_dict):
-            try:
-                self.loop_not_concluded_account()
-            except Exception as e:
-                self.logging.logger.error('Exception', exc_info=e)
-                self.line.notification("ETF RENEWAL BUY TRADE ERROR")
-
+            self.loop_not_concluded_account()
 
     def new_chejan_slot(self, sGubun, nItemCnt, sFidList):
         self.logging.logger.info("new_chejan_slot  %s", sGubun)
