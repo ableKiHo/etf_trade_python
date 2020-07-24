@@ -29,11 +29,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_code = ''
         self.buy_search_stock_name = ''
         self.total_cal_target_etf_stock_dict = {}
-        # self.nav_buy_point_dict = {}
-        # self.nav_buy_dict = {}
-        # self.search_end = False
         self.add_buy_etf_flag = False
-        # 252670:inverse / 233740:reverage / 122630: reverage / 251340:inverse
         self.target_etf_dict = {
             '252670': {"max_minus_std_price": -0.6, "divide_minus_std_price": -0.5, "add_sell_std_price": -0.4, "second_best_std_price": 0.3, "max_plus_std_price": 0.5},
             '233740': {"max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2, "second_best_std_price": None, "max_plus_std_price": 1.0},
@@ -163,13 +159,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
 
-                # if bool(self.buy_point_dict):
-                #     self.dynamicCall("SetRealRemove(QString, QString)", self.buy_screen_meme_stock, self.buy_point_dict[self.customType.STOCK_CODE])
-                #     self.sell_send_order_market_off_time(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                # elif bool(self.nav_buy_dict): self.dynamicCall("SetRealRemove(QString, QString)", "ALL", "ALL") quantity = self.use_money / self.nav_buy_dict[self.customType.CURRENT_PRICE] if
-                # quantity > 1: self.logging.logger.info("nav gap buy info > [%s] / current:%s / nav:%s" % (self.nav_buy_dict[self.customType.STOCK_CODE], self.nav_buy_dict[
-                # self.customType.CURRENT_PRICE], self.nav_buy_dict["NAV"])) self.buy_send_order_market_off_time(sCode, self.buy_screen_real_stock, quantity)
-
                 self.loop_call_exit()
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
@@ -191,7 +180,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order divide_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["divide_minus_std_price"]))
                         sell_quantity = math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY]/2)
-                        self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
+                        if sell_quantity >= 1:
+                            self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
 
                     if current_stock_price <= self.buy_point_dict["add_sell_std_price"] and self.add_buy_etf_flag is not True:
                         if self.buy_point_dict[self.customType.TOTAL_PURCHASE_PRICE] <= self.use_money:
@@ -246,21 +236,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         if limit_stock_price > current_stock_price:
                             limit_stock_price = current_stock_price
                         self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price, half_flag=True)
-
-        # elif sRealType == "ETF NAV" and self.search_end:
-        #     current_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
-        #     current_price = abs(int(current_price.strip()))
-        #
-        #     nav = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType]["NAV"])
-        #     nav = abs(float(nav.strip()))
-        #     nav_gap = nav - current_price
-        #     if nav_gap > 100:
-        #
-        #         if "nav_gap" not in self.nav_buy_dict.keys() or ("nav_gap" in self.nav_buy_dict.keys() and self.nav_buy_dict["nav_gap"] < nav_gap):
-        #             self.nav_buy_dict.update({"nav_gap": nav_gap})
-        #             self.nav_buy_dict.update({self.customType.STOCK_CODE: sCode})
-        #             self.nav_buy_dict.update({self.customType.CURRENT_PRICE: current_price})
-        #             self.nav_buy_dict.update({"NAV": nav})
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
@@ -704,7 +679,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_name = item[self.customType.STOCK_NAME]
 
     def init_search_info(self):
-        # self.timer2.stop()
         self.buy_search_stock_code = ''
         self.buy_search_stock_name = ''
 
