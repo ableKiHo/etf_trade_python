@@ -51,6 +51,10 @@ def get_max_plus_sell_std_price(purchase_price, max_sell_std_per=1.5):
     return purchase_price + round(purchase_price * (max_sell_std_per / 100))
 
 
+def get_default_std_price(purchase_price, std_prer=0):
+    return purchase_price + round(purchase_price * (std_prer / 100))
+
+
 def get_plus_sell_std_price_by_tic(highest_price, minus_tic=3):
     return highest_price - (get_etf_tic_price() * minus_tic)
 
