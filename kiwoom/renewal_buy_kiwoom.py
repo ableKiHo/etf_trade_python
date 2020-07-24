@@ -54,6 +54,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.not_account_info_event_loop = QEventLoop()
 
         self.timer2 = QTimer()
+        self.timer_contract = QTimer()
 
         self.detail_account_info()
         self.detail_account_mystock()
@@ -81,7 +82,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 chegual_quantity = int(chegual_quantity)
             self.logging.logger.info("new_chejan_slot order_status > %s" % order_status)
 
+            if order_status == self.customType.RECEIPT:
+                self.loop_check_not_contract()
+
             if order_status == self.customType.CONCLUSION:
+                self.timer_contract.stop()
                 self.logging.logger.info(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
                 self.line.notification(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
             else:
@@ -89,6 +94,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
 
         elif int(sGubun) == 1:  # 잔고
+
             sCode = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_CODE])[1:]
             stock_name = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_NAME])
             meme_gubun = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.SELL_BUY_CLASSIFICATOIN])
@@ -517,6 +523,29 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("시스템 종료")
             self.timer2.stop()
             sys.exit()
+
+    def loop_check_not_contract(self):
+        self.logging.logger.info('loop_check_not_contract')
+        self.timer_contract = default_q_timer_setting()
+        self.timer_contract.timeout.connect(self.check_not_contract)
+
+    def check_not_contract(self):
+        self.logging.logger.info('check_not_contract')
+        if bool(self.buy_point_dict) and self.add_buy_etf_flag is False:
+            code = self.buy_point_dict[self.customType.STOCK_CODE]
+        else:
+            self.timer_contract.stop()
+            self.loop_not_concluded_account()
+            return
+
+        self.get_opt10079_info(code)
+        create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
+        rows = self.analysis_etf_target_dict[code]["row"]
+        buy_point_time = self.buy_point_dict[self.customType.TIGHTENING_TIME]
+        filterd_lows = [x for x in rows if x[self.customType.TIGHTENING_TIME] >= buy_point_time]
+        if (len(filterd_lows) > 4):
+            self.timer_contract.stop()
+            self.loop_not_concluded_account()
 
     def loop_not_concluded_account(self):
         self.logging.logger.info('loop_not_concluded_account')
