@@ -543,7 +543,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         rows = self.analysis_etf_target_dict[code]["row"]
         buy_point_time = self.buy_point_dict[self.customType.TIGHTENING_TIME]
         filterd_lows = [x for x in rows if x[self.customType.TIGHTENING_TIME] >= buy_point_time]
-        if (len(filterd_lows) > 4):
+        if len(filterd_lows) > 4:
             self.timer_contract.stop()
             self.loop_not_concluded_account()
 
