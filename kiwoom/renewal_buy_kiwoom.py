@@ -862,6 +862,27 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 breaker = True
 
         if not breaker:
+            compare_rows = analysis_rows[1:3]
+            last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+            if is_increase_trend(last_price_list):
+                self.logging.logger.info("increase last price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[4:]
+            gap_last_price_list = [x for x in compare_rows if x["ma20"] > x[self.customType.CURRENT_PRICE] and x["ma20"] - x[self.customType.CURRENT_PRICE] > 25]
+            if len(gap_last_price_list) < 3:
+                self.logging.logger.info("gap_last_price_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[2:]
+            ma20_list = [item["ma20"] for item in compare_rows]
+            if not is_increase_trend(ma20_list):
+                self.logging.logger.info("increase ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
             compare_rows = analysis_rows[2:]
             for x in compare_rows:
                 if x[self.customType.LOWEST_PRICE] >= x["ma20"]:
