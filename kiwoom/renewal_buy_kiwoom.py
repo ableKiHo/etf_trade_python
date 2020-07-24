@@ -179,7 +179,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     if current_stock_price <= self.buy_point_dict["divide_minus_std_price"]:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order divide_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["divide_minus_std_price"]))
-                        sell_quantity = math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY]/2)
+                        sell_quantity = math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY] / 2)
                         if sell_quantity >= 1:
                             self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
 
@@ -725,10 +725,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("time check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
             return {}
 
-        if first_tic["ma20"] > first_tic[self.customType.CURRENT_PRICE] or first_tic["ma5"] > first_tic[self.customType.CURRENT_PRICE] or first_tic["ma10"] > first_tic[
-            self.customType.CURRENT_PRICE] or first_tic["ma60"] > first_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
-            return {}
+        ma_field_list = ["ma20", "ma5", "ma10", "ma60"]
+        for field in ma_field_list:
+            if first_tic[field] > first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+                return {}
 
         empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '' or x["ma60"] == '']
         if len(empty_gap_list) > 0:
@@ -736,9 +737,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             return {}
 
         compare_rows = analysis_rows[1:]
-        lower_gap_list = [x for x in compare_rows if
-                          x["ma20"] > x[self.customType.CURRENT_PRICE] or x["ma5"] > x[self.customType.CURRENT_PRICE] or x["ma10"] > x[self.customType.CURRENT_PRICE] or x["ma60"] > x[
-                              self.customType.CURRENT_PRICE]]
+        lower_gap_list = [(x, field) for x in compare_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
         if len(empty_gap_list) > 0:
             self.logging.logger.info("lower_gap_list check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], lower_gap_list))
             return {}
