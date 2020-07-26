@@ -30,10 +30,14 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict = {}
         self.add_buy_etf_flag = False
         self.target_etf_dict = {
-            '252670': {"max_minus_std_price": -0.6, "divide_minus_std_price": -0.5, "add_sell_std_price": -0.4, "divide_plus_std_price": 0.4, "max_plus_std_price": 0.6},
-            '233740': {"max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2, "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
-            '122630': {"max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2, "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
-            '251340': {"max_minus_std_price": -0.6, "divide_minus_std_price": -0.5, "add_sell_std_price": -0.4, "divide_plus_std_price": 0.4, "max_plus_std_price": 0.6},
+            '252670': {self.customType.STOCK_CODE: '252670', self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "max_minus_std_price": -0.6, "divide_minus_std_price": -0.5, "add_sell_std_price": -0.4,
+                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.6},
+            '233740': {self.customType.STOCK_CODE: '233740', self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
+                       "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
+            '122630': {self.customType.STOCK_CODE: '122630', self.customType.STOCK_NAME: 'KODEX 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
+                       "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
+            '251340': {self.customType.STOCK_CODE: '251340', self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "max_minus_std_price": -0.6, "divide_minus_std_price": -0.5, "add_sell_std_price": -0.4,
+                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.6},
         }
 
         self.buy_screen_meme_stock = "3000"
@@ -655,19 +659,19 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def get_next_stock_code(self, max_index=4):
         if self.buy_search_stock_code == '':
-            item = self.top_rank_etf_stock_list[0]
+            code = self.top_rank_etf_stock_list[0]
         else:
-            index = next((index for (index, d) in enumerate(self.top_rank_etf_stock_list) if d[self.customType.STOCK_CODE] == self.buy_search_stock_code), None)
+            index = next((index for (index, c) in enumerate(self.top_rank_etf_stock_list) if c == self.buy_search_stock_code), None)
             if index < 0 or index > max_index:
                 self.logging.logger.info("not found next stock code > index:[%s] " % index)
                 sys.exit()
 
             if index == len(self.top_rank_etf_stock_list) - 1:
                 index = -1
-            item = self.top_rank_etf_stock_list[index + 1]
+            code = self.top_rank_etf_stock_list[index + 1]
 
-        self.buy_search_stock_code = item[self.customType.STOCK_CODE]
-        self.buy_search_stock_name = item[self.customType.STOCK_NAME]
+        self.buy_search_stock_code = self.target_etf_dict[code][self.customType.STOCK_CODE]
+        self.buy_search_stock_name = self.target_etf_dict[code][self.customType.STOCK_NAME]
 
     def init_search_info(self):
         self.buy_search_stock_code = ''
