@@ -183,6 +183,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.logging.logger.info("sell_send_order divide_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["divide_minus_std_price"]))
                         sell_quantity = math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY] / 2)
                         if sell_quantity >= 1:
+                            self.buy_point_dict.update({"divide_minus_std_price": 0})
                             self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
 
                     # 추가 매수
@@ -516,7 +517,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def loop_check_not_contract(self):
         self.logging.logger.info('loop_check_not_contract')
-        self.timer_contract = default_q_timer_setting()
+        self.timer_contract = default_q_timer_setting(5)
         self.timer_contract.timeout.connect(self.check_not_contract)
 
     def check_not_contract(self):
@@ -539,7 +540,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def loop_not_concluded_account(self):
         self.logging.logger.info('loop_not_concluded_account')
-        self.timer2 = default_q_timer_setting()
+        self.timer2 = default_q_timer_setting(5)
         self.timer2.timeout.connect(self.prepare_not_concluded_account)
 
     def prepare_not_concluded_account(self):
