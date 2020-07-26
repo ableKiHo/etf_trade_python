@@ -145,6 +145,23 @@ def create_moving_average_20_line(code, target_dict, origin_field, source_field,
         row[target_field] = round(ma_20_value / gap, max_decimal_point)
 
 
+def get_trand_const_value(code, target_dict, origin_field, source_field, target_field):
+    rows = target_dict[code][origin_field]
+    gap = 8
+    for i in range(len(rows)):
+        max_ma_20_len = i + gap
+        if len(rows) < max_ma_20_len:
+            max_ma_20_len = len(rows)
+        analysis_rows = copy.deepcopy(rows[i: max_ma_20_len])
+        if len(analysis_rows) < gap:
+            break
+        ma20_list = [item[source_field] for item in analysis_rows]
+        inverselist = ma20_list[::-1]
+        trand_const_value = trendline(inverselist)
+        row = rows[i]
+        row[target_field] = trand_const_value
+
+
 def create_moving_average_gap_line(code, target_dict, origin_field, source_field, target_field, gap):
     rows = target_dict[code][origin_field]
     max_decimal_point = 3
@@ -168,7 +185,7 @@ def trendline(data, order=1):
     index = list(range(1, len(data) + 1))
     coeffs = np.polyfit(index, list(data), order)
     slope = coeffs[-2]
-    return float(slope)
+    return round(float(slope), 4)
 
 
 def is_increase_trend(data):
