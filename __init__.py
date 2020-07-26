@@ -33,13 +33,17 @@ class Main():
                 # self.kiwoom = NewBuyKiwoom()
                 self.kiwoom = RenewalBuyKiwoom()
             except Exception as e:
-                self.logging.logger.error('Exception', exc_info=e)
                 self.line.notification("ETF Error")
+                self.logging.logger.exception('Exception', exc_info=e)
                 # sys.exit()
         elif auto_type == 'prepare':
             self.prepareNextDay = PrepareNextDay()
         elif auto_type == 'goal':
-            self.goalKiwoom = GoalKiwoom()
+            try:
+                self.goalKiwoom = GoalKiwoom()
+            except Exception as e:
+                self.logging.logger.exception('Exception', exc_info=e)
+
         elif auto_type == 'error':
             try:
                 raise Exception('error test')

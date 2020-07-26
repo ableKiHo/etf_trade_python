@@ -14,10 +14,13 @@ class GoalKiwoom(ParentKiwoom):
 
         self.logging.logger.info("ETF GoalKiwoom() class start.")
 
+
+
         self.tr_opt10079_info_event_loop = QEventLoop()
         self.etf_info_event_loop = QEventLoop()
 
         self.cal_target_etf_stock_dict = {}
+        a = self.cal_target_etf_stock_dict["test"]
 
         self.event_slots()  # 키움과 연결하기 위한 시그널 / 슬롯 모음
 
