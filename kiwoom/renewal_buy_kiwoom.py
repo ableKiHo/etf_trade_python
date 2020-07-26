@@ -865,7 +865,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         if not breaker:
             compare_rows = analysis_rows[2:]
-            ma20_list = [item["ma20"] for item in compare_rows]
+            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
+            ma20_list = list(map(float, ma20_list))
             inverselist = ma20_list[::-1]
             if not is_increase_trend(inverselist):
                 self.logging.logger.info("decrease ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
