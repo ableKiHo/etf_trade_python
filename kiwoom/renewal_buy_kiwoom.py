@@ -576,7 +576,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        if (self.today + '151500') < currentDate:
+        if (self.today + '152900') < currentDate:
             self.timer2.stop()
             self.buy_search_stock_code = ''
             self.analysis_etf_target_dict = {}
