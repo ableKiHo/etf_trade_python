@@ -30,14 +30,14 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict = {}
         self.add_buy_etf_flag = False
         self.target_etf_dict = {
-            '252670': {self.customType.STOCK_CODE: '252670', self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.3,
-                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.6},
+            '252670': {self.customType.STOCK_CODE: '252670', self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
+                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
             '233740': {self.customType.STOCK_CODE: '233740', self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
                        "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
             '122630': {self.customType.STOCK_CODE: '122630', self.customType.STOCK_NAME: 'KODEX 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
                        "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
-            '251340': {self.customType.STOCK_CODE: '251340', self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.3,
-                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.6},
+            '251340': {self.customType.STOCK_CODE: '251340', self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
+                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
         }
 
         self.buy_screen_meme_stock = "3000"
