@@ -626,7 +626,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict = {}
         self.get_all_etf_stock()
         self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 20)
-        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if x.find(self.customType.LEVERAGE) < 0 and x.find(self.customType.INVERSE) < 0]
+        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if x[self.customType.STOCK_NAME].find(self.customType.LEVERAGE) < 0 and x[self.customType.STOCK_NAME].find(self.customType.INVERSE) < 0]
         self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
         self.timer2.stop()
 
@@ -638,7 +638,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.timer2.timeout.connect(self.buy_search_last_price_etf)
 
     def buy_search_last_price_etf(self):
-        self.get_next_stock_code()
+        self.get_next_rank_etf_stock_code()
 
         code = self.buy_search_stock_code
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
@@ -672,6 +672,22 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         self.buy_search_stock_code = self.target_etf_dict[code][self.customType.STOCK_CODE]
         self.buy_search_stock_name = self.target_etf_dict[code][self.customType.STOCK_NAME]
+
+    def get_next_rank_etf_stock_code(self, max_index=4):
+        if self.buy_search_stock_code == '':
+            item = self.top_rank_etf_stock_list[0]
+        else:
+            index = next((index for (index, d) in enumerate(self.top_rank_etf_stock_list) if d[self.customType.STOCK_CODE] == self.buy_search_stock_code), None)
+            if index < 0 or index > max_index:
+                self.logging.logger.info("not found next stock code > index:[%s] " % index)
+                sys.exit()
+
+            if index == len(self.top_rank_etf_stock_list) - 1:
+                index = -1
+            item = self.top_rank_etf_stock_list[index + 1]
+
+        self.buy_search_stock_code = item[self.customType.STOCK_CODE]
+        self.buy_search_stock_name = item[self.customType.STOCK_NAME]
 
     def init_search_info(self):
         self.buy_search_stock_code = ''
