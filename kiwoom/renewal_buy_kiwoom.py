@@ -175,6 +175,15 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
 
+                    # 추가 매수
+                    if current_stock_price <= self.buy_point_dict["add_sell_std_price"] and self.add_buy_etf_flag is not True:
+                        if self.buy_point_dict[self.customType.TOTAL_PURCHASE_PRICE] <= self.use_money:
+                            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
+                            self.logging.logger.info("add_sell_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["add_sell_std_price"]))
+                            self.buy_point_dict.update({"add_sell_std_price": 0})
+                            self.add_buy_etf_flag = True
+                            self.add_send_order(sCode, current_stock_price)
+
                     # max 손절
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
@@ -189,15 +198,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         if sell_quantity >= 1:
                             self.buy_point_dict.update({"divide_minus_std_price": 0})
                             self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
-
-                    # 추가 매수
-                    if current_stock_price <= self.buy_point_dict["add_sell_std_price"] and self.add_buy_etf_flag is not True:
-                        if self.buy_point_dict[self.customType.TOTAL_PURCHASE_PRICE] <= self.use_money:
-                            self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
-                            self.logging.logger.info("add_sell_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["add_sell_std_price"]))
-                            self.buy_point_dict.update({"add_sell_std_price": 0})
-                            self.add_buy_etf_flag = True
-                            self.add_send_order(sCode, current_stock_price)
 
                     # 최대 익절
                     if current_stock_price >= self.buy_point_dict["max_plus_std_price"]:
