@@ -30,14 +30,14 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict = {}
         self.add_buy_etf_flag = False
         self.target_etf_dict = {
-            '252670': {self.customType.STOCK_CODE: '252670', self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
-                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
-            '233740': {self.customType.STOCK_CODE: '233740', self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
-                       "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
-            '122630': {self.customType.STOCK_CODE: '122630', self.customType.STOCK_NAME: 'KODEX 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
-                       "divide_plus_std_price": 0.7, "max_plus_std_price": 1.0},
-            '251340': {self.customType.STOCK_CODE: '251340', self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4, "add_sell_std_price": -0.2,
-                       "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
+            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4,
+                       "add_sell_std_price": -0.2, "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
+            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4,
+                       "add_sell_std_price": -0.2, "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
+            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4,
+                       "add_sell_std_price": -0.2, "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
+            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "max_minus_std_price": -0.5, "divide_minus_std_price": -0.4,
+                       "add_sell_std_price": -0.2, "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
         }
 
         self.buy_screen_meme_stock = "3000"
@@ -184,12 +184,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
                             self.add_buy_etf_flag = True
                             self.add_send_order(sCode, current_stock_price)
 
-                    # max 손절
-                    if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
-                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
-                        self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
-                        self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-
                     # 분할 손절 (반만 매도)
                     if current_stock_price <= self.buy_point_dict["divide_minus_std_price"]:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
@@ -198,6 +192,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         if sell_quantity >= 1:
                             self.buy_point_dict.update({"divide_minus_std_price": 0})
                             self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
+
+                    # max 손절
+                    if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
+                        self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
+                        self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
+                        self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
                     # 최대 익절
                     if current_stock_price >= self.buy_point_dict["max_plus_std_price"]:
@@ -213,28 +213,25 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.sell_send_order(sCode, self.buy_screen_real_stock, math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY] / 2))
 
                     # 50% 이익 매도 전략
-                    if current_stock_price < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
-                        if get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.25) < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
+                    if current_stock_price >= get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.25):
+                        if current_stock_price < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
                             half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE])
-                            buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[sCode]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
                             if current_stock_price <= half_plus_price:
                                 first_tic = self.analysis_etf_target_dict[code]["row"][0]
-                                if get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.15) < current_stock_price <= first_tic["ma20"]:
+                                if current_stock_price <= first_tic["ma20"]:
                                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                                     self.logging.logger.info("sell_send_order reverage second best case >> %s / %s" % (current_stock_price, half_plus_price))
                                     self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-                            elif len(buy_after_tic_rows) > 10:
-                                self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
-                                self.logging.logger.info("sell_send_order reverage not change highest price until 120 * 10 >> %s" % current_stock_price)
-                                self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-
-                    # 첫 매수 후 11틱 이후 매수금액보다 떨어지고 trand 계수가 (소수점 4자리) -0.2 이하가 아니고 현재가가 ma20 아래이면 매도
-                    if current_stock_price < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+                                elif len(self.buy_point_dict[self.customType.TIC_120_PRICE]) > 7:
+                                    self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
+                                    self.logging.logger.info("sell_send_order reverage not change highest price until 120 * 18 >> %s" % current_stock_price)
+                                    self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                    else:
                         buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
-                        if len(buy_after_tic_rows) > 10 and self.analysis_etf_target_dict[code]["row"][1]["trand_const"] < -0.2:
+                        if len(buy_after_tic_rows) > 7 and self.analysis_etf_target_dict[code]["row"][1]["trand_const"] < -0.2:
                             if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
                                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
-                                self.logging.logger.info("sell_send_order trand const -0.2 until 120 * 10 >> %s" % current_stock_price)
+                                self.logging.logger.info("sell_send_order trand const -0.2 until 120 * 7 >> %s" % current_stock_price)
                                 self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.NEW_PURCHASE:
@@ -245,17 +242,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     limit_stock_price = int(self.buy_point_dict[self.customType.CURRENT_PRICE])
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
-                    start_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.START_PRICE]
-                    max_start_stock_price = get_max_plus_sell_std_price(start_stock_price, 1)
-                    if current_stock_price <= max_start_stock_price:
-                        if limit_stock_price > current_stock_price:
-                            limit_stock_price = current_stock_price
-                        self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price)
-                    else:
-                        self.logging.logger.info("call loop_all_etf_stock at max current price(1 per over) %s / %s" % (current_stock_price, max_start_stock_price))
-                        if limit_stock_price > current_stock_price:
-                            limit_stock_price = current_stock_price
-                        self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price, half_flag=True)
+                    if limit_stock_price > current_stock_price:
+                        limit_stock_price = current_stock_price
+                    self.add_send_order(self.buy_point_dict[self.customType.STOCK_CODE], limit_stock_price, half_flag=True)
 
     def comm_real_data(self, sCode, sRealType, sRealData):
         b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
@@ -277,6 +266,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
         if sCode not in self.total_cal_target_etf_stock_dict.keys():
             self.total_cal_target_etf_stock_dict.update({sCode: {}})
 
+        current_price_list = []
+        tic_price_list = []
+
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: a})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: b})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.VOLUME: g})
@@ -284,14 +276,36 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
 
+        if self.customType.TIC_120_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
+            tic_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]
+        else:
+            self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
+
+        if self.customType.CURRENT_PRICE_LIST in self.total_cal_target_etf_stock_dict[sCode]:
+            current_price_list = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE_LIST]
+            current_price_list.insert(0, b)
+            if len(current_price_list) >= 120:
+                if len(tic_price_list) > 0:
+                    tic_price_list.insert(0, np.mean(current_price_list))
+                else:
+                    tic_price_list.append(np.mean(current_price_list))
+                current_price_list.clear()
+        else:
+            current_price_list.append(b)
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: current_price_list})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: tic_price_list})
+
         current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
             if current_stock_price > self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]:
                 self.logging.logger.info("changed sell std highest price >> %s" % current_stock_price)
                 self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE_LIST: []})
+                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIC_120_PRICE: []})
         else:
             self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
         self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]})
+        self.buy_point_dict.update({self.customType.TIC_120_PRICE: self.total_cal_target_etf_stock_dict[sCode][self.customType.TIC_120_PRICE]})
 
     def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
 
@@ -373,7 +387,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def tr_opt10079_info(self, code, sPrevNext="0"):
         self.logging.logger.info('tr_opt10079_info > [%s]' % code)
-        tic = "120틱"
+        tic = self.target_etf_dict[code]["tic"]
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "틱범위", tic)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
@@ -591,8 +605,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         if not bool(self.buy_point_dict):
             code = self.buy_search_stock_code
+            name = self.buy_search_stock_name
         else:
             code = self.buy_point_dict[self.customType.STOCK_CODE]
+            name = self.buy_point_dict[self.customType.STOCK_NAME]
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
 
         self.get_opt10079_info(code)
@@ -606,11 +622,23 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.prepare_send_order(code, first_buy_point)
                 return
 
-            if not bool(first_buy_point):
-                seconf_buy_point = self.get_conform_second_buy_case(code)
-                if bool(seconf_buy_point):
-                    self.logging.logger.info("second_buy_point break")
-                    self.prepare_send_order(code, seconf_buy_point)
+            second_buy_point = self.get_conform_second_buy_case(code)
+            if bool(second_buy_point):
+                self.logging.logger.info("second_buy_point break")
+                self.prepare_send_order(code, second_buy_point)
+                return
+
+            third_buy_point = self.get_conform_third_buy_case(code)
+            if bool(third_buy_point):
+                self.logging.logger.info("third_buy_point break")
+                self.prepare_send_order(code, third_buy_point)
+                return
+
+            if name.find("인버스2X") >= 0:
+                inverse_buy_point = self.get_conform_invers_first_buy_case(code)
+                if bool(inverse_buy_point):
+                    self.logging.logger.info("inverse_buy_point break")
+                    self.prepare_send_order(code, inverse_buy_point)
                     return
 
         self.logging.logger.info('buy_search_etf end')
@@ -626,7 +654,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict = {}
         self.get_all_etf_stock()
         self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 20)
-        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if x[self.customType.STOCK_NAME].find(self.customType.LEVERAGE) < 0 and x[self.customType.STOCK_NAME].find(self.customType.INVERSE) < 0]
+        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if
+                                        x[self.customType.STOCK_NAME].find(self.customType.LEVERAGE) < 0 and x[self.customType.STOCK_NAME].find(self.customType.INVERSE) < 0]
         self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
         self.timer2.stop()
 
@@ -813,6 +842,147 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def is_current_start_compare(self, dict_info):
         return dict_info[self.customType.START_PRICE] < dict_info[self.customType.CURRENT_PRICE]
+
+    def get_conform_invers_first_buy_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 8:
+            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
+            return {}
+        analysis_rows = rows[:9]
+        self.logging.logger.info("invers_first_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        first_tic = analysis_rows[0]
+
+        breaker = False
+        compare_rows = analysis_rows[1:]
+        ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
+        ma20_list = list(map(float, ma20_list))
+        inverselist = ma20_list[::-1]
+        if is_increase_trend(inverselist):
+            self.logging.logger.info("decrease ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+            breaker = True
+        if not breaker:
+            if first_tic[self.customType.START_PRICE] < first_tic["ma20"]:
+                self.logging.logger.info("first_tic start price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+        if not breaker:
+            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] < item[self.customType.LOWEST_PRICE] or item["ma20"] > item[self.customType.HIGHEST_PRICE] ]
+            if len(ma20_list) > 0:
+                self.logging.logger.info("ma20_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], ma20_list))
+                breaker = True
+        if not breaker:
+            compare_rows = analysis_rows[1:5]
+            white_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] <= item[self.customType.CURRENT_PRICE] or item[self.customType.START_PRICE] == item[self.customType.CURRENT_PRICE] == item[self.customType.HIGHEST_PRICE]]
+            if len(white_candle_list) > 3:
+                self.logging.logger.info("white_candle_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], white_candle_list))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[5:]
+            black_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] >= item[self.customType.CURRENT_PRICE] or item[self.customType.START_PRICE] == item[self.customType.CURRENT_PRICE] == item[self.customType.LOWEST_PRICE]]
+            if len(black_candle_list) > 3:
+                self.logging.logger.info("black_candle_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], black_candle_list))
+                breaker = True
+
+        if not breaker:
+            result = copy.deepcopy(analysis_rows[0])
+            second_tic = analysis_rows[1]
+            result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
+
+            return result
+
+        return {}
+
+    def get_conform_third_buy_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 12:
+            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
+            return {}
+        analysis_rows = rows[:12]
+        self.logging.logger.info("conform_third_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        first_tic = analysis_rows[0]
+
+        empty_ma20_list = [x for x in analysis_rows if x["ma20"] == '']
+        if len(empty_ma20_list) > 0:
+            self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
+            return {}
+
+        breaker = False
+        if not breaker:
+            if first_tic[self.customType.START_PRICE] < first_tic["ma20"]:
+                self.logging.logger.info("first_tic start price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[2:]
+            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
+            ma20_list = list(map(float, ma20_list))
+            inverselist = ma20_list[::-1]
+            if not is_increase_trend(inverselist):
+                self.logging.logger.info("decrease ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[1:5]
+            white_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] <= item[self.customType.CURRENT_PRICE] or item[self.customType.START_PRICE] == item[self.customType.CURRENT_PRICE] == item[self.customType.HIGHEST_PRICE]]
+            if len(white_candle_list) > 4:
+                self.logging.logger.info("white_candle_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], white_candle_list))
+                breaker = True
+        if not breaker:
+            compare_rows = analysis_rows[1:4]
+            white_candle_current_price = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+            inverselist = white_candle_current_price[::-1]
+            if is_increase_trend(inverselist):
+                self.logging.logger.info("increase white_candle_current_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            second_tic = analysis_rows[1]
+            if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
+                breaker = True
+                self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+        if not breaker:
+            third_tic = analysis_rows[2]
+            if third_tic[self.customType.CURRENT_PRICE] > second_tic["ma20"]:
+                breaker = True
+                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
+        if not breaker:
+            compare_rows = analysis_rows[1:5]
+            ma20_list = [item for item in compare_rows if item[self.customType.CURRENT_PRICE] - item[self.customType.START_PRICE] > 20]
+            if len(ma20_list) < 1:
+                self.logging.logger.info("second_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+        if not breaker:
+            compare_rows = analysis_rows[4:]
+            gap_last_price_list = [x for x in compare_rows if x["ma20"] > x[self.customType.CURRENT_PRICE] and x["ma20"] - x[self.customType.CURRENT_PRICE] > 25]
+            if len(gap_last_price_list) < 3:
+                self.logging.logger.info("gap_last_price_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+        if not breaker:
+            compare_rows = analysis_rows[4:]
+            black_candle_current_price = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+            inverselist = black_candle_current_price[::-1]
+            if is_increase_trend(inverselist):
+                self.logging.logger.info("decrease black_candle_current_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[2:]
+            for x in compare_rows:
+                if x[self.customType.LOWEST_PRICE] >= x["ma20"]:
+                    breaker = True
+                    self.logging.logger.info("from third tic lowest_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                    break
+
+        if not breaker:
+            result = copy.deepcopy(analysis_rows[0])
+            second_tic = analysis_rows[1]
+            result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
+
+            return result
+
+        return {}
+
 
     def get_conform_second_buy_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]

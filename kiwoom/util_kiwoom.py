@@ -147,7 +147,7 @@ def create_moving_average_20_line(code, target_dict, origin_field, source_field,
 
 def get_trand_const_value(code, target_dict, origin_field, source_field, target_field):
     rows = target_dict[code][origin_field]
-    gap = 8
+    gap = 14
     for i in range(len(rows)):
         max_ma_20_len = i + gap
         if len(rows) < max_ma_20_len:
@@ -157,7 +157,7 @@ def get_trand_const_value(code, target_dict, origin_field, source_field, target_
             break
         ma20_list = [item[source_field] for item in analysis_rows if item[source_field] != '']
         inverselist = copy.deepcopy(ma20_list[::-1])
-        if len(inverselist) >= 8:
+        if len(inverselist) >= 14:
             trand_const_value = trendline(inverselist)
             row = rows[i]
             row[target_field] = trand_const_value
