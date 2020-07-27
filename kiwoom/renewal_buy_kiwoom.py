@@ -638,7 +638,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.timer2.timeout.connect(self.buy_search_last_price_etf)
 
     def buy_search_last_price_etf(self):
-        self.get_next_rank_etf_stock_code()
+        self.get_next_rank_etf_stock_code(20)
 
         code = self.buy_search_stock_code
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
