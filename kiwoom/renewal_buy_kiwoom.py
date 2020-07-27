@@ -576,7 +576,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        if (self.today + '150500') < currentDate:
+        if (self.today + '151500') < currentDate:
             self.timer2.stop()
             self.buy_search_stock_code = ''
             self.analysis_etf_target_dict = {}
@@ -638,6 +638,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.timer2.timeout.connect(self.buy_search_last_price_etf)
 
     def buy_search_last_price_etf(self):
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '154000') < currentDate:
+            self.timer2.stop()
+
         self.get_next_rank_etf_stock_code(20)
 
         code = self.buy_search_stock_code
@@ -732,9 +736,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
-        if first_tic[self.customType.TIGHTENING_TIME] != '151800':
-            self.logging.logger.info("time check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            return {}
+        # if first_tic[self.customType.TIGHTENING_TIME] != '151800':
+        #     self.logging.logger.info("time check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+        #     return {}
 
         ma_field_list = ["ma20", "ma5", "ma10", "ma60"]
         for field in ma_field_list:
