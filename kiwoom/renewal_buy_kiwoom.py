@@ -590,7 +590,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        if (self.today + '152900') < currentDate:
+        if (self.today + '153000') < currentDate:
             self.timer2.stop()
             self.buy_search_stock_code = ''
             self.analysis_etf_target_dict = {}
@@ -612,15 +612,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
 
         self.get_opt10079_info(code)
-        create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
+        create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+        create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
         get_trand_const_value(code, self.analysis_etf_target_dict, "row", "ma20", "trand_const")
 
         if not bool(self.buy_point_dict):
-            first_buy_point = self.get_conform_first_buy_case(code)
-            if bool(first_buy_point):
-                self.logging.logger.info("first_buy_point break")
-                self.prepare_send_order(code, first_buy_point)
-                return
 
             second_buy_point = self.get_conform_second_buy_case(code)
             if bool(second_buy_point):
@@ -628,18 +625,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.prepare_send_order(code, second_buy_point)
                 return
 
-            third_buy_point = self.get_conform_third_buy_case(code)
-            if bool(third_buy_point):
-                self.logging.logger.info("third_buy_point break")
-                self.prepare_send_order(code, third_buy_point)
+            forth_buy_point = self.get_conform_forth_buy_case(code)
+            if bool(forth_buy_point):
+                self.logging.logger.info("forth_buy_point break")
+                self.prepare_send_order(code, forth_buy_point)
                 return
-
-            if name.find("인버스2X") >= 0:
-                inverse_buy_point = self.get_conform_invers_first_buy_case(code)
-                if bool(inverse_buy_point):
-                    self.logging.logger.info("inverse_buy_point break")
-                    self.prepare_send_order(code, inverse_buy_point)
-                    return
 
         self.logging.logger.info('buy_search_etf end')
 
@@ -754,31 +744,30 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.send_order_market_price_stock_price(code, quantity, self.buy_point_dict)
 
     def get_conform_last_price_buy_case(self, code):
-        self.logging.logger.info("get_conform_last_price_buy_case analysis_rows > [%s]" % code)
         rows = self.analysis_etf_target_dict[code]["row"]
 
         if len(rows) < 7:
-            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
             return {}
 
         analysis_rows = rows[:7]
-        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
-        # if first_tic[self.customType.TIGHTENING_TIME] != '151800':
-        #     self.logging.logger.info("time check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-        #     return {}
 
         ma_field_list = ["ma20", "ma5", "ma10", "ma60"]
         for field in ma_field_list:
-            if first_tic[field] > first_tic[self.customType.CURRENT_PRICE]:
-                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+            if first_tic[field] == '':
                 return {}
 
         empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '' or x["ma60"] == '']
         if len(empty_gap_list) > 0:
-            self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_gap_list))
             return {}
+
+        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        for field in ma_field_list:
+            if first_tic[field] > first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+                return {}
 
         compare_rows = analysis_rows[1:]
         lower_gap_list = [(x, field) for x in compare_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
@@ -791,279 +780,79 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], last_price_list))
             return {}
 
-        return first_tic
-
-    def get_conform_first_buy_case(self, code):
-        self.logging.logger.info("first_buy_case analysis_rows > [%s]" % code)
-        rows = self.analysis_etf_target_dict[code]["row"]
-        if len(rows) < 5:
-            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
-            return {}
-
-        analysis_rows = rows[:5]
-        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
-
-        first_tic = analysis_rows[0]
-        secode_tic = analysis_rows[1]
-        third_tic = analysis_rows[2]
-        forth_tic = analysis_rows[3]
-        fifth_tic = analysis_rows[4]
-
-        empty_ma20_list = [x for x in analysis_rows if x["ma20"] == '']
-        if len(empty_ma20_list) > 0:
-            self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
-            return {}
-
-        if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
-            self.logging.logger.info("first_tic lowest_price check > [%s] >> %s" % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            return {}
-        if secode_tic["ma20"] > secode_tic[self.customType.HIGHEST_PRICE]:
-            self.logging.logger.info("secode_tic highest_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            return {}
-        if third_tic["ma20"] < third_tic[self.customType.LOWEST_PRICE]:
-            self.logging.logger.info("third_tic lowest_price check > [%s] >> %s" % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            return {}
-        if forth_tic[self.customType.HIGHEST_PRICE] >= forth_tic["ma20"] or fifth_tic[self.customType.HIGHEST_PRICE] >= fifth_tic["ma20"]:
-            self.logging.logger.info("forth_tic and fifth_tic highest_price check > [%s] >> %s" % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            return {}
-
-        if self.is_increase_current_price(first_tic, secode_tic, third_tic, forth_tic, self.customType.CURRENT_PRICE):
-            if self.is_current_start_compare(third_tic) and self.is_current_start_compare(secode_tic) and self.is_current_start_compare(first_tic):
-                if first_tic["ma20"] >= secode_tic["ma20"] and first_tic[self.customType.CURRENT_PRICE] - secode_tic[self.customType.CURRENT_PRICE] <= get_etf_tic_price():
-                    result = copy.deepcopy(first_tic)
-                    result.update({"second": secode_tic[self.customType.CURRENT_PRICE]})
-                    return result
-
-        self.logging.logger.info("increase check > [%s] >> %s" % (code, first_tic[self.customType.TIGHTENING_TIME]))
-        return {}
-
-    def is_increase_current_price(self, first_tic, secode_tic, third_tic, forth_tic, field):
-        return forth_tic[field] <= third_tic[field] <= secode_tic[field] <= first_tic[field] and self.is_current_start_compare(first_tic)
-
-    def is_current_start_compare(self, dict_info):
-        return dict_info[self.customType.START_PRICE] < dict_info[self.customType.CURRENT_PRICE]
-
-    def get_conform_invers_first_buy_case(self, code):
-        rows = self.analysis_etf_target_dict[code]["row"]
-        if len(rows) < 8:
-            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
-            return {}
-        analysis_rows = rows[:9]
-        self.logging.logger.info("invers_first_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
-        first_tic = analysis_rows[0]
-
-        breaker = False
-        compare_rows = analysis_rows[1:]
-        ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
-        ma20_list = list(map(float, ma20_list))
-        inverselist = ma20_list[::-1]
-        if is_increase_trend(inverselist):
-            self.logging.logger.info("decrease ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            breaker = True
-        if not breaker:
-            if first_tic[self.customType.START_PRICE] < first_tic["ma20"]:
-                self.logging.logger.info("first_tic start price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-        if not breaker:
-            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] < item[self.customType.LOWEST_PRICE] or item["ma20"] > item[self.customType.HIGHEST_PRICE] ]
-            if len(ma20_list) > 0:
-                self.logging.logger.info("ma20_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], ma20_list))
-                breaker = True
-        if not breaker:
-            compare_rows = analysis_rows[1:5]
-            white_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] <= item[self.customType.CURRENT_PRICE] or item[self.customType.START_PRICE] == item[self.customType.CURRENT_PRICE] == item[self.customType.HIGHEST_PRICE]]
-            if len(white_candle_list) > 3:
-                self.logging.logger.info("white_candle_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], white_candle_list))
-                breaker = True
-
-        if not breaker:
-            compare_rows = analysis_rows[5:]
-            black_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] >= item[self.customType.CURRENT_PRICE] or item[self.customType.START_PRICE] == item[self.customType.CURRENT_PRICE] == item[self.customType.LOWEST_PRICE]]
-            if len(black_candle_list) > 3:
-                self.logging.logger.info("black_candle_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], black_candle_list))
-                breaker = True
-
-        if not breaker:
-            result = copy.deepcopy(analysis_rows[0])
-            second_tic = analysis_rows[1]
-            result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
-
-            return result
-
-        return {}
-
-    def get_conform_third_buy_case(self, code):
-        rows = self.analysis_etf_target_dict[code]["row"]
-        if len(rows) < 12:
-            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
-            return {}
-        analysis_rows = rows[:12]
-        self.logging.logger.info("conform_third_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
-        first_tic = analysis_rows[0]
-
-        empty_ma20_list = [x for x in analysis_rows if x["ma20"] == '']
-        if len(empty_ma20_list) > 0:
-            self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
-            return {}
-
-        breaker = False
-        if not breaker:
-            if first_tic[self.customType.START_PRICE] < first_tic["ma20"]:
-                self.logging.logger.info("first_tic start price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-
-        if not breaker:
-            compare_rows = analysis_rows[2:]
-            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
-            ma20_list = list(map(float, ma20_list))
-            inverselist = ma20_list[::-1]
-            if not is_increase_trend(inverselist):
-                self.logging.logger.info("decrease ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-
-        if not breaker:
-            compare_rows = analysis_rows[1:5]
-            white_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] <= item[self.customType.CURRENT_PRICE] or item[self.customType.START_PRICE] == item[self.customType.CURRENT_PRICE] == item[self.customType.HIGHEST_PRICE]]
-            if len(white_candle_list) > 4:
-                self.logging.logger.info("white_candle_list check > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], white_candle_list))
-                breaker = True
-        if not breaker:
-            compare_rows = analysis_rows[1:4]
-            white_candle_current_price = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
-            inverselist = white_candle_current_price[::-1]
-            if is_increase_trend(inverselist):
-                self.logging.logger.info("increase white_candle_current_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-
-        if not breaker:
-            second_tic = analysis_rows[1]
-            if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
-                breaker = True
-                self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-        if not breaker:
-            third_tic = analysis_rows[2]
-            if third_tic[self.customType.CURRENT_PRICE] > second_tic["ma20"]:
-                breaker = True
-                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-
-        if not breaker:
-            compare_rows = analysis_rows[1:5]
-            ma20_list = [item for item in compare_rows if item[self.customType.CURRENT_PRICE] - item[self.customType.START_PRICE] > 20]
-            if len(ma20_list) < 1:
-                self.logging.logger.info("second_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-        if not breaker:
-            compare_rows = analysis_rows[4:]
-            gap_last_price_list = [x for x in compare_rows if x["ma20"] > x[self.customType.CURRENT_PRICE] and x["ma20"] - x[self.customType.CURRENT_PRICE] > 25]
-            if len(gap_last_price_list) < 3:
-                self.logging.logger.info("gap_last_price_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-        if not breaker:
-            compare_rows = analysis_rows[4:]
-            black_candle_current_price = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
-            inverselist = black_candle_current_price[::-1]
-            if is_increase_trend(inverselist):
-                self.logging.logger.info("decrease black_candle_current_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                breaker = True
-
-        if not breaker:
-            compare_rows = analysis_rows[2:]
-            for x in compare_rows:
-                if x[self.customType.LOWEST_PRICE] >= x["ma20"]:
-                    breaker = True
-                    self.logging.logger.info("from third tic lowest_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                    break
-
-        if not breaker:
-            result = copy.deepcopy(analysis_rows[0])
-            second_tic = analysis_rows[1]
-            result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
-
-            return result
-
-        return {}
-
+        return copy.deepcopy(first_tic)
 
     def get_conform_second_buy_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
         if len(rows) < 8:
-            self.logging.logger.info("analysis count > [%s] >> %s  " % (code, rows))
             return {}
 
-        analysis_rows = rows[:8]
-        self.logging.logger.info("second_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        analysis_rows = rows[:8]  # (0~7)
+
         first_tic = analysis_rows[0]
 
         empty_ma20_list = [x for x in analysis_rows if x["ma20"] == '']
         if len(empty_ma20_list) > 0:
-            self.logging.logger.info("empty_ma20_list > [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], empty_ma20_list))
             return {}
 
+        self.logging.logger.info("second_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
         breaker = False
 
         if not breaker:
             second_tic = analysis_rows[1]
-            if second_tic[self.customType.HIGHEST_PRICE] - second_tic[self.customType.LOWEST_PRICE] > 5:
-                if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] and second_tic[self.customType.LOWEST_PRICE] - second_tic["ma20"] < 5:
-                    pass
-                else:
-                    if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
-                        breaker = True
-                        self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-
-                if not breaker:
-                    if second_tic[self.customType.CURRENT_PRICE] - second_tic[self.customType.START_PRICE] > 20:
-                        self.logging.logger.info("second_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                        breaker = True
-                if not breaker:
-                    if second_tic[self.customType.START_PRICE] > second_tic[self.customType.CURRENT_PRICE]:
-                        self.logging.logger.info("second_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                        breaker = True
-
-            else:
-                third_tic = analysis_rows[2]
-                if third_tic[self.customType.LOWEST_PRICE] > third_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < third_tic["ma20"]:
+            third_tic = analysis_rows[2]
+            if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"]:
+                if third_tic[self.customType.LOWEST_PRICE] > third_tic["ma20"] or third_tic[self.customType.HIGHEST_PRICE] < third_tic["ma20"]:
                     breaker = True
                     self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-
-                if not breaker:
-                    if third_tic[self.customType.CURRENT_PRICE] - third_tic[self.customType.START_PRICE] > 20:
-                        self.logging.logger.info("third_tic big change check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                        breaker = True
-
-                if not breaker:
-                    if third_tic[self.customType.START_PRICE] > third_tic[self.customType.CURRENT_PRICE]:
-                        self.logging.logger.info("third_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                        breaker = True
+            else:
+                if third_tic[self.customType.LOWEST_PRICE] > third_tic["ma20"]:
+                    breaker = True
+                    self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                if second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
+                    breaker = True
+                    self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
 
         if not breaker:
-            compare_rows = analysis_rows[2:]
+            second_tic = analysis_rows[1]
+            if second_tic[self.customType.START_PRICE] > second_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("second_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            third_tic = analysis_rows[2]
+            if third_tic[self.customType.START_PRICE] > third_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("third_tic white candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[2:]  # (2~7)
             max_change_limit = 15
-            if self.buy_search_stock_name.find("인버스2X") >= 0:
+            if code == '252670':
                 max_change_limit = 5
-            big_change_tic_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] - x[self.customType.START_PRICE] > max_change_limit]
+            big_change_tic_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] - x[self.customType.START_PRICE] >= max_change_limit]
             if len(big_change_tic_list) == 0:
                 self.logging.logger.info("big_change_tic_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
         if not breaker:
-            compare_rows = analysis_rows[4:]
-            gap_last_price_list = [x for x in compare_rows if x["ma20"] > x[self.customType.CURRENT_PRICE] and x["ma20"] - x[self.customType.CURRENT_PRICE] > 25]
+            compare_rows = analysis_rows[4:]  # (4~7)
+            gap_last_price_list = [x for x in compare_rows if x["ma20"] > x[self.customType.CURRENT_PRICE] and x["ma20"] - x[self.customType.CURRENT_PRICE] >= 15]
             if len(gap_last_price_list) < 3:
                 self.logging.logger.info("gap_last_price_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
         if not breaker:
-            compare_rows = analysis_rows[2:]
+            compare_rows = analysis_rows[2:]  # (2~7)
             ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
             ma20_list = list(map(float, ma20_list))
             inverselist = ma20_list[::-1]
-            if not is_increase_trend(inverselist):
-                self.logging.logger.info("decrease ma20_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+            if is_increase_trend(inverselist):
+                self.logging.logger.info("increase ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
                 breaker = True
 
         if not breaker:
-            compare_rows = analysis_rows[2:]
+            compare_rows = analysis_rows[2:]  # (2~7)
             for x in compare_rows:
                 if x[self.customType.LOWEST_PRICE] >= x["ma20"]:
                     breaker = True
@@ -1076,18 +865,95 @@ class RenewalBuyKiwoom(ParentKiwoom):
             if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
                 breaker = True
                 self.logging.logger.info("first tic start_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            elif first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
-                self.logging.logger.info("first tic current_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
+        if not breaker:
+            second_tic = analysis_rows[1]
+            max_value = max([second_tic["ma5"], second_tic["ma10"], second_tic["ma20"]])
+            min_value = min([second_tic["ma5"], second_tic["ma10"], second_tic["ma20"]])
+            if max_value - min_value > 15:
                 breaker = True
-            elif first_tic[self.customType.CURRENT_PRICE] - second_tic[self.customType.CURRENT_PRICE] > get_etf_tic_price():
-                self.logging.logger.info("first tic current_price by second_tic_last_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                self.logging.logger.info("second_tic ma line check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
+        if not breaker:
+            result = copy.deepcopy(analysis_rows[0])
+            second_tic = analysis_rows[1]
+            result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
+            self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+            return result
+
+        return {}
+
+    def get_conform_forth_buy_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 11:
+            return {}
+        analysis_rows = rows[:11]  # (0~10)
+
+        first_tic = analysis_rows[0]
+        empty_ma5_list = [x for x in analysis_rows if x["ma5"] == '']
+        if len(empty_ma5_list) > 0:
+            return {}
+        empty_ma10_list = [x for x in analysis_rows if x["ma10"] == '']
+        if len(empty_ma10_list) > 0:
+            return {}
+        empty_ma20_list = [x for x in analysis_rows if x["ma20"] == '']
+        if len(empty_ma20_list) > 0:
+            return {}
+        breaker = False
+        self.logging.logger.info("conform_forth_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        if not breaker:
+            compare_rows = analysis_rows[1:]  # (1~10)
+            max_ma5 = max([item["ma5"] for item in compare_rows])
+            min_ma5 = min([item["ma5"] for item in compare_rows])
+            max_ma10 = max([item["ma10"] for item in compare_rows])
+            min_ma10 = min([item["ma10"] for item in compare_rows])
+            max_ma20 = max([item["ma20"] for item in compare_rows])
+            min_ma20 = min([item["ma20"] for item in compare_rows])
+            max_list = [max_ma5, max_ma10, max_ma20]
+            min_list = [min_ma5, min_ma10, min_ma20]
+            max_value = max(max_list)
+            min_value = min(min_list)
+            gap = 10
+            if code == '252670':
+                gap = 5
+            if max_value - min_value > gap:
+                self.logging.logger.info("ma line range check > [%s] >> %s / %s / %s" % (code, first_tic[self.customType.TIGHTENING_TIME], max_value, min_value))
+                breaker = True
+
+        if not breaker:
+            second_tic = analysis_rows[1]
+            if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first start price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            second_tic = analysis_rows[1]
+            if second_tic["ma5"] < second_tic["ma10"] or second_tic["ma10"] < second_tic["ma20"]:
+                self.logging.logger.info("second_tic ma line order check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            first_tic = analysis_rows[0]
+            second_tic = analysis_rows[1]
+            ma5_list = [first_tic["ma5"], second_tic["ma5"]]
+            ma5_list = list(map(float, ma5_list))
+            inverselist = ma5_list[::-1]
+            if not is_increase_trend(inverselist):
+                self.logging.logger.info("decrease ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+                breaker = True
+
+        if not breaker:
+            if first_tic[self.customType.START_PRICE] < first_tic["ma5"]:
+                self.logging.logger.info("first start price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
         if not breaker:
             result = copy.deepcopy(analysis_rows[0])
             second_tic = analysis_rows[1]
             result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
-
+            self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
             return result
 
         return {}
