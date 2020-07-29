@@ -542,9 +542,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.timer2.stop()
             if bool(self.buy_point_dict):
                 self.sell_send_order_market_off_time(self.buy_point_dict[self.customType.STOCK_CODE], self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
-            else:
-                self.loop_buy_search_etf()
 
+            self.loop_buy_search_etf()
         if (self.today + '160000') < currentDate:
             self.logging.logger.info("시스템 종료")
             self.timer2.stop()
