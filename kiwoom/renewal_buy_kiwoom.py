@@ -229,14 +229,15 @@ class RenewalBuyKiwoom(ParentKiwoom):
                                     self.logging.logger.info("sell_send_order reverage not change highest price until 120 * 18 >> %s" % current_stock_price)
                                     self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                     else:
-                        buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
-                        if len(buy_after_tic_rows) == 7 or len(buy_after_tic_rows) == 14:
-                            self.logging.logger.info("tic count after buy stock [%s]" % len(buy_after_tic_rows))
-                        if len(buy_after_tic_rows) > 7 and self.analysis_etf_target_dict[code]["row"][1]["trand_const"] < -0.2 or len(buy_after_tic_rows) > 14:
-                            if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
-                                self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
-                                self.logging.logger.info("sell_send_order trand const -0.2 until 120 * 7 >> %s" % current_stock_price)
-                                self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
+                        if code in self.analysis_etf_target_dict.keys() and "row" in self.analysis_etf_target_dict[code].keys():
+                            buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
+                            if len(buy_after_tic_rows) == 7 or len(buy_after_tic_rows) == 14:
+                                self.logging.logger.info("tic count after buy stock [%s]" % len(buy_after_tic_rows))
+                            if len(buy_after_tic_rows) > 7 and self.analysis_etf_target_dict[code]["row"][1]["trand_const"] < -0.2 or len(buy_after_tic_rows) > 14:
+                                if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
+                                    self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
+                                    self.logging.logger.info("sell_send_order trand const -0.2 until 120 * 7 >> %s" % current_stock_price)
+                                    self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
             elif bool(self.buy_point_dict) and self.customType.ORDER_STATUS in self.buy_point_dict.keys() and self.buy_point_dict[self.customType.ORDER_STATUS] == self.customType.NEW_PURCHASE:
                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BUY_RECEIPT})
