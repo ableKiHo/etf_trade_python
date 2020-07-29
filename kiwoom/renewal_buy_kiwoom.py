@@ -701,7 +701,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             if quantity >= 1:
                 self.timer2.stop()
                 self.logging.logger.info("last_price_buy_point break")
-                self.market_price_send_order(self.code, quantity)
+                self.market_price_send_order(code, quantity)
                 return
         self.logging.logger.info('last_price_buy_search_etf end')
 
