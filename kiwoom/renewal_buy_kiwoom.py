@@ -1005,10 +1005,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
              self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_PRICE], ""])
 
         if order_success == 0:
-            self.logging.logger.info(
-                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity))
-            self.line.notification(
-                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity))
+            self.logging.logger.info(self.logType.ORDER_BUY_SUCCESS_LOG)
+            self.line.notification(self.logType.ORDER_BUY_SUCCESS_LOG)
         else:
             self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
 
