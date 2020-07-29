@@ -617,6 +617,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.loop_last_price_buy_all_etf_stock()
             return
 
+        if (self.today + '150500') < currentDate:
+            return
+
         self.logging.logger.info('buy_search_etf')
 
         if not bool(self.buy_point_dict):
