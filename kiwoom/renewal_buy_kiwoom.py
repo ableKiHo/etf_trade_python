@@ -96,6 +96,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.timer_contract.stop()
                 self.logging.logger.info(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
                 self.line.notification(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
+                self.timer2.start()
             else:
                 if bool(self.buy_point_dict) and self.add_buy_etf_flag is True and order_gubun == "매수":
                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
