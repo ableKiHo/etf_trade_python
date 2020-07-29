@@ -690,10 +690,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma60", 60)
 
         last_price_buy_point = self.get_conform_last_price_buy_case(code)
-        if bool(last_price_buy_point):
+        result = self.use_money / last_price_buy_point[self.customType.CURRENT_PRICE]
+        quantity = int(result)
+        if bool(last_price_buy_point) and quantity >= 1:
             self.timer2.stop()
             self.logging.logger.info("last_price_buy_point break")
-            self.market_price_send_order(self.code, last_price_buy_point[self.customType.CURRENT_PRICE])
+            self.market_price_send_order(self.code, quantity)
             return
         self.logging.logger.info('last_price_buy_search_etf end')
 
@@ -753,10 +755,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("quantity > %s " % quantity)
             self.send_order_limit_stock_price(code, quantity, limit_stock_price, self.buy_point_dict)
 
-    def market_price_send_order(self, code, limit_stock_price):
-        self.logging.logger.info("[%s]add_send_order > %s " % (code, limit_stock_price))
-        result = self.use_money / limit_stock_price
-        quantity = int(result)
+    def market_price_send_order(self, code, quantity):
+        self.logging.logger.info("[%s]add_send_order > %s " % (code, quantity))
         if quantity >= 1:
             self.logging.logger.info("quantity > %s " % quantity)
             self.send_order_market_price_stock_price(code, quantity, self.buy_point_dict)
