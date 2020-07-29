@@ -652,6 +652,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.prepare_send_order(code, forth_buy_point)
                 return
 
+            sixth_buy_point = self.get_conform_sixth_buy_case(code)
+            if bool(sixth_buy_point):
+                self.logging.logger.info("sixth_buy_point break")
+                self.prepare_send_order(code, sixth_buy_point)
+                return
+
         self.logging.logger.info('buy_search_etf end')
 
     def loop_last_price_buy_all_etf_stock(self):
@@ -897,6 +903,73 @@ class RenewalBuyKiwoom(ParentKiwoom):
             if max_value - min_value > 15:
                 breaker = True
                 self.logging.logger.info("second_tic ma line check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
+        if not breaker:
+            result = copy.deepcopy(analysis_rows[0])
+            second_tic = analysis_rows[1]
+            result.update({"second": second_tic[self.customType.CURRENT_PRICE]})
+            self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+            return result
+
+        return {}
+
+    def get_conform_sixth_buy_case(self, code, rows):
+        if code == '252670' or code == '251340':
+            return {}
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 6:
+            return {}
+
+        analysis_rows = rows[:6]  # (0~7)
+
+        first_tic = analysis_rows[0]
+        third_tic = analysis_rows[2]
+        forth_tic = analysis_rows[3]
+
+        self.logging.logger.info("_sixth_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        breaker = False
+
+        if not breaker:
+            compare_rows = analysis_rows[1:]
+            for x in compare_rows:
+                r = [x[self.customType.CURRENT_PRICE], x[self.customType.START_PRICE]]
+                if x[self.customType.TIGHTENING_TIME] != forth_tic[self.customType.TIGHTENING_TIME] and x[self.customType.TIGHTENING_TIME] != third_tic[self.customType.TIGHTENING_TIME]:
+                    if min(r) < forth_tic[self.customType.CURRENT_PRICE] < max(r) or min(r) < third_tic[self.customType.START_PRICE] < max(r):
+                        breaker = True
+                        self.logging.logger.info("tail tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        break
+
+        if not breaker:
+            third_tic = analysis_rows[2]
+            forth_tic = analysis_rows[3]
+            if forth_tic[self.customType.CURRENT_PRICE] - third_tic[self.customType.START_PRICE] <= 0:
+                breaker = True
+                self.logging.logger.info("third_tic and forth_tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
+        if not breaker:
+            compare_rows = analysis_rows[1:5]
+            black_candle_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] > x[self.customType.START_PRICE]]
+            if len(black_candle_list) > 0:
+                self.logging.logger.info("black candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[1:]  # (2~7)
+            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
+            ma20_list = list(map(float, ma20_list))
+            inverselist = ma20_list[::-1]
+            if is_increase_trend(inverselist):
+                self.logging.logger.info("increase ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+                breaker = True
+
+        if not breaker:
+            compare_rows = analysis_rows[1:]  # (2~7)
+            current_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+            current_price_list = list(map(float, current_price_list))
+            inverselist = current_price_list[::-1]
+            if is_increase_trend(inverselist):
+                self.logging.logger.info("increase current_price_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+                breaker = True
 
         if not breaker:
             result = copy.deepcopy(analysis_rows[0])
