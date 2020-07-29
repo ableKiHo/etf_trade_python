@@ -349,6 +349,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.stop_screen_cancel(self.screen_my_info)
         self.detail_account_info_event_loop.exit()
         if bool(self.buy_point_dict):
+            self.loop_buy_search_etf()
             self.buy_stock_real_reg(self.buy_point_dict)
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
