@@ -694,13 +694,15 @@ class RenewalBuyKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma60", 60)
 
         last_price_buy_point = self.get_conform_last_price_buy_case(code)
-        result = self.use_money / last_price_buy_point[self.customType.CURRENT_PRICE]
-        quantity = int(result)
-        if bool(last_price_buy_point) and quantity >= 1:
-            self.timer2.stop()
-            self.logging.logger.info("last_price_buy_point break")
-            self.market_price_send_order(self.code, quantity)
-            return
+
+        if bool(last_price_buy_point):
+            result = self.use_money / last_price_buy_point[self.customType.CURRENT_PRICE]
+            quantity = int(result)
+            if quantity >= 1:
+                self.timer2.stop()
+                self.logging.logger.info("last_price_buy_point break")
+                self.market_price_send_order(self.code, quantity)
+                return
         self.logging.logger.info('last_price_buy_search_etf end')
 
     def get_next_stock_code(self, max_index=4):
