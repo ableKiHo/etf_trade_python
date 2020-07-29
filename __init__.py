@@ -36,6 +36,8 @@ class Main():
                 self.line.notification("ETF Error")
                 self.logging.logger.exception('Exception', exc_info=e)
                 # sys.exit()
+            finally:
+                self.line.notification("ETF END")
         elif auto_type == 'prepare':
             self.prepareNextDay = PrepareNextDay()
         elif auto_type == 'goal':
