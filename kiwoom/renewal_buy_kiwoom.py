@@ -222,7 +222,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.sell_send_order(sCode, self.buy_screen_real_stock, quantity)
 
                     # 50% 이익 매도 전략
-                    if current_stock_price >= get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.15):
+                    if current_stock_price >= get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.2):
                         if current_stock_price < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
                             half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE])
                             if current_stock_price <= half_plus_price:
