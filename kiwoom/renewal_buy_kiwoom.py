@@ -89,6 +89,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("new_chejan_slot order_status > %s" % order_status)
 
             if order_status == self.customType.RECEIPT:
+                self.timer2.stop()
                 self.loop_check_not_contract()
 
             if order_status == self.customType.CONCLUSION:
