@@ -718,6 +718,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def prepare_send_order(self, code, buy_point):
         buy_point.update({self.customType.STOCK_CODE: code})
+        buy_point.update({self.customType.STOCK_NAME: self.target_etf_dict[code][self.customType.STOCK_NAME]})
         buy_point.update({self.customType.ORDER_STATUS: self.customType.NEW_PURCHASE})
         self.logging.logger.info("buy_point > %s " % buy_point)
         self.buy_point_dict = copy.deepcopy(buy_point)
