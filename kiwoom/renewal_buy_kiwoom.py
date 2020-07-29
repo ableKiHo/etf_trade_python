@@ -611,10 +611,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         if not bool(self.buy_point_dict):
             self.get_next_stock_code()
             code = self.buy_search_stock_code
-            name = self.buy_search_stock_name
+            # name = self.buy_search_stock_name
         else:
             code = self.buy_point_dict[self.customType.STOCK_CODE]
-            name = self.buy_point_dict[self.customType.STOCK_NAME]
+            # name = self.buy_point_dict[self.customType.STOCK_NAME]
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
 
         self.get_opt10079_info(code)
