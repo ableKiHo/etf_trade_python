@@ -12,6 +12,7 @@ from kiwoom.sell_kiwoom import SellKiwoom
 
 sys.path.append("D:/PycharmProjects/etf/")
 
+
 class Main():
     def __init__(self):
         print("Main() start")
@@ -23,21 +24,21 @@ class Main():
         auto_type = args.type
 
         print("AUTO ETF TYPE %s" % auto_type)
+        try:
+            self.app = QApplication(sys.argv)
+        except Exception as e:
+            self.line.notification("ETF Error")
+            self.logging.logger.exception('Exception', exc_info=e)
+        # sys.exit()
 
-        self.app = QApplication(sys.argv)
         if auto_type == 'sell':
             self.sellKiwoom = SellKiwoom()
         elif auto_type == 'buy':
-            try:
-                # self.kiwoom = BuyKiwoom()
-                # self.kiwoom = NewBuyKiwoom()
-                self.kiwoom = RenewalBuyKiwoom()
-            except Exception as e:
-                self.line.notification("ETF Error")
-                self.logging.logger.exception('Exception', exc_info=e)
-                # sys.exit()
-            finally:
-                self.line.notification("ETF END")
+
+            # self.kiwoom = BuyKiwoom()
+            # self.kiwoom = NewBuyKiwoom()
+            self.kiwoom = RenewalBuyKiwoom()
+
         elif auto_type == 'prepare':
             self.prepareNextDay = PrepareNextDay()
         elif auto_type == 'goal':
@@ -56,6 +57,7 @@ class Main():
             print("ERROR TYPE %s" % auto_type)
             sys.exit()
         self.app.exec_()
+
 
 if __name__ == "__main__":
     Main()
