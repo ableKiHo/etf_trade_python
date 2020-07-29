@@ -230,6 +230,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
                                     self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
                     else:
                         buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
+                        if len(buy_after_tic_rows) == 7 or len(buy_after_tic_rows) == 14:
+                            self.logging.logger.info("tic count after buy stock [%s]" % len(buy_after_tic_rows))
                         if len(buy_after_tic_rows) > 7 and self.analysis_etf_target_dict[code]["row"][1]["trand_const"] < -0.2 or len(buy_after_tic_rows) > 14:
                             if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
                                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
