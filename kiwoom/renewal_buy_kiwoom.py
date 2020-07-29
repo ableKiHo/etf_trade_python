@@ -679,7 +679,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def buy_search_last_price_etf(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '154000') < currentDate:
+        if (self.today + '160000') < currentDate:
             self.timer2.stop()
 
         self.get_next_rank_etf_stock_code(20)
