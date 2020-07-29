@@ -564,6 +564,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         filterd_lows = [x for x in rows if x[self.customType.TIGHTENING_TIME] >= buy_point_time]
         if len(filterd_lows) > 5:
             self.timer_contract.stop()
+            if self.add_buy_etf_flag is True:
+                self.add_buy_etf_flag = False
             self.loop_not_concluded_account()
 
     def loop_not_concluded_account(self):
