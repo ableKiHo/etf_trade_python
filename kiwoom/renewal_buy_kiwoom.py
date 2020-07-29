@@ -607,9 +607,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
             return
 
         self.logging.logger.info('buy_search_etf')
-        self.get_next_stock_code()
 
         if not bool(self.buy_point_dict):
+            self.get_next_stock_code()
             code = self.buy_search_stock_code
             name = self.buy_search_stock_name
         else:
