@@ -174,7 +174,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
                 if sCode == code and sCode in self.total_cal_target_etf_stock_dict.keys():
                     current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
-                    diff_stock_price = self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] - current_stock_price
+                    diff_stock_price = current_stock_price - self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
                     diff_percent = round(diff_stock_price / self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 4) * 100
                     self.logging.logger.info("current diff percent >> %s" % diff_percent)
                     # 추가 매수
