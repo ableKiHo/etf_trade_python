@@ -1063,7 +1063,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         stock_dict.update({self.customType.MEME_SCREEN_NUMBER: self.buy_screen_meme_stock})
 
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-        self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
+        # self.logging.logger.info('trdata_slot %s / %s' % (sRQName, sPrevNext))
         if sRQName == self.customType.OPW00001:
             self.trdata_slot_opw00001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10079":
