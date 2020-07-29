@@ -194,7 +194,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order divide_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["divide_minus_std_price"]))
                         sell_quantity = math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY] / 2)
-                        if sell_quantity >= 1:
+                        if sell_quantity < 1:
+                            sell_quantity = 1
                             self.buy_point_dict.update({"divide_minus_std_price": 0})
                             self.sell_send_order(sCode, self.buy_screen_real_stock, sell_quantity)
 
@@ -215,7 +216,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.buy_point_dict.update({"divide_plus_std_price": 0})
                         self.logging.logger.info("sell_send_order divide_plus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["divide_plus_std_price"]))
-                        self.sell_send_order(sCode, self.buy_screen_real_stock, math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY] / 2))
+                        quantity = math.trunc(self.buy_point_dict[self.customType.HOLDING_QUANTITY] / 2)
+                        if quantity < 1:
+                            quantity = 1
+                        self.sell_send_order(sCode, self.buy_screen_real_stock, quantity)
 
                     # 50% 이익 매도 전략
                     if current_stock_price >= get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.15):
