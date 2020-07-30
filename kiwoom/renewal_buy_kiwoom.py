@@ -6,7 +6,7 @@ from kiwoom.parent_kiwoom import ParentKiwoom
 from kiwoom.util_kiwoom import *
 
 
-def default_q_timer_setting(second=4):
+def default_q_timer_setting(second=3.8):
     timer2 = QTimer()
     timer2.start(1000 * second)
     return timer2
@@ -254,7 +254,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                                 self.buy_point_dict.update({self.customType.TIGHTENING_TIME: self.analysis_etf_target_dict[code]["row"][0][self.customType.TIGHTENING_TIME]})
                             buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
                             if len(buy_after_tic_rows) == 20:
-                                self.logging.logger.info("tic count after buy stock [%s]" % len(buy_after_tic_rows))
+                                self.logging.logger.info("max tic count after buy stock [%s]" % len(buy_after_tic_rows))
                             if len(buy_after_tic_rows) > 20:
                                 if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
                                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
@@ -355,8 +355,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.buy_point_dict.update({self.customType.TOTAL_PURCHASE_PRICE: total_chegual_price})
             if total_chegual_price > self.use_money:
                 self.buy_point_dict.update({"first_add_sell_std_price": 0})
+                self.buy_point_dict.update({"second_add_sell_std_price": 0})
+            elif self.use_money < total_chegual_price + buy_price:
+                self.buy_point_dict.update({"first_add_sell_std_price": 0})
+                self.buy_point_dict.update({"second_add_sell_std_price": get_minus_sell_std_price(buy_price, self.second_add_sell_std_price)})
             else:
                 self.buy_point_dict.update({"first_add_sell_std_price": get_minus_sell_std_price(buy_price, self.first_add_sell_std_price)})
+                self.buy_point_dict.update({"second_add_sell_std_price": get_minus_sell_std_price(buy_price, self.second_add_sell_std_price)})
 
             self.buy_point_dict.update({"max_minus_std_price": get_default_std_price(buy_price, self.max_minus_std_price)})
             self.buy_point_dict.update({"divide_minus_std_price": get_default_std_price(buy_price, self.divide_minus_std_price)})
@@ -529,7 +534,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             order_no = int(order_no.strip())
             order_gubun = order_gubun.strip().lstrip('+').lstrip('-')
 
-            if order_gubun == "매수":
+            if order_gubun == self.customType.BUY:
                 order_success = self.dynamicCall(
                     "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
                     [self.customType.BUY_CANCLE, self.buy_screen_real_stock, self.account_num, 3, code, 0, 0,
@@ -568,21 +573,20 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def check_not_contract(self):
         self.logging.logger.info('check_not_contract')
-        if bool(self.buy_point_dict) and self.buy_point_dict["first_add_sell_std_price"] > 0:
+        if bool(self.buy_point_dict) and self.buy_point_dict["first_add_sell_std_price"] > 0 and self.buy_point_dict["second_add_sell_std_price"] > 0:
             code = self.buy_point_dict[self.customType.STOCK_CODE]
+
+            self.get_opt10079_info(code)
+            create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
+            rows = self.analysis_etf_target_dict[code]["row"]
+            buy_point_time = self.buy_point_dict[self.customType.TIGHTENING_TIME]
+            filterd_lows = [x for x in rows if x[self.customType.TIGHTENING_TIME] >= buy_point_time]
+            if len(filterd_lows) > 3:
+                self.timer_contract.stop()
+                self.loop_not_concluded_account()
         else:
             self.timer_contract.stop()
-            self.loop_not_concluded_account()
-            return
-
-        self.get_opt10079_info(code)
-        create_moving_average_20_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20")
-        rows = self.analysis_etf_target_dict[code]["row"]
-        buy_point_time = self.buy_point_dict[self.customType.TIGHTENING_TIME]
-        filterd_lows = [x for x in rows if x[self.customType.TIGHTENING_TIME] >= buy_point_time]
-        if len(filterd_lows) > 3:
-            self.timer_contract.stop()
-            self.loop_not_concluded_account()
+            self.timer2.start()
 
     def loop_not_concluded_account(self):
         self.logging.logger.info('loop_not_concluded_account')
