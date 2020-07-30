@@ -913,7 +913,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         return {}
 
-    def get_conform_sixth_buy_case(self, code, rows):
+    def get_conform_sixth_buy_case(self, code):
         if code == '252670' or code == '251340':
             return {}
         rows = self.analysis_etf_target_dict[code]["row"]
