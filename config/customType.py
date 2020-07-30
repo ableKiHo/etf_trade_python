@@ -87,3 +87,4 @@ class CustomType():
         self.LEVERAGE = '레버리지'
         self.INVERSE = '인버스'
         self.SELL = '매도'
+        self.BUY = '매수'

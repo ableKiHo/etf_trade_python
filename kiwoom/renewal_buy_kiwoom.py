@@ -88,12 +88,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 chegual_quantity = int(chegual_quantity)
             self.logging.logger.info("new_chejan_slot order_status / order_gubun> %s / %s" % (order_status, order_gubun))
 
-            if bool(self.buy_point_dict) and self.add_buy_etf_flag is True and order_gubun == "매수":
-                pass
-            else:
-                if order_status == self.customType.RECEIPT and order_gubun == "매수":
-                    self.timer2.stop()
-                    self.loop_check_not_contract()
+            if order_gubun == self.customType.BUY:
+                if bool(self.buy_point_dict) and self.add_buy_etf_flag is True:
+                    pass
+                else:
+                    if order_status == self.customType.RECEIPT:
+                        self.timer2.stop()
+                        self.loop_check_not_contract()
 
             if order_status == self.customType.CONCLUSION:
                 self.timer_contract.stop()
@@ -102,7 +103,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
                 self.timer2.start()
             else:
-                if bool(self.buy_point_dict) and self.add_buy_etf_flag is True and order_gubun == "매수":
+                if bool(self.buy_point_dict) and self.add_buy_etf_flag is True and order_gubun == self.customType.BUY:
                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
 
         elif int(sGubun) == 1:  # 잔고
