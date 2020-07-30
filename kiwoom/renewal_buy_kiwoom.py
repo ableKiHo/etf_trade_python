@@ -88,9 +88,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 chegual_quantity = int(chegual_quantity)
             self.logging.logger.info("new_chejan_slot order_status > %s" % order_status)
 
-            if order_status == self.customType.RECEIPT:
-                self.timer2.stop()
-                self.loop_check_not_contract()
+            if bool(self.buy_point_dict) and self.add_buy_etf_flag is True and order_gubun == "매수":
+                pass
+            else:
+                if order_status == self.customType.RECEIPT:
+                    self.timer2.stop()
+                    self.loop_check_not_contract()
 
             if order_status == self.customType.CONCLUSION:
                 self.timer_contract.stop()
@@ -222,7 +225,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.sell_send_order(sCode, self.buy_screen_real_stock, quantity)
 
                     # 50% 이익 매도 전략
-                    if current_stock_price >= get_max_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 0.2):
+                    if current_stock_price >= self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] + 20:
                         if current_stock_price < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
                             half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE])
                             if current_stock_price <= half_plus_price:
@@ -240,9 +243,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
                             if self.customType.TIGHTENING_TIME not in self.buy_point_dict.keys():
                                 self.buy_point_dict.update({self.customType.TIGHTENING_TIME: self.analysis_etf_target_dict[code]["row"][0][self.customType.TIGHTENING_TIME]})
                             buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
-                            if len(buy_after_tic_rows) == 10 or len(buy_after_tic_rows) == 20:
+                            if len(buy_after_tic_rows) == 20:
                                 self.logging.logger.info("tic count after buy stock [%s]" % len(buy_after_tic_rows))
-                            if len(buy_after_tic_rows) > 10 and self.analysis_etf_target_dict[code]["row"][1]["trand_const"] < -0.2 or len(buy_after_tic_rows) > 20:
+                            if len(buy_after_tic_rows) > 20:
                                 if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
                                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                                     self.logging.logger.info("sell_send_order trand const -0.2 until 120 * 7 >> %s" % current_stock_price)
@@ -568,7 +571,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         rows = self.analysis_etf_target_dict[code]["row"]
         buy_point_time = self.buy_point_dict[self.customType.TIGHTENING_TIME]
         filterd_lows = [x for x in rows if x[self.customType.TIGHTENING_TIME] >= buy_point_time]
-        if len(filterd_lows) > 5:
+        if len(filterd_lows) > 3:
             self.timer_contract.stop()
             if self.add_buy_etf_flag is True:
                 self.add_buy_etf_flag = False
