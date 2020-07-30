@@ -32,10 +32,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_name = ''
         self.total_cal_target_etf_stock_dict = {}
         self.target_etf_dict = {
-            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
+            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.5},
             '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
             '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
-            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.4, "max_plus_std_price": 0.5},
+            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.5},
         }
 
         self.buy_screen_meme_stock = "3000"
@@ -185,13 +185,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     diff_percent = round(round(diff_stock_price / self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 4) * 100, 3)
                     self.logging.logger.info("current diff info >> %s / %s / %s%%" % (current_stock_price, diff_stock_price, diff_percent))
 
-                    # max 손절
+                    # max lose sell
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order max_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_minus_std_price"]))
                         self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
-                    # 분할 손절 (반만 매도)
+                    # half lose sell
                     if current_stock_price <= self.buy_point_dict["divide_minus_std_price"] and self.buy_point_dict["divide_minus_std_price"] > 0:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order divide_minus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["divide_minus_std_price"]))
@@ -217,13 +217,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
                             self.buy_point_dict.update({"first_add_sell_std_price": 0})
                             self.add_send_order(sCode, current_stock_price, half_flag=True)
 
-                    # 최대 익절
+                    # max gain sell
                     if current_stock_price >= self.buy_point_dict["max_plus_std_price"]:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                         self.logging.logger.info("sell_send_order max_plus_std_price >> %s / %s" % (current_stock_price, self.buy_point_dict["max_plus_std_price"]))
                         self.sell_send_order(sCode, self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
 
-                    # 분할 익절 (반만 매도)
+                    # half gain sell
                     if current_stock_price >= self.buy_point_dict["divide_plus_std_price"] > 0:
                         self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
 
