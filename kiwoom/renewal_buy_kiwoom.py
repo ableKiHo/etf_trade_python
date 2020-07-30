@@ -32,10 +32,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_name = ''
         self.total_cal_target_etf_stock_dict = {}
         self.target_etf_dict = {
-            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.5},
-            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
-            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
-            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.5},
+            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
+            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.35, "max_plus_std_price": 0.5},
+            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.35, "max_plus_std_price": 0.5},
+            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
         }
 
         self.buy_screen_meme_stock = "3000"
