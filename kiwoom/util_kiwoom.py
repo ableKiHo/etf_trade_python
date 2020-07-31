@@ -194,3 +194,13 @@ def trendline(data, order=1):
 
 def is_increase_trend(data):
     return trendline(data) > 0
+
+
+def get_range_value(start, current):
+    if start > current:
+        start_value = current
+        end_value = start
+    else:
+        start_value = start
+        end_value = current
+    return list(range(start_value, end_value, 5))

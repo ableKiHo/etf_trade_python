@@ -928,31 +928,42 @@ class RenewalBuyKiwoom(ParentKiwoom):
         return {}
 
     def get_conform_sixth_buy_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
         if code == '252670' or code == '251340':
             return {}
-        rows = self.analysis_etf_target_dict[code]["row"]
+
         if len(rows) < 6:
             return {}
 
-        analysis_rows = rows[:6]  # (0~7)
+        analysis_rows = rows[:6]  # (0~5)
 
         first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
         third_tic = analysis_rows[2]
         forth_tic = analysis_rows[3]
+        fifth_tic = analysis_rows[4]
+        sixth_tic = analysis_rows[5]
 
         self.logging.logger.info("_sixth_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
         breaker = False
 
         if not breaker:
-            compare_rows = analysis_rows[1:]
-            for x in compare_rows:
-                r = [x[self.customType.CURRENT_PRICE], x[self.customType.START_PRICE]]
-                if x[self.customType.TIGHTENING_TIME] != forth_tic[self.customType.TIGHTENING_TIME] and x[self.customType.TIGHTENING_TIME] != third_tic[self.customType.TIGHTENING_TIME]:
-                    if min(r) < forth_tic[self.customType.CURRENT_PRICE] < max(r) or min(r) < third_tic[self.customType.START_PRICE] < max(r):
-                        breaker = True
-                        self.logging.logger.info("tail tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                        break
+            list1 = get_range_value(second_tic[self.customType.START_PRICE], second_tic[self.customType.CURRENT_PRICE])
+            list2 = get_range_value(third_tic[self.customType.START_PRICE], third_tic[self.customType.CURRENT_PRICE])
+            list3 = get_range_value(forth_tic[self.customType.START_PRICE], forth_tic[self.customType.CURRENT_PRICE])
+            list4 = get_range_value(fifth_tic[self.customType.START_PRICE], fifth_tic[self.customType.CURRENT_PRICE])
+            list5 = get_range_value(sixth_tic[self.customType.START_PRICE], sixth_tic[self.customType.CURRENT_PRICE])
+            total_list = list(set().union(list1, list2, list3, list4, list5))
+            if len(total_list) > 0:
 
+                full_list = get_range_value(min(total_list), max(total_list))
+                if len(total_list) == len(full_list):
+                    breaker = True
+                    self.logging.logger.info("tail tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+            else:
+                self.logging.logger.info("tail tic gap check(one value) > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
         if not breaker:
             third_tic = analysis_rows[2]
             forth_tic = analysis_rows[3]
@@ -961,20 +972,23 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.logging.logger.info("third_tic and forth_tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
 
         if not breaker:
-            compare_rows = analysis_rows[1:5]
-            black_candle_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] > x[self.customType.START_PRICE]]
-            if len(black_candle_list) > 0:
+            compare_rows = analysis_rows[1:6]
+            black_candle_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] < x[self.customType.START_PRICE]]
+            if len(black_candle_list) > 2:
                 self.logging.logger.info("black candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
         if not breaker:
             compare_rows = analysis_rows[1:]  # (2~7)
             ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
-            ma20_list = list(map(float, ma20_list))
-            inverselist = ma20_list[::-1]
-            if is_increase_trend(inverselist):
-                self.logging.logger.info("increase ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+            if len(ma20_list) == 0:
                 breaker = True
+            else:
+                ma20_list = list(map(float, ma20_list))
+                inverselist = ma20_list[::-1]
+                if is_increase_trend(inverselist):
+                    self.logging.logger.info("increase ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+                    breaker = True
 
         if not breaker:
             compare_rows = analysis_rows[1:]  # (2~7)
