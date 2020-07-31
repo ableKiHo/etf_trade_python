@@ -21,8 +21,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
         self.max_minus_std_price = -2.0
         self.divide_minus_std_price = -1.0
-        self.second_add_sell_std_price = -0.5
-        self.first_add_sell_std_price = -0.3
+        self.second_add_sell_std_price = -0.7
+        self.first_add_sell_std_price = -0.2
 
         self.analysis_etf_target_dict = {}
         self.all_etf_stock_list = []
