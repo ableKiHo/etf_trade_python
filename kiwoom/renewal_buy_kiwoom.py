@@ -555,7 +555,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def call_exit(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '153400') < currentDate:
+        if (self.today + '153200') < currentDate:
             self.timer2.stop()
             if bool(self.buy_point_dict):
                 self.sell_send_order_market_off_time(self.buy_point_dict[self.customType.STOCK_CODE], self.buy_screen_real_stock, self.buy_point_dict[self.customType.HOLDING_QUANTITY])
