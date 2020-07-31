@@ -1140,19 +1140,6 @@ class RenewalBuyKiwoom(ParentKiwoom):
         else:
             self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
 
-    def buy_send_order_market_off_time(self, sCode, screen_number, quantity):
-        self.logging.logger.info("buy_send_order_market_off_time > %s " % sCode)
-        order_success = self.dynamicCall(
-            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_PURCHASE, screen_number, self.account_num, 2, sCode, quantity, 0,
-             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_OFF_TIME_LAST_PRICE],
-             ""]
-        )
-        if order_success == 0:
-            self.logging.logger.info(self.logType.ORDER_BUY_SUCCESS_LOG % sCode)
-        else:
-            self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG % sCode)
-
     def event_slots(self):
         self.OnReceiveTrData.connect(self.trdata_slot)
         self.OnReceiveMsg.connect(self.msg_slot)
