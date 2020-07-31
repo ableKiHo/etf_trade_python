@@ -32,10 +32,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_name = ''
         self.total_cal_target_etf_stock_dict = {}
         self.target_etf_dict = {
-            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 1.0},
-            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.75, "max_plus_std_price": 1.5},
-            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.75, "max_plus_std_price": 1.5},
-            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 1.0},
+            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 1.0, "min_tic": 3},
+            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.75, "max_plus_std_price": 1.5, "min_tic": 4},
+            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.75, "max_plus_std_price": 1.5, "min_tic": 4},
+            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 1.0, "min_tic": 3},
         }
 
         self.buy_screen_meme_stock = "3000"
@@ -235,7 +235,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                         self.sell_send_order(sCode, self.buy_screen_real_stock, quantity)
 
                     # 50% 이익 매도 전략
-                    if current_stock_price >= self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] + (get_etf_tic_price() * 4):
+                    if current_stock_price >= self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE] + (get_etf_tic_price() * self.target_etf_dict[sCode]["min_tic"]):
                         if current_stock_price < self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
                             half_plus_price = get_plus_sell_std_price(self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE])
                             if current_stock_price <= half_plus_price:
