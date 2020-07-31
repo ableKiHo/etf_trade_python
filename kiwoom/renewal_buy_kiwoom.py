@@ -91,8 +91,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     pass
                 else:
                     if order_status == self.customType.RECEIPT:
-                        self.timer2.stop()
-                        self.loop_check_not_contract()
+                        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+                        if (self.today + '153000') >= currentDate:
+                            self.timer2.stop()
+                            self.loop_check_not_contract()
 
             if order_status == self.customType.CONCLUSION:
                 self.timer_contract.stop()
@@ -636,7 +638,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
             return
 
-        if (self.today + '150500') < currentDate:
+        if (self.today + '144500') < currentDate:
             return
 
         self.logging.logger.info('buy_search_etf')
