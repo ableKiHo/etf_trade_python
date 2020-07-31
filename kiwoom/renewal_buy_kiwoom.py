@@ -253,9 +253,9 @@ class RenewalBuyKiwoom(ParentKiwoom):
                             if self.customType.TIGHTENING_TIME not in self.buy_point_dict.keys():
                                 self.buy_point_dict.update({self.customType.TIGHTENING_TIME: self.analysis_etf_target_dict[code]["row"][0][self.customType.TIGHTENING_TIME]})
                             buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
-                            if len(buy_after_tic_rows) == 20:
+                            if len(buy_after_tic_rows) == 30:
                                 self.logging.logger.info("max tic count after buy stock [%s]" % len(buy_after_tic_rows))
-                            if len(buy_after_tic_rows) > 20:
+                            if len(buy_after_tic_rows) > 30:
                                 if current_stock_price < self.analysis_etf_target_dict[code]["row"][0]["ma20"]:
                                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.SELL_RECEPIT})
                                     self.logging.logger.info("sell_send_order tic count over [%s] / %s" % (len(buy_after_tic_rows), current_stock_price))
