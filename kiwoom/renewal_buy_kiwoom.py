@@ -615,7 +615,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def loop_buy_search_etf(self):
         self.logging.logger.info('loop_buy_search_etf')
-        self.timer2 = default_q_timer_setting()
+        if not bool(self.buy_point_dict):
+            self.timer2 = default_q_timer_setting()
+        else:
+            self.timer2 = default_q_timer_setting(10)
+
         self.timer2.timeout.connect(self.buy_search_etf)
 
     def buy_search_etf(self):
