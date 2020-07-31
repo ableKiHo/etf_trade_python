@@ -628,8 +628,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.analysis_etf_target_dict = {}
             self.total_cal_target_etf_stock_dict = {}
             self.buy_point_dict = {}
-            if not self.weekend.isFriday:
-                self.loop_last_price_buy_all_etf_stock()
+            self.loop_last_price_buy_all_etf_stock()
+
             return
 
         if (self.today + '150500') < currentDate:
