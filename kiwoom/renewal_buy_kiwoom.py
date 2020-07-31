@@ -19,10 +19,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info("ETF RenewalBuyKiwoom() class start.")
         self.line.notification("ETF RenewalBuyKiwoom() class start.")
 
-        self.max_minus_std_price = -0.8
-        self.divide_minus_std_price = -0.6
-        self.second_add_sell_std_price = -0.4
-        self.first_add_sell_std_price = -0.2
+        self.max_minus_std_price = -2.0
+        self.divide_minus_std_price = -1.0
+        self.second_add_sell_std_price = -0.5
+        self.first_add_sell_std_price = -0.3
 
         self.analysis_etf_target_dict = {}
         self.all_etf_stock_list = []
@@ -32,10 +32,10 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.buy_search_stock_name = ''
         self.total_cal_target_etf_stock_dict = {}
         self.target_etf_dict = {
-            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
-            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.35, "max_plus_std_price": 0.5},
-            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.35, "max_plus_std_price": 0.5},
-            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 0.7},
+            '252670': {self.customType.STOCK_CODE: '252670', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 200선물인버스2X', "divide_plus_std_price": 0.5, "max_plus_std_price": 1.0},
+            '233740': {self.customType.STOCK_CODE: '233740', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 코스닥150 레버리지', "divide_plus_std_price": 0.75, "max_plus_std_price": 1.5},
+            '122630': {self.customType.STOCK_CODE: '122630', "tic": "120틱", self.customType.STOCK_NAME: 'KODEX 레버리지', "divide_plus_std_price": 0.75, "max_plus_std_price": 1.5},
+            '251340': {self.customType.STOCK_CODE: '251340', "tic": "60틱", self.customType.STOCK_NAME: 'KODEX 코스닥150선물인버스', "divide_plus_std_price": 0.5, "max_plus_std_price": 1.0},
         }
 
         self.buy_screen_meme_stock = "3000"
@@ -87,7 +87,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
             self.logging.logger.info("new_chejan_slot order_status / order_gubun> %s / %s" % (order_status, order_gubun))
 
             if order_gubun == self.customType.BUY:
-                if bool(self.buy_point_dict) and (self.buy_point_dict["first_add_sell_std_price"] == 0 or self.buy_point_dict["second_add_sell_std_price"] == 0):
+                if bool(self.buy_point_dict) and (("first_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["first_add_sell_std_price"] == 0) or ("second_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["second_add_sell_std_price"] == 0)):
                     pass
                 else:
                     if order_status == self.customType.RECEIPT:
@@ -101,7 +101,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
                 self.timer2.start()
             else:
-                if bool(self.buy_point_dict) and (self.buy_point_dict["first_add_sell_std_price"] == 0 or self.buy_point_dict["second_add_sell_std_price"] == 0) and order_gubun == self.customType.BUY:
+                if bool(self.buy_point_dict) and (("first_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["first_add_sell_std_price"] == 0) or ("second_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["second_add_sell_std_price"] == 0)) and order_gubun == self.customType.BUY:
                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
 
         elif int(sGubun) == 1:  # 잔고
