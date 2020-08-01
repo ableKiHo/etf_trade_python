@@ -945,31 +945,17 @@ class RenewalBuyKiwoom(ParentKiwoom):
         analysis_rows = rows[:6]  # (0~5)
 
         first_tic = analysis_rows[0]
-        second_tic = analysis_rows[1]
-        third_tic = analysis_rows[2]
-        forth_tic = analysis_rows[3]
-        fifth_tic = analysis_rows[4]
-        sixth_tic = analysis_rows[5]
 
         self.logging.logger.info("_sixth_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
         breaker = False
 
         if not breaker:
-            list1 = get_range_value(second_tic[self.customType.START_PRICE], second_tic[self.customType.CURRENT_PRICE])
-            list2 = get_range_value(third_tic[self.customType.START_PRICE], third_tic[self.customType.CURRENT_PRICE])
-            list3 = get_range_value(forth_tic[self.customType.START_PRICE], forth_tic[self.customType.CURRENT_PRICE])
-            list4 = get_range_value(fifth_tic[self.customType.START_PRICE], fifth_tic[self.customType.CURRENT_PRICE])
-            list5 = get_range_value(sixth_tic[self.customType.START_PRICE], sixth_tic[self.customType.CURRENT_PRICE])
-            total_list = list(set().union(list1, list2, list3, list4, list5))
-            if len(total_list) > 0:
-
-                full_list = get_range_value(min(total_list), max(total_list))
-                if len(total_list) == len(full_list):
-                    breaker = True
-                    self.logging.logger.info("tail tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-            else:
-                self.logging.logger.info("tail tic gap check(one value) > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+            third_tic = analysis_rows[2]
+            forth_tic = analysis_rows[3]
+            if third_tic[self.customType.CURRENT_PRICE] > third_tic[self.customType.START_PRICE] or forth_tic[self.customType.CURRENT_PRICE] > forth_tic[self.customType.START_PRICE]:
                 breaker = True
+                self.logging.logger.info("third_tic and forth_tic black candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+
         if not breaker:
             third_tic = analysis_rows[2]
             forth_tic = analysis_rows[3]
@@ -978,10 +964,27 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.logging.logger.info("third_tic and forth_tic gap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
 
         if not breaker:
+            third_tic = analysis_rows[2]
+            forth_tic = analysis_rows[3]
+            gap = [third_tic[self.customType.START_PRICE], forth_tic[self.customType.CURRENT_PRICE]]
+            copy_gap = copy.deepcopy(gap)
+            for tic in analysis_rows:
+                if tic[self.customType.CURRENT_PRICE] < tic[self.customType.START_PRICE]:
+                    if getOverlap(copy_gap, [tic[self.customType.CURRENT_PRICE], tic[self.customType.START_PRICE]]) > 0:
+                        breaker = True
+                        self.logging.logger.info("gap overlap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        break
+                else:
+                    if getOverlap(copy_gap, [tic[self.customType.START_PRICE], tic[self.customType.CURRENT_PRICE]]) > 0:
+                        breaker = True
+                        self.logging.logger.info("gap overlap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                        break
+
+        if not breaker:
             compare_rows = analysis_rows[1:6]
             black_candle_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] < x[self.customType.START_PRICE]]
-            if len(black_candle_list) > 2:
-                self.logging.logger.info("black candle check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+            if len(black_candle_list) < 2:
+                self.logging.logger.info("black_candle_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
         if not breaker:
