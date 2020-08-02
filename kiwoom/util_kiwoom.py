@@ -204,3 +204,7 @@ def get_range_value(start, current):
         start_value = start
         end_value = current
     return list(range(start_value, end_value, 5))
+
+
+def getOverlap(a, b):
+    return max(0, min(a[1], b[1]) - max(a[0], b[0]))
