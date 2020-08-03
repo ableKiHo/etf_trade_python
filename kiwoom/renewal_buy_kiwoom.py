@@ -577,7 +577,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
 
     def check_not_contract(self):
         self.logging.logger.info('check_not_contract')
-        if bool(self.buy_point_dict) and self.buy_point_dict["first_add_sell_std_price"] > 0 and self.buy_point_dict["second_add_sell_std_price"] > 0:
+        if bool(self.buy_point_dict) and ( "first_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["first_add_sell_std_price"] > 0) and ("second_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["second_add_sell_std_price"] > 0):
             code = self.buy_point_dict[self.customType.STOCK_CODE]
 
             self.get_opt10079_info(code)
