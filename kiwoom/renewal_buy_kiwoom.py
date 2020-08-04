@@ -23,6 +23,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.divide_minus_std_price = -1.4
         self.second_add_sell_std_price = -1.3
         self.first_add_sell_std_price = -0.2
+        self.first_lose_add_sell = False
+        self.second_lose_add_sell = False
 
         self.analysis_etf_target_dict = {}
         self.all_etf_stock_list = []
@@ -156,7 +158,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.buy_point_dict.update({"max_minus_std_price": get_default_std_price(buy_price, self.max_minus_std_price)})
                 if "divide_minus_std_price" not in self.buy_point_dict.keys() or ("first_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["first_add_sell_std_price"] == 0):
                     self.buy_point_dict.update({"divide_minus_std_price": get_default_std_price(buy_price, self.divide_minus_std_price)})
-                if "second_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["second_add_sell_std_price"] >= 0:
+                if "second_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["second_add_sell_std_price"] > 0:
                     self.buy_point_dict.update({self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S')})
                 self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: buy_price})
 
@@ -264,17 +266,19 @@ class RenewalBuyKiwoom(ParentKiwoom):
                                 self.buy_point_dict.update({self.customType.TIGHTENING_TIME: self.analysis_etf_target_dict[code]["row"][0][self.customType.TIGHTENING_TIME]})
                             buy_after_tic_rows = [x for x in self.analysis_etf_target_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > self.buy_point_dict[self.customType.TIGHTENING_TIME]]
                             if len(buy_after_tic_rows) == 29:
-                                if self.buy_point_dict["second_add_sell_std_price"] > 0 and current_stock_price < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+                                if self.first_lose_add_sell is False and current_stock_price < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
                                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
                                     self.logging.logger.info("tic count over second_add_sell_std_price >> %s / %s" % (current_stock_price, len(buy_after_tic_rows)))
                                     self.buy_point_dict.update({"second_add_sell_std_price": 0})
+                                    self.first_lose_add_sell = True
                                     self.add_send_order(sCode, current_stock_price, half_flag=True)
                                 self.logging.logger.info("tic count over >> %s" % len(buy_after_tic_rows))
                             if len(buy_after_tic_rows) == 30:
-                                if self.buy_point_dict["second_add_sell_std_price"] == 0 and current_stock_price < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
+                                if self.second_lose_add_sell is False and current_stock_price < self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]:
                                     self.buy_point_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
                                     self.logging.logger.info("tic count over second_add_sell_std_price >> %s / %s" % (current_stock_price, len(buy_after_tic_rows)))
                                     self.buy_point_dict.update({"second_add_sell_std_price": 0})
+                                    self.second_lose_add_sell = True
                                     self.add_send_order(sCode, current_stock_price, half_flag=True)
                                 self.logging.logger.info("tic count over >> %s" % len(buy_after_tic_rows))
                             if len(buy_after_tic_rows) > 30:
@@ -699,11 +703,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.prepare_send_order(code, sixth_buy_point)
                 return
 
-            # seventh_buy_point = self.get_conform_seventh_buy_case(code)
-            # if bool(seventh_buy_point):
-            #     self.logging.logger.info("seventh_buy_point break")
-            #     self.prepare_send_order(code, seventh_buy_point)
-            #     return
+            seventh_buy_point = self.get_conform_seventh_buy_case(code)
+            if bool(seventh_buy_point):
+                self.logging.logger.info("seventh_buy_point break")
+                self.prepare_send_order(code, seventh_buy_point)
+                return
 
         self.logging.logger.info('buy_search_etf end')
 
