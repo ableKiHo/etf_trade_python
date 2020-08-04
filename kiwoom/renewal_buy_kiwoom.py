@@ -156,7 +156,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     self.buy_point_dict.update({"max_minus_std_price": get_default_std_price(buy_price, self.max_minus_std_price)})
                 if "divide_minus_std_price" not in self.buy_point_dict.keys() or ("first_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["first_add_sell_std_price"] == 0):
                     self.buy_point_dict.update({"divide_minus_std_price": get_default_std_price(buy_price, self.divide_minus_std_price)})
-                if "first_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["first_add_sell_std_price"] >= 0:
+                if "second_add_sell_std_price" in self.buy_point_dict.keys() and self.buy_point_dict["second_add_sell_std_price"] >= 0:
                     self.buy_point_dict.update({self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S')})
                 self.buy_point_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: buy_price})
 
@@ -194,6 +194,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                     diff_stock_price = current_stock_price - self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
                     diff_percent = round(round(diff_stock_price / self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], 4) * 100, 3)
                     self.logging.logger.info("current diff info >> %s / %s / %s%%" % (current_stock_price, diff_stock_price, diff_percent))
+                    self.logging.logger.info("current buy_point_dict info >> %s / %s / %s / %s / %s" % (self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE], self.buy_point_dict[self.customType.SELL_STD_HIGHEST_PRICE], self.buy_point_dict["first_add_sell_std_price"], self.buy_point_dict["second_add_sell_std_price"], self.buy_point_dict[self.customType.TIGHTENING_TIME]))
 
                     # max lose sell
                     if current_stock_price <= self.buy_point_dict["max_minus_std_price"]:
