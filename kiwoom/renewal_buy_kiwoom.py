@@ -924,21 +924,22 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 breaker = True
 
         if not breaker:
-            compare_rows = analysis_rows[2:]  # (2~7)
+            compare_rows = analysis_rows[4:]  # (2~7)
             ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
             ma20_list = list(map(float, ma20_list))
             inverselist = ma20_list[::-1]
             if is_increase_trend(inverselist):
-                self.logging.logger.info("increase ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+                self.logging.logger.info("increase tail ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
                 breaker = True
 
         if not breaker:
-            compare_rows = analysis_rows[2:]  # (2~7)
-            for x in compare_rows:
-                if x[self.customType.LOWEST_PRICE] >= x["ma20"]:
-                    breaker = True
-                    self.logging.logger.info("from third tic lowest_price check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
-                    break
+            compare_rows = analysis_rows[:5]  # (2~7)
+            ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
+            ma20_list = list(map(float, ma20_list))
+            inverselist = ma20_list[::-1]
+            if not is_increase_trend(inverselist):
+                self.logging.logger.info("decrease head ma20_list check > [%s] >> %s [%s]" % (code, first_tic[self.customType.TIGHTENING_TIME], inverselist))
+                breaker = True
 
         if not breaker:
             first_tic = analysis_rows[0]

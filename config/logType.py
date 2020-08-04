@@ -7,7 +7,7 @@ class LogType():
         self.SELL_PORTFOLIO_STOCK_DICT_LOG = "매도용 > %s"
         self.MARKET_END_LOG = "3시30분 장 종료"
         self.NOT_BUY_TARGET_GOAL_PRICE_ZERO_LOG = "매수 미대상 [목표가 0원]"
-        self.PASS_CONDITION_GOAL_PRICE_LOG = "%s > 매수조건 통과  목표가 : %s / 현재가 : %s / (최우선)매도호가 : %s"
+        self.PASS_CONDITION_GOAL_PRICE_LOG = "%s > 매수조건 통과  목표가 : %s / 현재가 : %s / 수량 : %s"
         self.ORDER_BUY_SUCCESS_LOG = "매수주문 전달 성공"
         self.ORDER_BUY_SUCCESS_STATUS_LOG = "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]"
         self.ORDER_BUY_FAIL_LOG = "매수주문 전달 실패"
