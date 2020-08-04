@@ -699,11 +699,11 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.prepare_send_order(code, sixth_buy_point)
                 return
 
-            seventh_buy_point = self.get_conform_seventh_buy_case(code)
-            if bool(seventh_buy_point):
-                self.logging.logger.info("seventh_buy_point break")
-                self.prepare_send_order(code, seventh_buy_point)
-                return
+            # seventh_buy_point = self.get_conform_seventh_buy_case(code)
+            # if bool(seventh_buy_point):
+            #     self.logging.logger.info("seventh_buy_point break")
+            #     self.prepare_send_order(code, seventh_buy_point)
+            #     return
 
         self.logging.logger.info('buy_search_etf end')
 
