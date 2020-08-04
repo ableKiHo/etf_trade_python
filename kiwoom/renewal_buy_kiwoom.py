@@ -1040,7 +1040,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 breaker = True
 
         if not breaker:
-            if third_tic[self.customType.CURRENT_PRICE] - third_tic[self.customType.START_PRICE] > 20 or third_tic[self.customType.START_PRICE] - third_tic[self.customType.CURRENT_PRICE] > 20:
+            if third_tic[self.customType.CURRENT_PRICE] - third_tic[self.customType.START_PRICE] > 20:
                 self.logging.logger.info("third_tic gap check > [%s] >> %s" % (code, first_tic[self.customType.TIGHTENING_TIME]))
                 breaker = True
 
