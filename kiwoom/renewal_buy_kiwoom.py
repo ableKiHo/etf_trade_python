@@ -1001,6 +1001,13 @@ class RenewalBuyKiwoom(ParentKiwoom):
                 self.logging.logger.info("third_tic ma20 check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
 
         if not breaker:
+            compare_rows = analysis_rows[1:3]
+            black_candle_list = [x for x in compare_rows if x[self.customType.CURRENT_PRICE] < x[self.customType.START_PRICE]]
+            if len(black_candle_list) > 0:
+                self.logging.logger.info("black_candle_list check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
+                breaker = True
+
+        if not breaker:
             compare_rows = analysis_rows
             ma20_list = [item["ma20"] for item in compare_rows if item["ma20"] != '']
             ma20_list = list(map(float, ma20_list))
