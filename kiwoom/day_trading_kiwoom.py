@@ -20,9 +20,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("ETF DayTradingKiwoom() class start.")
         self.line.notification("ETF DayTradingKiwoom() class start.")
 
-        self.analysis_etf_file_path = self.property.analysisEtfFilePath
-        self.sell_analysis_etf_file_path = self.property.sellAnalysisEtfFIlePath
-
         self.priority_list = ['252670', '233740', '122630', '251340']
         self.today = get_today_by_format('%Y%m%d')
 
@@ -51,6 +48,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.buy_point_dict = {}
         self.all_etf_stock_list = []
         self.top_rank_etf_stock_list = []
+        self.search_stock_code = []
 
         self.event_slots()
         self.real_event_slot()
@@ -153,6 +151,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         code = self.buy_search_stock_code
         self.logging.logger.info("top_rank_etf_stock_list loop > %s " % code)
+        self.search_stock_code.append(code)
 
         self.get_opt10080_info(code)
         create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
@@ -163,16 +162,20 @@ class DayTradingKiwoom(ParentKiwoom):
         last_price_buy_point = self.get_conform_last_price_buy_case(code)
 
         if bool(last_price_buy_point):
-            result = self.use_money / last_price_buy_point[self.customType.CURRENT_PRICE]
-            quantity = int(result)
-            if quantity >= 1:
+            self.line.notification("BUY MARKET OFF TIME ETF %s" % code)
+            if self.martket_off_buy_count < 2:
+                result = self.use_money / last_price_buy_point[self.customType.CURRENT_PRICE]
+                quantity = int(result)
+                if quantity >= 1:
 
-                self.logging.logger.info("last_price_buy_point break >> %s" % code)
-                self.martket_off_buy_count = self.martket_off_buy_count + 1
-                self.market_price_send_order(code, quantity)
-                if self.martket_off_buy_count == 2:
-                    self.timer2.stop()
-                    return
+                    self.logging.logger.info("last_price_buy_point break >> %s" % code)
+                    self.martket_off_buy_count = self.martket_off_buy_count + 1
+                    self.market_price_send_order(code, quantity)
+
+        if len(self.search_stock_code) == len(self.top_rank_etf_stock_list):
+            self.timer2.stop()
+            self.call_exit()
+
         self.logging.logger.info('last_price_buy_search_etf end')
 
     def get_next_rank_etf_stock_code(self, max_index=4):
