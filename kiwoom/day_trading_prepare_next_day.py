@@ -96,7 +96,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             row = {self.customType.CURRENT_PRICE: a, "일자": c, "ma20": '', "ma5": '', "ma10": ''}
             new_rows.append(row)
 
-        self.analysis_etf_target_dict[stock_code].update({"row": rows})
+        self.analysis_etf_target_dict[stock_code].update({"row": new_rows})
 
         self.stop_screen_cancel(self.screen_opt10080_info)
         self.tr_opt10080_info_event_loop.exit()
@@ -129,7 +129,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         lowest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.LOWEST_PRICE)
         last_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
         change_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.THE_DAY_BEFORE)
-        current_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
 
         market_cap = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.MARTKET_CAP)
         market_cap = market_cap.strip()
@@ -143,20 +142,20 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
         self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LAST_PRICE: abs(int(last_stock_price.strip()))})
         self.target_etf_stock_dict[code].update({self.customType.MARTKET_CAP: int(market_cap)})
-        self.target_etf_stock_dict[code].update({self.customType.CURRENT_PRICE: abs(int(current_stock_price.strip()))})
 
         self.etf_info_event_loop.exit()
 
     def is_traget_etf_stock(self, value):
-        return int(value[self.customType.MARTKET_CAP]) >= 65 and value[self.customType.CURRENT_PRICE] < 50000
+        return int(value[self.customType.MARTKET_CAP]) >= 65 and int(value[self.customType.LAST_DAY_LAST_PRICE]) < 50000
 
     def create_target_etf_stock_file(self):
         self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
             value = self.target_etf_stock_dict[sCode]
             if self.is_traget_etf_stock(value):
+                self.logging.logger.info("pass is_traget_etf_stock %s " % sCode)
                 if self.is_ma_line_analysis(sCode):
-
+                    self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
                     f = open(self.target_etf_file_path, "a", encoding="utf8")
                     f.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" %
                             (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],
