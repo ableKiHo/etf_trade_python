@@ -83,7 +83,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         if stock_code not in self.analysis_etf_target_dict.keys():
             self.analysis_etf_target_dict.update({stock_code: {"row": []}})
-        rows = self.analysis_etf_target_dict[stock_code]["row"]
         new_rows = []
         cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
 
