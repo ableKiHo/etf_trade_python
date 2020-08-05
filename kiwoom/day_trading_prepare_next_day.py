@@ -94,16 +94,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             c = c.strip()
 
             row = {self.customType.CURRENT_PRICE: a, "일자": c, "ma20": '', "ma5": '', "ma10": ''}
-            new_rows.insert(0, row)
+            new_rows.append(row)
 
-        if len(rows) > 0:
-            del rows[0]
-            last_register_row = rows[0]
-            for add in new_rows:
-                if last_register_row[self.customType.TIGHTENING_TIME] < add[self.customType.TIGHTENING_TIME]:
-                    rows.insert(0, add)
-        else:
-            rows = sorted(new_rows, key=itemgetter(self.customType.TIGHTENING_TIME), reverse=True)
         self.analysis_etf_target_dict[stock_code].update({"row": rows})
 
         self.stop_screen_cancel(self.screen_opt10080_info)
