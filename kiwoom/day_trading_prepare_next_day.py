@@ -21,10 +21,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.all_etc_info_event_loop = QEventLoop()
         self.etf_info_event_loop = QEventLoop()
         self.etf_day_info_event_loop = QEventLoop()
+        self.tr_opt10080_info_event_loop = QEventLoop()
 
         self.screen_all_etf_stock = "4000"
         self.screen_etf_stock = "5000"
         self.screen_etf_day_stock = "4050"
+        self.screen_opt10080_info = "4060"
 
         self.analysis_etf_target_dict = {}
         self.target_etf_stock_dict = {}
@@ -215,17 +217,16 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         return np.copy.deepcopy(first_tic)
 
     def get_etf_stock_info(self):
-        self.logging.logger.info("get_etf_stock_info")
-
         for sCode in self.target_etf_stock_dict.keys():
             QTest.qWait(4000)
+            self.logging.logger.info("get_etf_stock_info >> %s" % sCode)
             self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
             self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
             self.etf_info_event_loop.exec_()
 
     def get_etf_daily_candle_info(self):
-        self.logging.logger.info("get_etf_stock_info")
         for code in self.target_etf_stock_dict.keys():
+            self.logging.logger.info("get_etf_stock_info >> %s" % code)
             self.get_individual_etf_daily_candle_info(code)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
