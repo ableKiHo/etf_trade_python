@@ -229,4 +229,4 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081", "opt10081", 0, self.screen_etf_stock)
-        self.etf_info_event_loop.exec_()
+        self.tr_opt10080_info_event_loop.exec_()
