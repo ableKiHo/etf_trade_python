@@ -31,7 +31,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.target_etf_day_info_dict = []
         self.event_slots()
 
-        self.line.notification("ETF PREPARE AUTO TRADE START")
+        self.line.notification("ETF DAY TRADE PREPARE AUTO TRADE START")
         self.prepare_next_day()
 
     def event_slots(self):
@@ -117,12 +117,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             last_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
             last_price = last_price.strip()
             if int(volume) >= 50000 and int(last_price) <= 50000:
-                code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NAME)
-                code_nm = code_nm.strip()
 
-                if code in self.target_etf_stock_dict:
-                    pass
-                else:
+                if code not in self.target_etf_stock_dict:
                     self.target_etf_stock_dict[code] = {}
 
         if sPrevNext == "2":  # 다음페이지 존재
@@ -177,7 +173,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def is_ma_line_analysis(self, code):
         ma_line_buy_point = self.get_conform_ma_line_case(code)
-
         return bool(ma_line_buy_point)
 
     def get_conform_ma_line_case(self, code):
