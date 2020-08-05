@@ -1,8 +1,6 @@
+import copy
 import os
 import sys
-from operator import itemgetter
-
-import numpy as np
 
 from PyQt5.QtCore import QEventLoop
 from PyQt5.QtTest import QTest
@@ -204,7 +202,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, last_price_list))
             return {}
 
-        return np.copy.deepcopy(first_tic)
+        return copy.deepcopy(first_tic)
 
     def get_etf_stock_info(self):
         for sCode in self.target_etf_stock_dict.keys():
