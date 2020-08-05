@@ -90,10 +90,10 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         for i in range(cnt):
             a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
             a = int(a.strip())
-            c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.TIGHTENING_TIME)
+            c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
             c = c.strip()
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.TIGHTENING_TIME: c, "ma20": '', "ma5": '', "ma10": ''}
+            row = {self.customType.CURRENT_PRICE: a, "일자": c, "ma20": '', "ma5": '', "ma10": ''}
             new_rows.insert(0, row)
 
         if len(rows) > 0:
@@ -206,12 +206,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         compare_rows = analysis_rows[1:]
         current_price_position_list = [(x, field) for x in compare_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
         if len(current_price_position_list) > 0:
-            self.logging.logger.info("lower_gap_list check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], current_price_position_list))
+            self.logging.logger.info("lower_gap_list check> [%s] >> %s  " % (code, current_price_position_list))
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
         if not is_increase_trend(last_price_list):
-            self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], last_price_list))
+            self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, last_price_list))
             return {}
 
         return np.copy.deepcopy(first_tic)
@@ -226,7 +226,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def get_etf_daily_candle_info(self):
         for code in self.target_etf_stock_dict.keys():
-            self.logging.logger.info("get_etf_stock_info >> %s" % code)
+            self.logging.logger.info("get_etf_daily_candle_info >> %s" % code)
             self.get_individual_etf_daily_candle_info(code)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
