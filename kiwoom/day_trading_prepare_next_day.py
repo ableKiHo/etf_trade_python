@@ -166,19 +166,19 @@ class DayTradingPrepareNextDay(ParentKiwoom):
     def get_conform_ma_line_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
 
-        if len(rows) < 3:
+        if len(rows) < 2:
             return {}
 
-        analysis_rows = rows[:3]
+        analysis_rows = rows[:2]
 
         first_tic = analysis_rows[0]
 
-        ma_field_list = ["ma20", "ma5", "ma10"]
+        ma_field_list = ["ma20", "ma5"]
         for field in ma_field_list:
             if first_tic[field] == '':
                 return {}
 
-        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '']
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '']
         if len(empty_gap_list) > 0:
             return {}
 
@@ -189,13 +189,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                 self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
                 return {}
 
-        compare_rows = analysis_rows[1:]
-        current_price_position_list = [(x, field) for x in compare_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
+        current_price_position_list = [(x, field) for x in analysis_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
         if len(current_price_position_list) > 0:
             self.logging.logger.info("lower_gap_list check> [%s] >> %s  " % (code, current_price_position_list))
             return {}
 
-        last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+        last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
         if not is_increase_trend(last_price_list):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, last_price_list))
             return {}
