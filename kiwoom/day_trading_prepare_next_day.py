@@ -225,7 +225,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def get_etf_daily_candle_info(self):
         self.logging.logger.info("get_etf_stock_info")
-        for code in self.analysis_etf_target_dict.keys():
+        for code in self.target_etf_stock_dict.keys():
             self.get_individual_etf_daily_candle_info(code)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
