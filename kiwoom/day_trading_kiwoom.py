@@ -210,8 +210,8 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.martket_off_buy_count = self.martket_off_buy_count + 1
                     self.market_price_send_order(code, quantity)
                 else:
-                    self.line.notification("market time off trade >> %s" % code)
-                    self.logging.logger.info("lack quantity[%s] > %s / %s " % (code, self.use_money, last_price_buy_point[self.customType.CURRENT_PRICE]))
+                    self.line.notification("lack quantity[%s] > %s " % (code, last_price_buy_point[self.customType.CURRENT_PRICE]))
+                    self.logging.logger.info("lack quantity[%s] > %s " % (code, last_price_buy_point[self.customType.CURRENT_PRICE]))
 
         if len(self.search_stock_code) == len(self.top_rank_etf_stock_list):
             self.logging.logger.info("market time off trade search end")
@@ -288,7 +288,8 @@ class DayTradingKiwoom(ParentKiwoom):
         if quantity >= 1:
             self.send_order_limit_stock_price(sCode, quantity, current_stock_price, target_dict)
         else:
-            self.logging.logger.info("lack quantity[%s] > %s / %s " % (sCode, self.use_money, current_stock_price))
+            self.line.notification("lack quantity[%s] > %s " % (sCode, current_stock_price))
+            self.logging.logger.info("lack quantity[%s] > %s " % (sCode, current_stock_price))
 
     def get_all_etf_info(self):
         self.logging.logger.info('get_all_etf_info_opt10001')
