@@ -1106,12 +1106,12 @@ class RenewalBuyKiwoom(ParentKiwoom):
             copy_gap = copy.deepcopy(gap)
             for tic in analysis_rows:
                 if tic[self.customType.CURRENT_PRICE] < tic[self.customType.START_PRICE]:
-                    if getOverlap(copy_gap, [tic[self.customType.CURRENT_PRICE], tic[self.customType.START_PRICE]]) > 0:
+                    if get_overlap(copy_gap, [tic[self.customType.CURRENT_PRICE], tic[self.customType.START_PRICE]]) > 0:
                         breaker = True
                         self.logging.logger.info("gap overlap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                         break
                 else:
-                    if getOverlap(copy_gap, [tic[self.customType.START_PRICE], tic[self.customType.CURRENT_PRICE]]) > 0:
+                    if get_overlap(copy_gap, [tic[self.customType.START_PRICE], tic[self.customType.CURRENT_PRICE]]) > 0:
                         breaker = True
                         self.logging.logger.info("gap overlap check > [%s] >> %s " % (code, first_tic[self.customType.TIGHTENING_TIME]))
                         break

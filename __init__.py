@@ -6,6 +6,7 @@ from config.lineNotify import LineNotify
 from config.log_class import Logging
 from kiwoom.buy_kiwoom import *
 from kiwoom.day_trading_kiwoom import DayTradingKiwoom
+from kiwoom.day_trading_prepare_next_day import DayTradingPrepareNextDay
 from kiwoom.goal_kiwoom import GoalKiwoom
 from kiwoom.prepare_next_day import PrepareNextDay
 from kiwoom.renewal_buy_kiwoom import RenewalBuyKiwoom
@@ -41,7 +42,8 @@ class Main():
             # self.kiwoom = RenewalBuyKiwoom()
             self.kiwoom = DayTradingKiwoom()
         elif auto_type == 'prepare':
-            self.prepareNextDay = PrepareNextDay()
+            #self.prepareNextDay = PrepareNextDay()
+            self.prepareNextDay = DayTradingPrepareNextDay()
         elif auto_type == 'goal':
             try:
                 self.goalKiwoom = GoalKiwoom()

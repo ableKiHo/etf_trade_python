@@ -143,7 +143,7 @@ class PrepareNextDay(ParentKiwoom):
         return int(value[self.customType.MARTKET_CAP]) >= 65
 
     def createTargetEtfStockFile(self):
-        self.logging.logger.info("createTargetEtfStockFile")
+        self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
             value = self.target_etf_stock_dict[sCode]
             if self.isTragetEtfStock(value):

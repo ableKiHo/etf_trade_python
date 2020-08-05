@@ -206,5 +206,14 @@ def get_range_value(start, current):
     return list(range(start_value, end_value, 5))
 
 
-def getOverlap(a, b):
+def get_overlap(a, b):
     return max(0, min(a[1], b[1]) - max(a[0], b[0]))
+
+
+def get_next_price(target_value):
+    remainder = target_value % 10
+    if remainder > 5:
+        return target_value + (10 - remainder)
+    elif remainder < 5:
+        return target_value + (5 - remainder)
+    return target_value
