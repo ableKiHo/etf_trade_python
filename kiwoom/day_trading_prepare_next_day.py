@@ -220,6 +220,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         for sCode in self.target_etf_stock_dict.keys():
             QTest.qWait(4000)
             self.logging.logger.info("get_etf_stock_info >> %s" % sCode)
+            self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
             self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
             self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
             self.etf_info_event_loop.exec_()
