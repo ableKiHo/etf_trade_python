@@ -200,7 +200,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         last_price_buy_point = self.get_conform_last_price_buy_case(code)
 
-        if bool(last_price_buy_point):
+        if bool(last_price_buy_point) and code not in self.order_stock_dict.keys():
             self.logging.logger.info("last_price_buy_point >>  %s " % last_price_buy_point)
             if self.martket_off_buy_count < 2:
                 result = self.use_money / last_price_buy_point[self.customType.CURRENT_PRICE]
