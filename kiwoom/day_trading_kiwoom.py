@@ -456,10 +456,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     stock_name = ls[1]
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
-                    last_stock_price = ls[4]
-                    avg_the_day_before_price = ls[5]
-                    max_the_day_before_price = ls[6]
-                    min_the_day_before_price = ls[7].rstrip('\n')
+                    last_stock_price = ls[4].rstrip('\n')
 
                     if stock_code in self.priority_list:
                         self.priority_cal_target_etf_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
