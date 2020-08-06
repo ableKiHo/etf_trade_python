@@ -109,7 +109,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             code = code.strip()
             last_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
             last_price = last_price.strip()
-            if int(volume) >= 50000 and int(last_price) <= 50000:
+            if (int(volume) >= 50000 and int(last_price) <= 50000) or code in self.priority_list:
 
                 if code not in self.target_etf_stock_dict:
                     self.target_etf_stock_dict[code] = {}
