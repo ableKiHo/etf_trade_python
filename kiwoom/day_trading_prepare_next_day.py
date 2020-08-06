@@ -135,12 +135,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
             code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price.strip(), market_cap)
                                  )
-
-        self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm})
-        self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
-        self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
-        self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LAST_PRICE: abs(int(last_stock_price.strip()))})
-        self.target_etf_stock_dict[code].update({self.customType.MARTKET_CAP: int(market_cap)})
+        if int(market_cap) >= 100:
+            self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm})
+            self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
+            self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
+            self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LAST_PRICE: abs(int(last_stock_price.strip()))})
+            self.target_etf_stock_dict[code].update({self.customType.MARTKET_CAP: int(market_cap)})
 
         self.etf_info_event_loop.exit()
 
@@ -235,11 +235,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def get_etf_daily_candle_info(self):
         for code in self.target_etf_stock_dict.keys():
-            self.logging.logger.info("get_etf_daily_candle_info >> %s" % code)
-            self.get_individual_etf_daily_candle_info(code)
-            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+            if self.customType.MARTKET_CAP in self.target_etf_stock_dict[code]:
+                self.logging.logger.info("get_etf_daily_candle_info >> %s" % code)
+                self.get_individual_etf_daily_candle_info(code)
+                create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+                create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+                create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
 
     def get_individual_etf_daily_candle_info(self, code):
         QTest.qWait(4000)
