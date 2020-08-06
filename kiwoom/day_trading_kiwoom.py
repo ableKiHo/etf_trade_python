@@ -484,6 +484,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if goal_stock_price > 0:
                 self.priority_cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
                 self.logging.logger.info("pass goal_price_priority_etf[%s] >> %s" % (code, self.priority_cal_target_etf_stock_dict[code]))
+                self.line.notification("pass goal_price_priority_etf[%s] >> %s" % (code, goal_stock_price))
             else:
                 self.priority_cal_target_etf_stock_dict[code].update({"stat": "del"})
 
@@ -494,6 +495,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if goal_stock_price > 0:
                 self.second_cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
                 self.logging.logger.info("pass goal_price_second_etf[%s] >> %s" % (code, self.second_cal_target_etf_stock_dict[code]))
+                self.line.notification("pass goal_price_second_etf[%s] >> %s" % (code, goal_stock_price))
             else:
                 self.second_cal_target_etf_stock_dict[code].update({"stat": "del"})
 
