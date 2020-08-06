@@ -29,8 +29,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.priority_cal_target_etf_stock_dict = {}
         self.second_cal_target_etf_stock_dict = {}
-        self.not_order_priority_etf_stock_dict = {}
-        self.not_order_second_etf_stock_dict = {}
 
         self.screen_start_stop_real = "1000"
         self.buy_screen_meme_stock = "3000"
