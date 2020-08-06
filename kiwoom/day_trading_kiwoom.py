@@ -360,11 +360,14 @@ class DayTradingKiwoom(ParentKiwoom):
         code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         code = code.strip()
         start_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.START_PRICE)
+        current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
         if code in self.priority_cal_target_etf_stock_dict.keys():
             self.priority_cal_target_etf_stock_dict[code].update({self.customType.START_PRICE: abs(int(start_price.strip()))})
+            self.priority_cal_target_etf_stock_dict[code].update({self.customType.CURRENT_PRICE: abs(int(current_price.strip()))})
 
         if code in self.second_cal_target_etf_stock_dict.keys():
             self.second_cal_target_etf_stock_dict[code].update({self.customType.START_PRICE: abs(int(start_price.strip()))})
+            self.second_cal_target_etf_stock_dict[code].update({self.customType.CURRENT_PRICE: abs(int(current_price.strip()))})
 
         self.etf_info_event_loop.exit()
 
@@ -470,7 +473,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if goal_stock_price > 0:
                 self.priority_cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
                 self.logging.logger.info("pass goal_price_priority_etf[%s] >> %s" % (code, self.priority_cal_target_etf_stock_dict[code]))
-                self.line.notification("pass goal_price_priority_etf[%s] >> %s" % (code, goal_stock_price))
+                self.line.notification("pass goal_price_priority_etf[%s] >> GOAL:%s / CURRENT:%s" % (code, goal_stock_price, self.priority_cal_target_etf_stock_dict[code][self.customType.CURRENT_PRICE]))
             else:
                 self.priority_cal_target_etf_stock_dict[code].update({"stat": "del"})
 
@@ -481,7 +484,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if goal_stock_price > 0:
                 self.second_cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
                 self.logging.logger.info("pass goal_price_second_etf[%s] >> %s" % (code, self.second_cal_target_etf_stock_dict[code]))
-                self.line.notification("pass goal_price_second_etf[%s] >> %s" % (code, goal_stock_price))
+                self.line.notification("pass goal_price_second_etf[%s] >> GOAL:%s / CURRENT:%s" % (code, goal_stock_price, self.second_cal_target_etf_stock_dict[code][self.customType.CURRENT_PRICE]))
             else:
                 self.second_cal_target_etf_stock_dict[code].update({"stat": "del"})
 
