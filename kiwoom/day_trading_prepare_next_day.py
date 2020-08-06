@@ -173,12 +173,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         first_tic = analysis_rows[0]
 
-        ma_field_list = ["ma20", "ma5"]
+        ma_field_list = ["ma20"]
         for field in ma_field_list:
             if first_tic[field] == '':
                 return {}
 
-        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '']
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '']
         if len(empty_gap_list) > 0:
             return {}
 
