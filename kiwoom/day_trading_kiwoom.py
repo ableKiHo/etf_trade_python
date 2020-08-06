@@ -95,34 +95,27 @@ class DayTradingKiwoom(ParentKiwoom):
                     if self.total_buy_amount < self.buy_possible_deposit:
                         if sCode in self.priority_cal_target_etf_stock_dict.keys() and self.priority_buy_flag is False:
                             if sCode not in self.order_stock_dict.keys() and current_stock_price >= self.priority_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]:
+                                limit_stock_price = current_stock_price
                                 if current_stock_price > self.priority_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE] + 10:
-                                    self.priority_buy_flag = True
-                                    self.dynamicCall("SetRealRemove(QString, QString)", self.priority_cal_target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
-                                    self.logging.logger.info("priority_buy >> %s" % self.order_stock_dict[sCode])
-                                    self.buy_order_etf(sCode, sRealType, sRealData, get_next_price(self.priority_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]), self.priority_cal_target_etf_stock_dict)
-                                else:
-                                    self.order_stock_dict.update({sCode: {self.customType.GOAL_PRICE: self.priority_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE],
-                                                                          self.customType.CURRENT_PRICE: current_stock_price}})
-                                    self.priority_buy_flag = True
-                                    self.dynamicCall("SetRealRemove(QString, QString)", self.priority_cal_target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
-                                    self.logging.logger.info("priority_buy >> %s" % self.order_stock_dict[sCode])
-                                    self.buy_order_etf(sCode, sRealType, sRealData, current_stock_price, self.priority_cal_target_etf_stock_dict)
+                                    limit_stock_price = get_next_price(self.priority_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE])
+
+                                self.order_stock_dict.update({sCode: {self.customType.GOAL_PRICE: self.priority_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE],
+                                                                      self.customType.CURRENT_PRICE: current_stock_price}})
+                                self.dynamicCall("SetRealRemove(QString, QString)", self.priority_cal_target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
+                                self.logging.logger.info("priority_buy >> %s" % self.order_stock_dict[sCode])
+                                self.buy_order_etf(sCode, sRealType, sRealData, limit_stock_price, self.priority_cal_target_etf_stock_dict, 'priority')
 
                         if sCode in self.second_cal_target_etf_stock_dict.keys() and self.second_buy_flag is False:
                             if sCode not in self.order_stock_dict.keys() and current_stock_price >= self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]:
+                                limit_stock_price = current_stock_price
                                 if current_stock_price > self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE] + 10:
-                                    self.order_stock_dict.update({sCode: {self.customType.GOAL_PRICE: self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE],
-                                                                          self.customType.CURRENT_PRICE: current_stock_price}})
-                                    self.second_buy_flag = True
-                                    self.dynamicCall("SetRealRemove(QString, QString)", self.second_cal_target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
-                                    self.logging.logger.info("second_buy >> %s" % self.order_stock_dict[sCode])
-                                    self.buy_order_etf(sCode, sRealType, sRealData, get_next_price(self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]), self.second_cal_target_etf_stock_dict)
-                                else:
-                                    self.order_stock_dict.update({sCode: {self.customType.GOAL_PRICE: self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE], self.customType.CURRENT_PRICE: current_stock_price}})
-                                    self.second_buy_flag = True
-                                    self.dynamicCall("SetRealRemove(QString, QString)", self.second_cal_target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
-                                    self.logging.logger.info("second_buy >> %s" % self.order_stock_dict[sCode])
-                                    self.buy_order_etf(sCode, sRealType, sRealData, current_stock_price, self.second_cal_target_etf_stock_dict)
+                                    limit_stock_price = get_next_price(self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE])
+
+                                self.order_stock_dict.update({sCode: {self.customType.GOAL_PRICE: self.second_cal_target_etf_stock_dict[sCode][self.customType.GOAL_PRICE],
+                                                                      self.customType.CURRENT_PRICE: current_stock_price}})
+                                self.dynamicCall("SetRealRemove(QString, QString)", self.second_cal_target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
+                                self.logging.logger.info("second_buy >> %s" % self.order_stock_dict[sCode])
+                                self.buy_order_etf(sCode, sRealType, sRealData, limit_stock_price, self.second_cal_target_etf_stock_dict, 'second')
 
     def martket_off_trading(self):
         self.logging.logger.info("market_off_trading")
@@ -268,11 +261,15 @@ class DayTradingKiwoom(ParentKiwoom):
         for code in self.second_cal_target_etf_stock_dict.keys():
             self.dynamicCall("SetRealRemove(QString, QString)", self.second_cal_target_etf_stock_dict[code][self.customType.SCREEN_NUMBER], code)
 
-    def buy_order_etf(self, sCode, sRealType, sRealData, current_stock_price, target_dict):
+    def buy_order_etf(self, sCode, sRealType, sRealData, current_stock_price, target_dict, target_type):
         result = self.use_money / current_stock_price
         self.logging.logger.info(self.logType.PASS_CONDITION_GOAL_PRICE_LOG % (sCode, target_dict[sCode][self.customType.GOAL_PRICE], current_stock_price, result))
         quantity = int(result)
         if quantity >= 1:
+            if target_type == 'priority':
+                self.priority_buy_flag = True
+            else:
+                self.second_buy_flag = True
             self.send_order_limit_stock_price(sCode, quantity, current_stock_price, target_dict)
         else:
             self.line.notification("lack quantity[%s] > %s " % (sCode, current_stock_price))
@@ -474,7 +471,8 @@ class DayTradingKiwoom(ParentKiwoom):
             if goal_stock_price > 0:
                 self.priority_cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
                 self.logging.logger.info("pass goal_price_priority_etf[%s] >> %s" % (code, self.priority_cal_target_etf_stock_dict[code]))
-                self.line.notification("pass goal_price_priority_etf[%s] >> GOAL:%s / CURRENT:%s" % (code, goal_stock_price, self.priority_cal_target_etf_stock_dict[code][self.customType.CURRENT_PRICE]))
+                self.line.notification(
+                    "pass goal_price_priority_etf[%s] >> GOAL:%s / CURRENT:%s" % (code, goal_stock_price, self.priority_cal_target_etf_stock_dict[code][self.customType.CURRENT_PRICE]))
             else:
                 self.priority_cal_target_etf_stock_dict[code].update({"stat": "del"})
 
