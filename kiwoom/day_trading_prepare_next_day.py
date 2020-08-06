@@ -146,9 +146,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.etf_info_event_loop.exit()
 
-    def is_traget_etf_stock(self, value):
-        return int(value[self.customType.MARTKET_CAP]) >= 100 and int(value[self.customType.LAST_DAY_LAST_PRICE]) < 50000
-
     def create_target_etf_stock_file(self):
         self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
