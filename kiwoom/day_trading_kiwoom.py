@@ -198,7 +198,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 else:
                     self.line.notification("lack quantity[%s] > %s " % (code, last_price_buy_point[self.customType.CURRENT_PRICE]))
                     self.logging.logger.info("lack quantity[%s] > %s " % (code, last_price_buy_point[self.customType.CURRENT_PRICE]))
-
+            else:
+                self.line.notification("last_price_buy_point [%s] > %s " % (code, last_price_buy_point[self.customType.CURRENT_PRICE]))
         if len(self.search_stock_code) == len(self.top_rank_etf_stock_list):
             self.logging.logger.info("market time off trade search end")
             self.search_timer.stop()
