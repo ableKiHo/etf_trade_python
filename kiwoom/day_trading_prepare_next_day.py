@@ -208,7 +208,19 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
         inverselist = last_price_list[::-1]
         if not is_increase_trend(inverselist):
-            self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, last_price_list))
+            self.logging.logger.info("is_increase_trend current check> [%s] >> %s  " % (code, last_price_list))
+            return {}
+
+        last_price_list = [item["ma5"] for item in analysis_rows]
+        inverselist = last_price_list[::-1]
+        if not is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend ma5 check> [%s] >> %s  " % (code, last_price_list))
+            return {}
+
+        last_price_list = [item["ma20"] for item in analysis_rows]
+        inverselist = last_price_list[::-1]
+        if not is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend ma20 check> [%s] >> %s  " % (code, last_price_list))
             return {}
 
         return copy.deepcopy(first_tic)
