@@ -29,6 +29,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.priority_cal_target_etf_stock_dict = {}
         self.second_cal_target_etf_stock_dict = {}
+        self.lack_quantity_etf_stock_dict = {}
 
         self.screen_start_stop_real = "1000"
         self.buy_screen_meme_stock = "3000"
@@ -270,10 +271,14 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.priority_buy_flag = True
             else:
                 self.second_buy_flag = True
+            if sCode in self.lack_quantity_etf_stock_dict.keys():
+                del self.lack_quantity_etf_stock_dict[sCode]
             self.send_order_limit_stock_price(sCode, quantity, current_stock_price, target_dict)
         else:
-            self.line.notification("lack quantity[%s] > %s " % (sCode, current_stock_price))
-            self.logging.logger.info("lack quantity[%s] > %s " % (sCode, current_stock_price))
+            if sCode not in self.lack_quantity_etf_stock_dict.keys():
+                self.lack_quantity_etf_stock_dict.update({sCode: {}})
+                self.line.notification("lack quantity[%s] > %s " % (sCode, current_stock_price))
+                self.logging.logger.info("lack quantity[%s] > %s " % (sCode, current_stock_price))
 
     def get_all_etf_info(self):
         self.logging.logger.info('get_all_etf_info_opt10001')
