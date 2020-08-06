@@ -6,7 +6,7 @@ from PyQt5.QtCore import QEventLoop
 from PyQt5.QtTest import QTest
 
 from kiwoom.parent_kiwoom import ParentKiwoom
-from kiwoom.util_kiwoom import create_moving_average_gap_line, is_increase_trend
+from kiwoom.util_kiwoom import *
 
 
 class DayTradingPrepareNextDay(ParentKiwoom):
@@ -197,7 +197,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
-        if not is_increase_trend(last_price_list):
+        inverselist = last_price_list[::-1]
+        if not is_increase_trend(inverselist):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, last_price_list))
             return {}
 

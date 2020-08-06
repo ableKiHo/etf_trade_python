@@ -857,7 +857,8 @@ class RenewalBuyKiwoom(ParentKiwoom):
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
-        if not is_increase_trend(last_price_list):
+        inverselist = last_price_list[::-1]
+        if not is_increase_trend(inverselist):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], last_price_list))
             return {}
 
