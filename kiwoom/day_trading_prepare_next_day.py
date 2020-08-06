@@ -141,6 +141,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LAST_PRICE: abs(int(last_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.MARTKET_CAP: int(market_cap)})
+        else:
+            del self.target_etf_stock_dict[code]
 
         self.etf_info_event_loop.exit()
 
@@ -226,7 +228,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         return copy.deepcopy(first_tic)
 
     def get_etf_stock_info(self):
-        for sCode in self.target_etf_stock_dict.keys():
+        copy_dict = copy.deepcopy(self.target_etf_stock_dict)
+        for sCode in copy_dict.keys():
             QTest.qWait(4000)
             self.logging.logger.info("get_etf_stock_info >> %s" % sCode)
             self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
