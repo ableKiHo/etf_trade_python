@@ -238,12 +238,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def get_etf_daily_candle_info(self):
         for code in self.target_etf_stock_dict.keys():
-            if self.customType.MARTKET_CAP in self.target_etf_stock_dict[code]:
-                self.logging.logger.info("get_etf_daily_candle_info >> %s" % code)
-                self.get_individual_etf_daily_candle_info(code)
-                create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-                create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-                create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+            self.logging.logger.info("get_etf_daily_candle_info >> %s" % code)
+            self.get_individual_etf_daily_candle_info(code)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+
 
     def get_individual_etf_daily_candle_info(self, code):
         QTest.qWait(4000)
