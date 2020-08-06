@@ -153,15 +153,13 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
             value = self.target_etf_stock_dict[sCode]
-            if self.is_traget_etf_stock(value):
-                self.logging.logger.info("pass is_traget_etf_stock %s " % sCode)
-                if self.is_ma_line_analysis(sCode) or sCode in self.priority_list:
-                    self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
-                    f = open(self.target_etf_file_path, "a", encoding="utf8")
-                    f.write("%s\t%s\t%s\t%s\t%s\n" %
-                            (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],
-                             value[self.customType.LAST_DAY_LOWEST_PRICE], value[self.customType.LAST_DAY_LAST_PRICE]))
-                    f.close()
+            if self.is_ma_line_analysis(sCode) or sCode in self.priority_list:
+                self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
+                f = open(self.target_etf_file_path, "a", encoding="utf8")
+                f.write("%s\t%s\t%s\t%s\t%s\n" %
+                        (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],
+                         value[self.customType.LAST_DAY_LOWEST_PRICE], value[self.customType.LAST_DAY_LAST_PRICE]))
+                f.close()
 
     def is_ma_line_analysis(self, code):
         ma_line_buy_point = self.get_conform_ma_line_case(code)
