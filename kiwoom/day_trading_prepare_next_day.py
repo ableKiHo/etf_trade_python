@@ -89,10 +89,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         for i in range(cnt):
             a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
             a = int(a.strip())
+            b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
+            b = int(a.strip())
             c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
             c = c.strip()
 
-            row = {self.customType.CURRENT_PRICE: a, "일자": c, "ma20": '', "ma5": '', "ma10": ''}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, "ma20": '', "ma5": '', "ma10": ''}
             new_rows.append(row)
 
         self.analysis_etf_target_dict[stock_code].update({"row": new_rows})
