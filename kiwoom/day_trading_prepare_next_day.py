@@ -1,5 +1,3 @@
-import copy
-import os
 import sys
 
 from PyQt5.QtCore import QEventLoop
