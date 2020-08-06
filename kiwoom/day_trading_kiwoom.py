@@ -142,8 +142,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict = {}
         self.get_all_etf_stock()
         self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 20)
-        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if
-                                        x[self.customType.STOCK_CODE] not in self.priority_list and x[self.customType.STOCK_CODE] not in self.order_stock_dict.keys()]
+        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if x[self.customType.STOCK_CODE] not in self.order_stock_dict.keys()]
         self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
         self.search_timer.stop()
 
