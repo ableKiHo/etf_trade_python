@@ -26,6 +26,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_etf_day_stock = "4050"
         self.screen_opt10080_info = "4060"
 
+        self.priority_list = ['252670', '233740', '122630', '251340']
+
         self.analysis_etf_target_dict = {}
         self.target_etf_stock_dict = {}
         self.target_etf_day_info_dict = []
@@ -151,7 +153,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             value = self.target_etf_stock_dict[sCode]
             if self.is_traget_etf_stock(value):
                 self.logging.logger.info("pass is_traget_etf_stock %s " % sCode)
-                if self.is_ma_line_analysis(sCode):
+                if self.is_ma_line_analysis(sCode) or sCode in self.priority_list:
                     self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
                     f = open(self.target_etf_file_path, "a", encoding="utf8")
                     f.write("%s\t%s\t%s\t%s\t%s\n" %
