@@ -466,9 +466,6 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                                      self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                                      self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
                                                                                      self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
-                                                                                     self.customType.THE_DAY_BEFORE_AVG: avg_the_day_before_price,
-                                                                                     self.customType.THE_DAY_BEFORE_MAX: max_the_day_before_price,
-                                                                                     self.customType.THE_DAY_BEFORE_MIN: min_the_day_before_price,
                                                                                      self.customType.GOAL_PRICE: '',
                                                                                      "stat": ''}})
                     else:
@@ -476,9 +473,6 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                                    self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                                    self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
                                                                                    self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
-                                                                                   self.customType.THE_DAY_BEFORE_AVG: avg_the_day_before_price,
-                                                                                   self.customType.THE_DAY_BEFORE_MAX: max_the_day_before_price,
-                                                                                   self.customType.THE_DAY_BEFORE_MIN: min_the_day_before_price,
                                                                                    self.customType.GOAL_PRICE: '',
                                                                                    "stat": ''}})
 
