@@ -174,17 +174,26 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         analysis_rows = rows[:2]
 
         first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
 
-        ma_field_list = ["ma20"]
+        ma_field_list = ["ma20", "ma5"]
         for field in ma_field_list:
             if first_tic[field] == '':
                 return {}
 
-        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '']
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '']
         if len(empty_gap_list) > 0:
             return {}
 
         self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        if first_tic[self.customType.START_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic))
+            return {}
+
+        if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic start position check > [%s] >> %s " % (code, first_tic))
+            return {}
 
         for field in ma_field_list:
             if first_tic[field] > first_tic[self.customType.CURRENT_PRICE]:
