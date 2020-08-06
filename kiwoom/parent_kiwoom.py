@@ -37,6 +37,7 @@ class ParentKiwoom(QAxWidget):
         self.detail_account_info_event_loop = QEventLoop()  # 예수금 요청용 이벤트 루프
 
         self.target_etf_file_path = self.property.targetEtfFilePath
+        self.sallAnalysisEtfFilePath = self.property.sellAnalysisEtfFIlePath
         self.account_num = self.property.account  # 계좌번호
         self.account_pw = self.property.accountPw
 

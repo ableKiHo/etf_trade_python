@@ -69,6 +69,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_all_etf_info()
         QTest.qWait(5000)
         self.get_goal_price_etf()
+        self.create_analysis_target_etf_file()
         QTest.qWait(5000)
         self.screen_number_setting(self.priority_cal_target_etf_stock_dict)
         self.screen_number_setting(self.second_cal_target_etf_stock_dict)
@@ -624,3 +625,25 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("시스템 종료")
         self.search_timer.stop()
         sys.exit()
+
+    def create_analysis_target_etf_file(self):
+        self.logging.logger.info("create_analysis_target_etf_file")
+        nowDate = get_today_by_format('%Y-%m-%d')
+        parent_path = self.sallAnalysisEtfFilePath
+        if not os.path.isdir(parent_path):
+            os.mkdir(parent_path)
+        path = self.sallAnalysisEtfFilePath + '/' + 'target_etf_info' + '_' + nowDate + '.txt'
+
+        for sCode in self.priority_cal_target_etf_stock_dict.keys():
+            value = self.priority_cal_target_etf_stock_dict[sCode]
+            f = open(path, "a", encoding="utf8")
+            f.write("%s\t%s\n" %
+                    (sCode, value))
+            f.close()
+
+        for sCode in self.second_cal_target_etf_stock_dict.keys():
+            value = self.second_cal_target_etf_stock_dict[sCode]
+            f = open(path, "a", encoding="utf8")
+            f.write("%s\t%s\n" %
+                    (sCode, value))
+            f.close()
