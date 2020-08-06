@@ -449,8 +449,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
                     last_stock_price = ls[4].rstrip('\n')
-
-                    if stock_code in self.priority_list:
+                    if stock_code in self.priority_list or stock_name.find(self.customType.LEVERAGE) >= 0 or stock_name.find(self.customType.INVERSE) >= 0:
                         self.priority_cal_target_etf_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
                                                                                      self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                                      self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
@@ -464,7 +463,6 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                                    self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
                                                                                    self.customType.GOAL_PRICE: '',
                                                                                    "stat": ''}})
-
             f.close()
 
     def get_goal_price_etf(self):
