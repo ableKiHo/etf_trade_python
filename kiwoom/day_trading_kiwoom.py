@@ -131,8 +131,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.analysis_etf_target_dict = {}
             self.total_cal_target_etf_stock_dict = {}
             self.buy_point_dict = {}
-            if self.priority_buy_flag is False or self.second_buy_flag is False:
-                self.max_market_off_buy_count = self.max_market_off_buy_count + 1
             self.loop_last_price_buy_all_etf_stock()
 
             return
