@@ -94,7 +94,7 @@ class DayTradingKiwoom(ParentKiwoom):
         elif sRealType == self.customType.STOCK_CONCLUSION:
             if self.status == "SEARCH":
                 currentDate = get_today_by_format('%Y%m%d%H%M%S')
-                if (sCode in self.second_cal_target_etf_stock_dict.keys() or sCode in self.priority_cal_target_etf_stock_dict.keys()) and (self.today + '150000') > currentDate:
+                if (sCode in self.second_cal_target_etf_stock_dict.keys() or sCode in self.priority_cal_target_etf_stock_dict.keys()) and (self.today + '143000') > currentDate:
 
                     current_stock_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
                     current_stock_price = abs(int(current_stock_price.strip()))
