@@ -79,7 +79,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
 
-        self.stock_real_reg()
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '143000') > currentDate:
+            self.stock_real_reg()
 
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
@@ -120,7 +122,9 @@ class DayTradingKiwoom(ParentKiwoom):
                 if (self.today + '143000') <= currentDate:
                     self.logging.logger.info("stock conclusion realdata callback end")
                     self.line.notification("stock conclusion realdata callback end")
-                    self.all_real_remove()
+                    if len(self.priority_cal_target_etf_stock_dict.keys()) > 0 or len(self.second_cal_target_etf_stock_dict.keys()) > 0:
+                        self.all_real_remove()
+
 
     def martket_off_trading(self):
         self.logging.logger.info("market_off_trading")
