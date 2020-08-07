@@ -82,8 +82,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.stock_real_reg()
         else:
             self.logging.logger.info("current time is not realdata trade time")
-            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
-                             self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
+            self.status = "END"
+            self.loop_call_exit()
 
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
