@@ -117,6 +117,11 @@ class DayTradingKiwoom(ParentKiwoom):
                                     self.logging.logger.info("second_buy >> %s" % self.order_stock_dict[sCode])
                                     self.buy_order_etf(sCode, sRealType, sRealData, current_stock_price, self.second_cal_target_etf_stock_dict, 'second')
 
+                if (self.today + '143000') <= currentDate:
+                    self.logging.logger.info("stock conclusion realdata callback end")
+                    self.line.notification("stock conclusion realdata callback end")
+                    self.all_real_remove()
+
     def martket_off_trading(self):
         self.logging.logger.info("market_off_trading")
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
@@ -604,7 +609,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if goal_stock_price > 0:
                 self.second_cal_target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
                 self.logging.logger.info("pass goal_price_second_etf[%s] >> %s" % (code, self.second_cal_target_etf_stock_dict[code]))
-                self.line.notification("pass goal_price_second_etf[%s] >> GOAL:%s / CURRENT:%s" % (code, goal_stock_price, self.second_cal_target_etf_stock_dict[code][self.customType.CURRENT_PRICE]))
+                # self.line.notification("pass goal_price_second_etf[%s] >> GOAL:%s / CURRENT:%s" % (code, goal_stock_price, self.second_cal_target_etf_stock_dict[code][self.customType.CURRENT_PRICE]))
             else:
                 self.second_cal_target_etf_stock_dict[code].update({"stat": "del"})
 
