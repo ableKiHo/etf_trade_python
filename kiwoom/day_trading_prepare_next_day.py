@@ -86,9 +86,9 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         for i in range(cnt):
             a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
-            a = int(a.strip())
+            a = abs(int(a.strip()))
             b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
-            b = int(b.strip())
+            b = abs(int(b.strip()))
             c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
             c = c.strip()
 
