@@ -196,11 +196,13 @@ class DayTradingKiwoom(ParentKiwoom):
             self.loop_last_candle_hammer_check()
 
     def loop_last_candle_hammer_check(self):
-
         self.logging.logger.info('loop_last_candle_hammer_check')
         self.analysis_etf_target_dict = {}
         self.search_stock_code = []
         self.top_rank_etf_stock_list = []
+        for key in self.market_off_target_dict.keys():
+            item = self.market_off_target_dict[key]
+            self.top_rank_etf_stock_list.append(item)
         self.search_timer = default_q_timer_setting()
         self.search_timer.timeout.connect(self.last_candle_hammer_check)
 
@@ -210,9 +212,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.call_exit()
 
         self.logging.logger.info('last_candle_hammer_check')
-        for key in self.market_off_target_dict.keys():
-            item = self.market_off_target_dict[key]
-            self.top_rank_etf_stock_list.append(item)
 
         if len(self.top_rank_etf_stock_list) == 0:
             self.logging.logger.info("day trade target nothing")
