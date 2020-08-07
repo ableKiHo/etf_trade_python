@@ -120,7 +120,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def martket_off_trading(self):
         self.logging.logger.info("market_off_trading")
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '153000') < currentDate:
+        if (self.today + '153000') <= currentDate:
             self.search_timer.stop()
             self.buy_search_stock_code = ''
             self.analysis_etf_target_dict = {}
@@ -144,8 +144,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.all_etf_stock_list = []
         self.total_cal_target_etf_stock_dict = {}
         self.get_all_etf_stock()
-        self.top_rank_etf_stock_list = get_top_rank_etf_stock(self.all_etf_stock_list, self.customType.VOLUME, 20)
-        self.top_rank_etf_stock_list = [x for x in self.top_rank_etf_stock_list if x[self.customType.STOCK_CODE] not in self.order_stock_dict.keys()]
+
+        remove_order_stock_list = [x for x in self.all_etf_stock_list if x[self.customType.STOCK_CODE] not in self.order_stock_dict.keys()]
+        self.top_rank_etf_stock_list = get_top_rank_etf_stock(remove_order_stock_list, self.customType.VOLUME, 20)
         self.logging.logger.info('top_rank_etf_stock_list %s' % self.top_rank_etf_stock_list)
         self.search_timer.stop()
 
@@ -157,15 +158,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.search_timer.timeout.connect(self.buy_search_last_price_etf)
 
     def buy_search_last_price_etf(self):
+
         if self.total_buy_amount >= self.buy_possible_deposit:
             self.logging.logger.info("day trade possible deposit over > %s / %s " % (self.total_buy_amount, self.buy_possible_deposit))
             self.call_exit()
         if len(self.top_rank_etf_stock_list) == 0:
             self.logging.logger.info("day trade target nothing")
-            self.call_exit()
-        currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '160000') < currentDate:
-            self.logging.logger.info("day trade time over")
             self.call_exit()
 
         self.get_next_rank_etf_stock_code(len(self.top_rank_etf_stock_list))
@@ -195,14 +193,25 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info('last_price_buy_search_etf end')
 
     def loop_last_candle_hammer_check(self):
-        self.logging.logger.info('last_candle_hammer_check')
+
+        self.logging.logger.info('loop_last_candle_hammer_check')
         self.analysis_etf_target_dict = {}
         self.search_stock_code = []
+        self.top_rank_etf_stock_list = []
         self.search_timer = default_q_timer_setting()
         self.search_timer.timeout.connect(self.last_candle_hammer_check)
 
     def last_candle_hammer_check(self):
+        self.logging.logger.info('last_candle_hammer_check')
         self.top_rank_etf_stock_list = list(self.market_off_target_dict.keys())
+
+        if len(self.top_rank_etf_stock_list) == 0:
+            self.logging.logger.info("day trade target nothing")
+            self.call_exit()
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '160000') < currentDate:
+            self.logging.logger.info("day trade time over")
+            self.call_exit()
 
         self.get_next_rank_etf_stock_code(len(self.top_rank_etf_stock_list))
 
@@ -234,6 +243,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("market time off trade search end")
             self.search_timer.stop()
             self.call_exit()
+
+        self.logging.logger.info('last_candle_hammer_check end')
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
