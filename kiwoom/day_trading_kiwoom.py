@@ -130,12 +130,15 @@ class DayTradingKiwoom(ParentKiwoom):
     def martket_off_trading(self):
         self.logging.logger.info("market_off_trading")
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '160000') < currentDate:
+            self.call_exit()
+            return
+
         if (self.today + '153000') <= currentDate:
             self.search_timer.stop()
             self.buy_search_stock_code = ''
             self.analysis_etf_target_dict = {}
             self.loop_last_price_buy_all_etf_stock()
-
             return
 
     def loop_last_price_buy_all_etf_stock(self):
