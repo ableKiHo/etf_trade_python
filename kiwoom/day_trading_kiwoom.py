@@ -32,6 +32,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.buy_screen_meme_stock = "3000"
         self.buy_screen_real_stock = "6000"
         self.screen_etf_stock = "4020"
+        self.screen_opt10080_info = "4030"
 
         self.analysis_goal_etf_max_count = 10
         self.search_analysis_goal_etf_count = 0
