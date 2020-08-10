@@ -345,6 +345,11 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(current_price_position_list) > 0:
             self.logging.logger.info("head current_price_position_list check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], current_price_position_list))
             return {}
+        compare_rows = analysis_rows[1:4]
+        current_price_position_list = [x for x in compare_rows if x["ma5"] < x["ma20"]]
+        if len(current_price_position_list) < 1:
+            self.logging.logger.info("ma5 and ma20 cross check> [%s] >> %s / %s  " % (code, first_tic[self.customType.TIGHTENING_TIME], compare_rows))
+            return {}
         compare_rows = analysis_rows[4:]
         current_price_position_list = [x for x in compare_rows for field in ma_field_list if x[field] < x[self.customType.CURRENT_PRICE]]
         if len(current_price_position_list) < 1:
