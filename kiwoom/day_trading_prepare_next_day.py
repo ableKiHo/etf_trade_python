@@ -76,14 +76,16 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.trdata_slot_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
     def trdata_slot_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        self.logging.logger.info("trdata_slot_opt10081 >> %s" % sScrNo)
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         stock_code = stock_code.strip()
 
         if stock_code not in self.analysis_etf_target_dict.keys():
             self.analysis_etf_target_dict.update({stock_code: {"row": []}})
+        self.logging.logger.info("trdata_slot_opt10081 stock_code >> %s" % stock_code)
         new_rows = []
         cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
-
+        self.logging.logger.info("trdata_slot_opt10081 stock_code >> %s" % stock_code)
         for i in range(cnt):
             a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
             a = abs(int(a.strip()))
@@ -97,7 +99,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.analysis_etf_target_dict[stock_code].update({"row": new_rows})
 
-        self.stop_screen_cancel(self.screen_opt10080_info)
+        self.stop_screen_cancel(self.screen_etf_stock)
         self.tr_opt10080_info_event_loop.exit()
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
@@ -225,7 +227,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
     def get_etf_stock_info(self):
         copy_dict = copy.deepcopy(self.target_etf_stock_dict)
         for sCode in copy_dict.keys():
-            QTest.qWait(4000)
+            QTest.qWait(5000)
             self.logging.logger.info("get_etf_stock_info >> %s" % sCode)
             self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
             self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
@@ -239,9 +241,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
 
-
     def get_individual_etf_daily_candle_info(self, code):
-        QTest.qWait(4000)
+        QTest.qWait(5000)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081", "opt10081", 0, self.screen_etf_stock)
