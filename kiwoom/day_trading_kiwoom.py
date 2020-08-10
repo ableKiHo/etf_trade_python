@@ -35,7 +35,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.analysis_goal_etf_max_count = 10
         self.search_analysis_goal_etf_count = 0
-        self.goal_etf_buy_max_amount = 140000
+        self.goal_etf_buy_max_amount = 100000
         self.market_off_trade_max_amount = 40000
         self.total_buy_amount = 0
 
