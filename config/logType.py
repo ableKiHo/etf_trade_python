@@ -17,7 +17,7 @@ class LogType():
         self.ORDER_SELL_SUCCESS_LOG = "매도주문 전달 성공 [%s]"
         self.ORDER_SELL_FAIL_LOG = "매도주문 전달 실패 [%s]"
         self.OPW00018_SUMMARY_LOG = "계좌평가잔고내역요청 싱글데이터 : 총매입금액: %s / 총평가손익금액: %s / 총수익률: %s"
-        self.OPW00018_DETAIL_LOG = "종목번호: %s / 종목명: %s / 보유수량: %s / 매입가: %s / 수익률: %s / 현재가: %s"
+        self.OPW00018_DETAIL_LOG = "보유중 주식 정보 >> 종목번호: %s / 종목명: %s / 보유수량: %s / 매입가: %s / 수익률: %s / 현재가: %s"
         self.OWN_STOCK_LOG = "보유 종목 > %s"
         self.OWN_TOTAL_STOCK_LOG = "계좌에 가지고 있는 종목은 %s"
         self.CONCLUSION_ORDER_STATUS_LOG = "%s_주문체결 %s[%s] / 주문상태 : %s / 체결가 : %s / 체결량 : %s"
