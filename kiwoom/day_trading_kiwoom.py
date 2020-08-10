@@ -411,8 +411,9 @@ class DayTradingKiwoom(ParentKiwoom):
     def trdata_slot_opt10080(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         stock_code = stock_code.strip()
-        if stock_code not in self.analysis_goal_etf_stock_dict.keys():
-            self.analysis_goal_etf_stock_dict.update({stock_code: {"row": []}})
+        if stock_code in self.analysis_goal_etf_stock_dict.keys():
+            if "row" not in self.analysis_goal_etf_stock_dict[stock_code]:
+                self.analysis_goal_etf_stock_dict.update({stock_code: {"row": []}})
         rows = self.analysis_goal_etf_stock_dict[stock_code]["row"]
         new_rows = []
         cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
@@ -480,8 +481,9 @@ class DayTradingKiwoom(ParentKiwoom):
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         stock_code = stock_code.strip()
 
-        if stock_code not in self.analysis_etf_target_dict.keys():
-            self.analysis_etf_target_dict.update({stock_code: {"row": []}})
+        if stock_code in self.analysis_etf_target_dict.keys():
+            if "row" not in self.analysis_etf_target_dict[stock_code]:
+                self.analysis_etf_target_dict.update({stock_code: {"row": []}})
         new_rows = []
         cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
 
