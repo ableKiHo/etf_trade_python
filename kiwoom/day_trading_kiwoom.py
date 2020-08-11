@@ -106,8 +106,15 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
 
-        full_sell_point = self.get_sell_case(code, "ma10")
+        max_profit_sell_point = self.get_max_profit_sell_case(code)
+        if bool(max_profit_sell_point):
+            self.hold_stock_check_timer.stop()
+            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            self.logging.logger.info("max_profit_sell_point break >> %s" % code)
+            self.current_hold_etf_stock_dict[code].update({"sell": "full"})
+            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
+        full_sell_point = self.get_sell_case(code, "ma10")
         if bool(full_sell_point):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -331,6 +338,24 @@ class DayTradingKiwoom(ParentKiwoom):
             item = self.analysis_sell_etf_stock_list[index + 1]
 
         self.sell_search_stock_code = item[self.customType.STOCK_CODE]
+
+    def get_max_profit_sell_case(self, code):
+        self.logging.logger.info('get_max_profit_sell_case')
+
+        rows = self.current_hold_etf_stock_dict[code]["row"]
+        if len(rows) < 2:
+            return {}
+        analysis_rows = rows[:2]
+        first_tic = analysis_rows[0]
+        current_price = first_tic[self.customType.CURRENT_PRICE]
+        buy_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+
+        if current_price > buy_price:
+            profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+            if profit_rate >= 10:
+                self.logging.logger.info("max_profit check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
+                return copy.deepcopy(first_tic)
+        return {}
 
     def get_sell_case(self, code, field):
         self.logging.logger.info('get_sell_case %s' % field)
