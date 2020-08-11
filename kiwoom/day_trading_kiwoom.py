@@ -102,7 +102,7 @@ class DayTradingKiwoom(ParentKiwoom):
         code = self.sell_search_stock_code
         self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
 
-        self.get_opt10081_info(code)
+        self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
 
@@ -134,7 +134,7 @@ class DayTradingKiwoom(ParentKiwoom):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
         # self.logging.logger.info('analysis_day_candle_info >> %s' % len(self.analysis_goal_etf_stock_dict.keys()))
-        if (self.today + '150000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
+        if (self.today + '120000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
             self.analysis_search_timer.stop()
             if self.current_hold_stock_count < self.max_hold_stock_count:
                 self.loop_last_price_buy_all_etf_stock()
@@ -185,7 +185,7 @@ class DayTradingKiwoom(ParentKiwoom):
         rows = self.target_etf_stock_dict[code]["row"]
         last_price_buy_point = self.get_conform_hammer_case(code, rows)
 
-        if bool(last_price_buy_point) and code not in self.order_stock_dict.keys():
+        if bool(last_price_buy_point) :
             quantity = math.trunc(self.max_buy_amount_by_stock / last_price_buy_point[self.customType.CURRENT_PRICE])
             if quantity >= 1:
                 self.logging.logger.info("last_price_buy_point break >> %s" % code)
@@ -232,12 +232,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.search_stock_code.append(code)
 
         self.get_opt10081_info(code)
-        create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-        create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        rows = self.analysis_etf_target_dict[code]["row"]
+        create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+        create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        rows = self.analysis_goal_etf_stock_dict[code]["row"]
         last_price_buy_point = self.get_conform_hammer_case(code, rows)
 
-        if bool(last_price_buy_point) and code not in self.order_stock_dict.keys():
+        if bool(last_price_buy_point):
             quantity = math.trunc(self.max_buy_amount_by_stock / last_price_buy_point[self.customType.CURRENT_PRICE])
             if quantity >= 1:
                 self.logging.logger.info("last_price_buy_point break >> %s" % code)
@@ -305,6 +305,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exec_()
 
+    def get_sell_opt10081_info(self, code):
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
+        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
+        self.tr_opt10081_info_event_loop.exec_()
+
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
             item = self.analysis_goal_etf_stock_list[0]
@@ -337,7 +343,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def get_sell_case(self, code, field):
         self.logging.logger.info('get_sell_case')
-        rows = self.analysis_etf_target_dict[code]["row"]
+        rows = self.analysis_goal_etf_stock_dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
@@ -447,6 +453,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.trdata_slot_opt10001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10081":
             self.trdata_slot_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
+        elif sRQName == "tr_sell_opt10081":
+            self.trdata_slot_sell_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPW00018:
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
@@ -523,12 +531,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.etf_info_event_loop.exit()
 
-    def trdata_slot_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+    def trdata_slot_sell_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         stock_code = stock_code.strip()
 
-        if stock_code not in self.analysis_etf_target_dict.keys():
-            self.analysis_etf_target_dict.update({stock_code: {"row": []}})
+        if stock_code not in self.current_hold_etf_stock_dict.keys():
+            self.current_hold_etf_stock_dict.update({stock_code: {"row": []}})
 
         new_rows = []
         cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
@@ -546,7 +554,35 @@ class DayTradingKiwoom(ParentKiwoom):
             row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
             new_rows.append(row)
 
-        self.analysis_etf_target_dict[stock_code].update({"row": new_rows})
+        self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
+
+        self.stop_screen_cancel(self.screen_etf_stock)
+        self.tr_opt10081_info_event_loop.exit()
+
+    def trdata_slot_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
+        stock_code = stock_code.strip()
+
+        if stock_code not in self.analysis_goal_etf_stock_dict.keys():
+            self.analysis_goal_etf_stock_dict.update({stock_code: {"row": []}})
+
+        new_rows = []
+        cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+
+        for i in range(cnt):
+            a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
+            a = abs(int(a.strip()))
+            b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
+            b = abs(int(b.strip()))
+            c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
+            c = c.strip()
+            d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
+            d = abs(int(d.strip()))
+
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
+            new_rows.append(row)
+
+        self.analysis_goal_etf_stock_dict[stock_code].update({"row": new_rows})
 
         self.stop_screen_cancel(self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exit()
