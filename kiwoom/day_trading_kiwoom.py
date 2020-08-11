@@ -42,6 +42,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.current_hold_stock_count = 0  # 현재 보유중인 종목수
         self.status = "WAIT"
 
+        self.target_etf_stock_dict = {}
         self.current_hold_etf_stock_dict = {}  # 현재 보유중인 주식 정보
         self.analysis_goal_etf_stock_dict = {}
         self.analysis_goal_etf_stock_list = []
