@@ -638,7 +638,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
             self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
             self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
-            self.total_buy_amount = self.total_buy_amount + total_buy_price
 
             if meme_gubun == self.customType.SELL:
                 if holding_quantity > 0:
