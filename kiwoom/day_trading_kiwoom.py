@@ -134,7 +134,7 @@ class DayTradingKiwoom(ParentKiwoom):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
         # self.logging.logger.info('analysis_day_candle_info >> %s' % len(self.analysis_goal_etf_stock_dict.keys()))
-        if (self.today + '120000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
+        if (self.today + '150000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
             self.analysis_search_timer.stop()
             if self.current_hold_stock_count < self.max_hold_stock_count:
                 self.loop_last_price_buy_all_etf_stock()
