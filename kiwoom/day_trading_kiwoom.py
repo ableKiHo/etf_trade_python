@@ -33,7 +33,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.buy_screen_real_stock = "6000"
         self.screen_etf_stock = "4020"
 
-        self.max_hold_stock_count = 3  # 총 매수 가능 종목 수는 3개
+        self.max_hold_stock_count = 6  # 총 매수 가능 종목 수는 6개
         self.max_buy_amount_by_stock = 50000  # 종목당 총 매수금액은 5만원
 
         self.hold_stock_check_timer = QTimer()  # 매도시점을 찾기 위한 일분봉 호출
@@ -104,25 +104,15 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
 
         self.get_sell_opt10081_info(code)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
 
-        full_sell_point = self.get_sell_case(code, "ma20")
+        full_sell_point = self.get_sell_case(code, "ma10")
 
         if bool(full_sell_point):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("full_sell_point break >> %s" % code)
             self.current_hold_etf_stock_dict[code].update({"sell": "full"})
-            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
-
-        half_sell_point = self.get_sell_case(code, "ma5")
-
-        if bool(half_sell_point) and ("sell" not in self.current_hold_etf_stock_dict[code]):
-            self.hold_stock_check_timer.stop()
-            quantity = math.trunc(self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY] / 2)
-            self.logging.logger.info("half_sell_point break >> %s" % code)
-            self.current_hold_etf_stock_dict[code].update({"sell": "half"})
             self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
         self.logging.logger.info('last_candle_hammer_sell_check end')
@@ -358,9 +348,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("hammer_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         if second_tic[field] >= second_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("second_tic ma5 check > [%s] >> %s " % (code, second_tic))
-            if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
-                self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
+            self.logging.logger.info("second_tic ma10 check > [%s] >> %s " % (code, second_tic))
+            if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic ma10 check > [%s] >> %s " % (code, first_tic))
                 return copy.deepcopy(first_tic)
 
         return {}
