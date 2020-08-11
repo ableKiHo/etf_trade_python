@@ -154,7 +154,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.search_stock_code = []
         for key in self.target_etf_stock_dict.keys():
             if key not in self.analysis_goal_etf_stock_dict:
-                self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.analysis_goal_etf_stock_dict[key]))
+                self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
         self.analysis_search_timer = default_q_timer_setting(30)
         self.analysis_search_timer.timeout.connect(self.last_target_candle_hammer_check)
 
