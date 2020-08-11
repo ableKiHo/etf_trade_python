@@ -42,6 +42,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.current_hold_stock_count = 0  # 현재 보유중인 종목수
         self.status = "WAIT"
 
+        self.today_buy_etf_stock_dict = {}
         self.target_etf_stock_dict = {}
         self.current_hold_etf_stock_dict = {}  # 현재 보유중인 주식 정보
         self.analysis_goal_etf_stock_dict = {}
@@ -50,7 +51,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.goal_buy_search_stock_code = ''
         self.sell_search_stock_code = ''
         self.search_stock_code = []
-        self.sell_search_stock_code = []
 
         self.event_slots()
         self.real_event_slot()
@@ -71,6 +71,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.loop_check_sell_hold_etf()
 
     def loop_check_sell_hold_etf(self):
+        self.hold_stock_check_timer.stop()
         self.hold_stock_check_timer = default_q_timer_setting()
         self.hold_stock_check_timer.timeout.connect(self.check_sell_hold_etf)
 
@@ -85,10 +86,10 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info('loop_last_price_sell_all_etf_stock')
         self.sell_search_stock_code = ''
         self.analysis_sell_etf_stock_list = []
-        self.sell_search_stock_code = []
         for key in self.current_hold_etf_stock_dict.keys():
-            self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
-        self.hold_stock_check_timer = default_q_timer_setting(60)
+            if key not in self.today_buy_etf_stock_dict.keys():
+                self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
+        self.hold_stock_check_timer = default_q_timer_setting(120)
         self.hold_stock_check_timer.timeout.connect(self.last_candle_hammer_sell_check)
 
     def last_candle_hammer_sell_check(self):
@@ -162,11 +163,11 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max_hold_stock_count over")
             self.analysis_search_timer.stop()
-            self.call_exit()
+            self.loop_check_sell_hold_etf()
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("market off time day trade target nothing")
             self.analysis_search_timer.stop()
-            self.call_exit()
+            self.loop_check_sell_hold_etf()
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '160000') < currentDate:
             self.logging.logger.info("market off time day trade over")
@@ -214,11 +215,11 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max_hold_stock_count over")
             self.analysis_search_timer.stop()
-            self.call_exit()
+            self.loop_check_sell_hold_etf()
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("market off time day trade target nothing")
             self.analysis_search_timer.stop()
-            self.call_exit()
+            self.loop_check_sell_hold_etf()
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '160000') < currentDate:
             self.logging.logger.info("market off time day trade over")
@@ -342,8 +343,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code = item[self.customType.STOCK_CODE]
 
     def get_sell_case(self, code, field):
-        self.logging.logger.info('get_sell_case')
-        rows = self.analysis_goal_etf_stock_dict[code]["row"]
+        self.logging.logger.info('get_sell_case %s' % field)
+        rows = self.current_hold_etf_stock_dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
@@ -488,6 +489,7 @@ class DayTradingKiwoom(ParentKiwoom):
             total_chegual_price = int(total_chegual_price.strip())
             possible_quantity = int(possible_quantity.strip())
 
+            self.current_hold_etf_stock_dict[code].update({self.customType.STOCK_CODE: code})
             self.current_hold_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm})
             self.current_hold_etf_stock_dict[code].update({self.customType.HOLDING_QUANTITY: stock_quantity})
             self.current_hold_etf_stock_dict[code].update({self.customType.PURCHASE_PRICE: buy_price})
@@ -742,6 +744,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 else:
                     del self.current_hold_etf_stock_dict[sCode]
                     self.check_sell_hold_etf()
+            else:
+                self.today_buy_etf_stock_dict.update({sCode: {}})
 
     def call_exit(self):
         self.logging.logger.info("시스템 종료")
