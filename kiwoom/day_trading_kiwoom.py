@@ -230,10 +230,10 @@ class DayTradingKiwoom(ParentKiwoom):
                     current_stock_price = abs(int(current_stock_price.strip()))
                     if sCode in self.target_etf_stock_dict.keys():
                         if sCode not in self.analysis_goal_etf_stock_dict.keys() and current_stock_price >= self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]:
+                            self.logging.logger.info("pass goal price")
                             self.dynamicCall("SetRealRemove(QString, QString)", self.target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
                             self.analysis_goal_etf_stock_dict.update(
                                 {sCode: {self.customType.STOCK_CODE: sCode, self.customType.GOAL_PRICE: self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]}})
-                            self.analysis_search_timer.stop()
 
                 if (self.today + '150000') <= currentDate:
                     self.logging.logger.info("max time over stock conclusion realdata callback")
