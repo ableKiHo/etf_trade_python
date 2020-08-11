@@ -126,7 +126,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info('last_candle_hammer_sell_check end')
 
     def loop_analysis_buy_etf(self):
-        self.analysis_search_timer = default_q_timer_setting()
+        self.analysis_search_timer = default_q_timer_setting(60)
         self.analysis_search_timer.timeout.connect(self.analysis_day_candle_info)
 
     def analysis_day_candle_info(self):
@@ -445,9 +445,7 @@ class DayTradingKiwoom(ParentKiwoom):
         buy_possible_deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.AVAILABLE_AMOUNT)
         self.buy_possible_deposit = int(buy_possible_deposit)
         self.buy_possible_deposit = math.trunc(self.buy_possible_deposit / 2)
-        if self.buy_possible_deposit < self.goal_etf_buy_max_amount + self.market_off_trade_max_amount:
-            self.logging.logger.info("max possible deposoit over")
-            self.call_exit()
+
         self.logging.logger.info(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
         self.line.notification(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
 
