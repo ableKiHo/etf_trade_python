@@ -668,7 +668,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.send_order_market_price_stock_price(code, quantity)
 
     def send_order_market_price_stock_price(self, code, quantity):
-        self.logging.logger.info("send_order_market_price_stock_price > %s / %s" % (code))
+        self.logging.logger.info("send_order_market_price_stock_price > %s / %s" % (code, quantity))
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
             [self.customType.NEW_PURCHASE, self.buy_screen_real_stock, self.account_num, 1, code, quantity, 0,
