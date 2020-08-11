@@ -133,7 +133,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def analysis_day_candle_info(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        self.logging.logger.info('analysis_day_candle_info >> %s' % len(self.analysis_goal_etf_stock_dict.keys()))
+        # self.logging.logger.info('analysis_day_candle_info >> %s' % len(self.analysis_goal_etf_stock_dict.keys()))
         if (self.today + '150000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
             self.analysis_search_timer.stop()
             if self.current_hold_stock_count < self.max_hold_stock_count:
@@ -285,7 +285,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 if sCode in self.target_etf_stock_dict.keys() and (self.today + '150000') > currentDate:
                     current_stock_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
                     current_stock_price = abs(int(current_stock_price.strip()))
-                    self.logging.logger.info('STOCK_CONCLUSION [%s]>> %s / %s' % (sCode, current_stock_price, self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]))
+                    # self.logging.logger.info('STOCK_CONCLUSION [%s]>> %s / %s' % (sCode, current_stock_price, self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]))
                     if sCode in self.target_etf_stock_dict.keys():
                         if sCode not in self.analysis_goal_etf_stock_dict.keys() and current_stock_price >= self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]:
                             self.logging.logger.info("pass goal price [%s] >> %s" % (sCode, self.target_etf_stock_dict[sCode]))
