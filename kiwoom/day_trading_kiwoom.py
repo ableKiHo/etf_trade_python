@@ -265,10 +265,11 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_number_setting(self.target_etf_stock_dict)
 
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
-                         self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
 
         if (self.today + '150000') > currentDate:
+            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
+                             self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
+
             self.stock_real_reg()
 
     def realdata_slot(self, sCode, sRealType, sRealData):
