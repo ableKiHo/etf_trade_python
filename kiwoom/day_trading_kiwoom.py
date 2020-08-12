@@ -255,7 +255,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def get_search_goal_price_etf(self):
         self.read_target_etf_file()
-        QTest.qWait(10000)
+        QTest.qWait(5000)
 
         self.get_all_etf_info()
         QTest.qWait(5000)
@@ -266,8 +266,9 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
-
-        self.stock_real_reg()
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '150000') > currentDate:
+            self.stock_real_reg()
 
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
