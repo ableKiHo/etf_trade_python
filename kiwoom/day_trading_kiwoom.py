@@ -34,18 +34,19 @@ class DayTradingKiwoom(ParentKiwoom):
         self.buy_screen_real_stock = "6000"
         self.screen_etf_stock = "4020"
 
-        self.max_hold_stock_count = 6  # 총 매수 가능 종목 수는 6개
-        self.max_buy_amount_by_stock = 50000  # 종목당 총 매수금액은 5만원
+        self.max_hold_stock_count = 6
+        self.max_buy_amount_by_stock = 50000
 
-        self.hold_stock_check_timer = QTimer()  # 매도시점을 찾기 위한 일분봉 호출
-        self.analysis_search_timer = QTimer()  # 매수를 위한 일분봉 호출
+        self.hold_stock_check_timer = QTimer()
+        self.analysis_search_timer = QTimer()
 
-        self.current_hold_stock_count = 0  # 현재 보유중인 종목수
+        self.current_hold_stock_count = 0
         self.status = "WAIT"
 
         self.today_buy_etf_stock_dict = {}
         self.target_etf_stock_dict = {}
-        self.current_hold_etf_stock_dict = {}  # 현재 보유중인 주식 정보
+        self.current_hold_etf_stock_dict = {}
+        self.miraeasset_hold_etf_stock_dict = {}
         self.analysis_goal_etf_stock_dict = {}
         self.analysis_goal_etf_stock_list = []
         self.analysis_sell_etf_stock_list = []
@@ -62,14 +63,22 @@ class DayTradingKiwoom(ParentKiwoom):
         QTest.qWait(5000)
 
         self.detail_account_mystock()
+        self.set_miraeasset_stock_info()
         self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
 
         if self.current_hold_stock_count < self.max_hold_stock_count:
             self.get_search_goal_price_etf()
             self.loop_analysis_buy_etf()
 
-        if self.current_hold_stock_count > 0:
+        if self.current_hold_stock_count > 0 or len(self.miraeasset_hold_etf_stock_dict.keys()) > 0:
             self.loop_check_sell_hold_etf()
+
+    def set_miraeasset_stock_info(self):
+        self.miraeasset_hold_etf_stock_dict.update({'161510': {self.customType.STOCK_CODE: '161510',
+                                                               self.customType.STOCK_NAME: 'ARIRANG 고배당주',
+                                                               self.customType.HOLDING_QUANTITY: 10,
+                                                               self.customType.PURCHASE_PRICE: 9475,
+                                                               "row": []}})
 
     def loop_check_sell_hold_etf(self):
         self.hold_stock_check_timer.stop()
@@ -90,6 +99,8 @@ class DayTradingKiwoom(ParentKiwoom):
         for key in self.current_hold_etf_stock_dict.keys():
             if key not in self.today_buy_etf_stock_dict.keys():
                 self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
+        for key in self.miraeasset_hold_etf_stock_dict.keys():
+            self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.miraeasset_hold_etf_stock_dict[key]))
         self.hold_stock_check_timer = default_q_timer_setting(120)
         self.hold_stock_check_timer.timeout.connect(self.last_candle_hammer_sell_check)
 
@@ -109,19 +120,25 @@ class DayTradingKiwoom(ParentKiwoom):
 
         max_profit_sell_point = self.get_max_profit_sell_case(code)
         if bool(max_profit_sell_point):
-            self.hold_stock_check_timer.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("max_profit_sell_point break >> %s" % code)
-            self.current_hold_etf_stock_dict[code].update({"sell": "full"})
-            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
+            if code in self.miraeasset_hold_etf_stock_dict.keys():
+                self.line.notification("miraeasset etf sell point - max profit")
+            else:
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                self.logging.logger.info("max_profit_sell_point break >> %s" % code)
+                self.current_hold_etf_stock_dict[code].update({"sell": "full"})
+                self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
         full_sell_point = self.get_sell_case(code, "ma10")
         if bool(full_sell_point):
-            self.hold_stock_check_timer.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("full_sell_point break >> %s" % code)
-            self.current_hold_etf_stock_dict[code].update({"sell": "full"})
-            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
+            if code in self.miraeasset_hold_etf_stock_dict.keys():
+                self.line.notification("miraeasset etf sell point - ma10")
+            else:
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                self.logging.logger.info("full_sell_point break >> %s" % code)
+                self.current_hold_etf_stock_dict[code].update({"sell": "full"})
+                self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
         self.logging.logger.info('last_candle_hammer_sell_check end')
 
@@ -184,7 +201,7 @@ class DayTradingKiwoom(ParentKiwoom):
         rows = self.target_etf_stock_dict[code]["row"]
         last_price_buy_point = self.get_conform_hammer_case(code, rows)
 
-        if bool(last_price_buy_point) :
+        if bool(last_price_buy_point):
             quantity = math.trunc(self.max_buy_amount_by_stock / last_price_buy_point[self.customType.CURRENT_PRICE])
             if quantity >= 1:
                 self.logging.logger.info("last_price_buy_point break >> %s" % code)
