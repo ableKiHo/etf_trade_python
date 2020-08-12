@@ -22,6 +22,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.etf_info_event_loop = QEventLoop()
         self.tr_opt10081_info_event_loop = QEventLoop()
+        self.tr_sell_opt10081_info_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()
         self.detail_account_mystock_info_event_loop = QEventLoop()
 
@@ -294,6 +295,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 if (self.today + '150000') <= currentDate:
                     self.logging.logger.info("max time over stock conclusion realdata callback")
                     self.line.notification("max time over stock conclusion realdata callback")
+                    self.hold_stock_check_timer.stop()
                     if len(self.target_etf_stock_dict.keys()) > 0:
                         self.all_real_remove()
 
@@ -307,7 +309,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
-        self.tr_opt10081_info_event_loop.exec_()
+        self.tr_sell_opt10081_info_event_loop.exec_()
 
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
@@ -542,6 +544,7 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
         highest_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.HIGHEST_PRICE)
         if code in self.target_etf_stock_dict.keys():
+            self.target_etf_stock_dict[code].update({self.customType.STOCK_CODE: code})
             self.target_etf_stock_dict[code].update({self.customType.START_PRICE: abs(int(start_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.CURRENT_PRICE: abs(int(current_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.HIGHEST_PRICE: abs(int(highest_price.strip()))})
@@ -574,7 +577,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
 
         self.stop_screen_cancel(self.screen_etf_stock)
-        self.tr_opt10081_info_event_loop.exit()
+        self.tr_sell_opt10081_info_event_loop.exit()
 
     def trdata_slot_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
@@ -619,7 +622,8 @@ class DayTradingKiwoom(ParentKiwoom):
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
                     last_stock_price = ls[4].rstrip('\n')
-                    self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_NAME: stock_name,
+                    self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_CODE: stock_code,
+                                                                    self.customType.STOCK_NAME: stock_name,
                                                                     self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
                                                                     self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
                                                                     self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
