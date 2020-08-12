@@ -178,7 +178,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("analysis_goal_etf_stock_list loop > %s " % code)
         self.search_stock_code.append(code)
 
-        self.get_opt10081_info(code)
+        self.get_opt10081_info_all(code)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         rows = self.target_etf_stock_dict[code]["row"]
@@ -264,9 +264,10 @@ class DayTradingKiwoom(ParentKiwoom):
         QTest.qWait(5000)
         self.screen_number_setting(self.target_etf_stock_dict)
 
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
-        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+
         if (self.today + '150000') > currentDate:
             self.stock_real_reg()
 
@@ -304,6 +305,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081", "opt10081", 0, self.screen_etf_stock)
+        self.tr_opt10081_info_event_loop.exec_()
+
+    def get_opt10081_info_all(self, code):
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
+        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081_all", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exec_()
 
     def get_sell_opt10081_info(self, code):
@@ -474,6 +481,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.trdata_slot_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_sell_opt10081":
             self.trdata_slot_sell_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
+        elif sRQName == "tr_opt10081_all":
+            self.trdata_slot_opt10081_all(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPW00018:
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
@@ -604,6 +613,34 @@ class DayTradingKiwoom(ParentKiwoom):
             new_rows.append(row)
 
         self.analysis_goal_etf_stock_dict[stock_code].update({"row": new_rows})
+
+        self.stop_screen_cancel(self.screen_etf_stock)
+        self.tr_opt10081_info_event_loop.exit()
+
+    def trdata_slot_opt10081_all(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
+        stock_code = stock_code.strip()
+
+        if stock_code not in self.target_etf_stock_dict.keys():
+            self.target_etf_stock_dict.update({stock_code: {"row": []}})
+
+        new_rows = []
+        cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+
+        for i in range(cnt):
+            a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
+            a = abs(int(a.strip()))
+            b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
+            b = abs(int(b.strip()))
+            c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
+            c = c.strip()
+            d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
+            d = abs(int(d.strip()))
+
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
+            new_rows.append(row)
+
+        self.target_etf_stock_dict[stock_code].update({"row": new_rows})
 
         self.stop_screen_cancel(self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exit()
