@@ -79,7 +79,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def check_sell_hold_etf(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         self.hold_stock_check_timer.stop()
-        if (self.today + '153000') < currentDate:
+        if (self.today + '150000') < currentDate:
             return
         self.loop_last_price_sell_all_etf_stock()
 
