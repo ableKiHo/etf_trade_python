@@ -192,7 +192,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.market_price_send_order(code, quantity)
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
-            self.logging.logger.info("market price trade search end")
+            self.logging.logger.info("market price trade all search end")
             self.analysis_search_timer.stop()
             self.call_exit()
 
