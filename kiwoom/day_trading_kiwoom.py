@@ -54,6 +54,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code = ''
         self.search_stock_code = []
 
+        self.trace_stock_dict = {}
+        self.set_trace_stock_info()
+
         self.event_slots()
         self.real_event_slot()
 
@@ -72,6 +75,18 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if self.current_hold_stock_count > 0 or len(self.miraeasset_hold_etf_stock_dict.keys()) > 0:
             self.loop_check_sell_hold_etf()
+
+        self.trace_stock_real_reg()
+
+    def set_trace_stock_info(self):
+        self.trace_stock_dict.update({'008370': {"name": "원풍", "sell_std_price": 4250, "buy_std_price": 4100, "noti_count": 0, "noti_type": "buy"}})
+        self.trace_stock_dict.update({'100220': {"name": "비상교육", "sell_std_price": 7140, "buy_std_price": 7000, "noti_count": 0, "noti_type": "sell"}})
+
+    def trace_stock_real_reg(self):
+        for code in self.trace_stock_dict.keys():
+            self.logging.logger.info("trace_stock_real_reg >> %s" % code)
+            fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
+            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.buy_screen_real_stock, code, fids, "1")
 
     def set_miraeasset_stock_info(self):
         self.miraeasset_hold_etf_stock_dict.update({'161510': {self.customType.STOCK_CODE: '161510',
@@ -307,6 +322,18 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.status = "END"
 
         elif sRealType == self.customType.STOCK_CONCLUSION:
+            if sCode in self.trace_stock_dict.keys():
+                current_stock_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
+                current_stock_price = abs(int(current_stock_price.strip()))
+
+                if current_stock_price >= self.trace_stock_dict[sCode]["sell_std_price"] and self.trace_stock_dict[sCode]["noti_type"] == "sell" and self.trace_stock_dict[sCode]["noti_count"] < 3:
+                    self.line.notification("sell time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["sell_std_price"]), "[TRACE]")
+                    self.trace_stock_dict[sCode]["noti_count"] = self.trace_stock_dict[sCode]["noti_count"] + 1
+
+                if current_stock_price < self.trace_stock_dict[sCode]["buy_std_price"] and self.trace_stock_dict[sCode]["noti_type"] == "buy" and self.trace_stock_dict[sCode]["noti_count"] < 3:
+                    self.line.notification("[TRACE] buy time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["buy_std_price"]), "[TRACE]")
+                    self.trace_stock_dict[sCode]["noti_count"] = self.trace_stock_dict[sCode]["noti_count"] + 1
+
             if self.status == "SEARCH":
                 currentDate = get_today_by_format('%Y%m%d%H%M%S')
                 if sCode in self.target_etf_stock_dict.keys() and (self.today + '150000') > currentDate:
