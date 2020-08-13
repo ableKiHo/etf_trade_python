@@ -190,9 +190,9 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic start position check > [%s] >> %s " % (code, first_tic))
-            return {}
+        # if first_tic[self.customType.START_PRICE] < second_tic[self.customType.CURRENT_PRICE]:
+        #     self.logging.logger.info("first_tic start position check > [%s] >> %s " % (code, first_tic))
+        #     return {}
 
         for field in ma_field_list:
             if first_tic[field] > first_tic[self.customType.CURRENT_PRICE]:
