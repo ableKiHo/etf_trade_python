@@ -349,7 +349,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 if (self.today + '150000') <= currentDate:
                     self.logging.logger.info("max time over stock conclusion realdata callback")
-                    self.line.notification("max time over stock conclusion realdata callback")
                     self.hold_stock_check_timer.stop()
                     if len(self.target_etf_stock_dict.keys()) > 0:
                         self.all_real_remove()
