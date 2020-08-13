@@ -346,7 +346,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081_mirae", "opt10081", 0, self.screen_etf_stock)
-        self.tr_opt10081_info_event_loop.exec_()
+        self.tr_sell_opt10081_info_event_loop.exec_()
 
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
