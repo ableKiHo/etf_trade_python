@@ -137,7 +137,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if code in self.miraeasset_hold_etf_stock_dict.keys():
             full_sell_point = self.get_sell_case(code, "ma10", self.miraeasset_hold_etf_stock_dict)
         else:
-           full_sell_point = self.get_sell_case(code, "ma10", self.current_hold_etf_stock_dict)
+            full_sell_point = self.get_sell_case(code, "ma10", self.current_hold_etf_stock_dict)
         if bool(full_sell_point):
             if code in self.miraeasset_hold_etf_stock_dict.keys():
                 self.line.notification("miraeasset etf sell point - ma10")
