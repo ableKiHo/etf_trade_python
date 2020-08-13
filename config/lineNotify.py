@@ -13,10 +13,10 @@ class LineNotify():
         self.getToken()
 
 
-    def notification(self, message):
+    def notification(self, message, prefix=""):
         headers = {'Authorization': self.token}
         url = 'https://notify-api.line.me/api/notify'
-        data = {"message": message}
+        data = {"message": prefix + " " + message}
 
         resp = requests.post(url, headers=headers, data=data)
         # print("response status: %d" % resp.status_code)
