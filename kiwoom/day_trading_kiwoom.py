@@ -116,7 +116,10 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
 
         self.get_sell_opt10081_info(code)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+        if code in self.miraeasset_hold_etf_stock_dict.keys():
+            create_moving_average_gap_line(code, self.miraeasset_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+        else:
+            create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
 
         max_profit_sell_point = self.get_max_profit_sell_case(code)
         if bool(max_profit_sell_point):
