@@ -712,7 +712,7 @@ class RenewalBuyKiwoom(ParentKiwoom):
         self.logging.logger.info('buy_search_etf end')
 
     def loop_last_price_buy_all_etf_stock(self):
-        self.logging.logger.info('loop_last_price_buy_all_etf_stock')
+        self.logging.logger.info('loop_last_price_buy_goal_etf_stock')
         self.timer2 = default_q_timer_setting()
         self.timer2.timeout.connect(self.prepare_last_price_buy_all_etf_stock)
 

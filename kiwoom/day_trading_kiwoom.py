@@ -176,7 +176,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if (self.today + '150000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
             self.analysis_search_timer.stop()
             if self.current_hold_stock_count < self.max_hold_stock_count:
-                self.loop_last_price_buy_all_etf_stock()
+                self.loop_last_price_buy_goal_etf_stock()
             else:
                 self.call_exit()
                 return
@@ -185,8 +185,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.call_exit()
             return
 
-    def loop_last_target_buy_etf_stock(self):
-        self.logging.logger.info('loop_last_target_buy_etf_stock')
+    def loop_other_target_buy_etf_stock(self):
+        self.logging.logger.info('loop_other_target_buy_etf_stock')
         self.goal_buy_search_stock_code = ''
         self.analysis_goal_etf_stock_list = []
         self.search_stock_code = []
@@ -197,7 +197,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_search_timer.timeout.connect(self.last_target_candle_hammer_check)
 
     def last_target_candle_hammer_check(self):
-        self.logging.logger.info('last_target_candle_hammer_check')
+        self.logging.logger.info('other_target_candle_hammer_check')
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max_hold_stock_count over")
             self.analysis_search_timer.stop()
@@ -236,10 +236,10 @@ class DayTradingKiwoom(ParentKiwoom):
             self.analysis_search_timer.stop()
             self.call_exit()
 
-        self.logging.logger.info('last_target_candle_hammer_check end')
+        self.logging.logger.info('other_target_candle_hammer_check end')
 
-    def loop_last_price_buy_all_etf_stock(self):
-        self.logging.logger.info('loop_last_price_buy_all_etf_stock')
+    def loop_last_price_buy_goal_etf_stock(self):
+        self.logging.logger.info('loop_last_price_buy_goal_etf_stock')
         self.goal_buy_search_stock_code = ''
         self.analysis_goal_etf_stock_list = []
         self.search_stock_code = []
@@ -249,7 +249,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_search_timer.timeout.connect(self.last_candle_hammer_check)
 
     def last_candle_hammer_check(self):
-        self.logging.logger.info('last_candle_hammer_check')
+        self.logging.logger.info('goal_etf_last_candle_hammer_check')
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max_hold_stock_count over")
             self.analysis_search_timer.stop()
@@ -279,19 +279,19 @@ class DayTradingKiwoom(ParentKiwoom):
         if bool(last_price_buy_point):
             quantity = math.trunc(self.max_buy_amount_by_stock / last_price_buy_point[self.customType.CURRENT_PRICE])
             if quantity >= 1:
-                self.logging.logger.info("last_price_buy_point break >> %s" % code)
+                self.logging.logger.info("goal_etf_last_price_buy_point break >> %s" % code)
                 self.current_hold_stock_count = self.current_hold_stock_count + 1
                 self.market_price_send_order(code, quantity)
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
-            self.logging.logger.info("market price trade search end")
+            self.logging.logger.info("goal_etf market price trade search end")
             self.analysis_search_timer.stop()
             if self.current_hold_stock_count < self.max_hold_stock_count:
-                self.loop_last_target_buy_etf_stock()
+                self.loop_other_target_buy_etf_stock()
             else:
                 self.call_exit()
 
-        self.logging.logger.info('last_candle_hammer_check end')
+        self.logging.logger.info('goal_etf_last_candle_hammer_check end')
 
     def get_search_goal_price_etf(self):
         self.read_target_etf_file()
