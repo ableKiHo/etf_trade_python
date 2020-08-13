@@ -115,13 +115,15 @@ class DayTradingKiwoom(ParentKiwoom):
         code = self.sell_search_stock_code
         self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
 
-        self.get_sell_opt10081_info(code)
         if code in self.miraeasset_hold_etf_stock_dict.keys():
+            self.get_opt10081_info_mirae(code)
             create_moving_average_gap_line(code, self.miraeasset_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+            max_profit_sell_point = self.get_max_profit_sell_case(code, self.miraeasset_hold_etf_stock_dict)
         else:
+            self.get_sell_opt10081_info(code)
             create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+            max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
 
-        max_profit_sell_point = self.get_max_profit_sell_case(code)
         if bool(max_profit_sell_point):
             if code in self.miraeasset_hold_etf_stock_dict.keys():
                 self.line.notification("miraeasset etf sell point - max profit")
@@ -340,6 +342,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
         self.tr_sell_opt10081_info_event_loop.exec_()
 
+    def get_opt10081_info_mirae(self, code):
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
+        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081_mirae", "opt10081", 0, self.screen_etf_stock)
+        self.tr_opt10081_info_event_loop.exec_()
+
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
             item = self.analysis_goal_etf_stock_list[0]
@@ -370,16 +378,16 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.sell_search_stock_code = item[self.customType.STOCK_CODE]
 
-    def get_max_profit_sell_case(self, code):
+    def get_max_profit_sell_case(self, code, dict):
         self.logging.logger.info('get_max_profit_sell_case')
 
-        rows = self.current_hold_etf_stock_dict[code]["row"]
+        rows = dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
         first_tic = analysis_rows[0]
         current_price = first_tic[self.customType.CURRENT_PRICE]
-        buy_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+        buy_price = dict[code][self.customType.PURCHASE_PRICE]
 
         if current_price > buy_price:
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
@@ -504,6 +512,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.trdata_slot_sell_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10081_all":
             self.trdata_slot_opt10081_all(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
+        elif sRQName == "tr_sell_opt10081_mirae":
+            self.trdata_slot_sell_mirae_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPW00018:
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
 
@@ -606,6 +616,34 @@ class DayTradingKiwoom(ParentKiwoom):
             new_rows.append(row)
 
         self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
+
+        self.stop_screen_cancel(self.screen_etf_stock)
+        self.tr_sell_opt10081_info_event_loop.exit()
+
+    def trdata_slot_sell_mirae_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
+        stock_code = stock_code.strip()
+
+        if stock_code not in self.miraeasset_hold_etf_stock_dict.keys():
+            self.miraeasset_hold_etf_stock_dict.update({stock_code: {"row": []}})
+
+        new_rows = []
+        cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+
+        for i in range(cnt):
+            a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
+            a = abs(int(a.strip()))
+            b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
+            b = abs(int(b.strip()))
+            c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
+            c = c.strip()
+            d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
+            d = abs(int(d.strip()))
+
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
+            new_rows.append(row)
+
+        self.miraeasset_hold_etf_stock_dict[stock_code].update({"row": new_rows})
 
         self.stop_screen_cancel(self.screen_etf_stock)
         self.tr_sell_opt10081_info_event_loop.exit()
