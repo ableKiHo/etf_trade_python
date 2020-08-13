@@ -681,14 +681,15 @@ class DayTradingKiwoom(ParentKiwoom):
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
                     last_stock_price = ls[4].rstrip('\n')
-                    self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_CODE: stock_code,
-                                                                    self.customType.STOCK_NAME: stock_name,
-                                                                    self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
-                                                                    self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
-                                                                    self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
-                                                                    self.customType.GOAL_PRICE: '',
-                                                                    "stat": '',
-                                                                    "row": []}})
+                    if stock_code not in self.current_hold_etf_stock_dict.keys():
+                        self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_CODE: stock_code,
+                                                                        self.customType.STOCK_NAME: stock_name,
+                                                                        self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
+                                                                        self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
+                                                                        self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
+                                                                        self.customType.GOAL_PRICE: '',
+                                                                        "stat": '',
+                                                                        "row": []}})
             f.close()
 
     def get_goal_price_etf(self):
