@@ -134,7 +134,10 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.current_hold_etf_stock_dict[code].update({"sell": "full"})
                 self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
-        full_sell_point = self.get_sell_case(code, "ma10")
+        if code in self.miraeasset_hold_etf_stock_dict.keys():
+            full_sell_point = self.get_sell_case(code, "ma10", self.miraeasset_hold_etf_stock_dict)
+        else:
+           full_sell_point = self.get_sell_case(code, "ma10", self.current_hold_etf_stock_dict)
         if bool(full_sell_point):
             if code in self.miraeasset_hold_etf_stock_dict.keys():
                 self.line.notification("miraeasset etf sell point - ma10")
@@ -396,9 +399,9 @@ class DayTradingKiwoom(ParentKiwoom):
                 return copy.deepcopy(first_tic)
         return {}
 
-    def get_sell_case(self, code, field):
+    def get_sell_case(self, code, field, dict):
         self.logging.logger.info('get_sell_case %s' % field)
-        rows = self.current_hold_etf_stock_dict[code]["row"]
+        rows = dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
