@@ -79,8 +79,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.trace_stock_real_reg()
 
     def set_trace_stock_info(self):
-        self.trace_stock_dict.update({'008370': {"name": "원풍", "sell_std_price": 4250, "buy_std_price": 4100, "noti_count": 0, "noti_type": "buy"}})
-        self.trace_stock_dict.update({'100220': {"name": "비상교육", "sell_std_price": 7150, "buy_std_price": 6980, "noti_count": 0, "noti_type": "buy"}})
+        self.trace_stock_dict.update({'008370': {"name": "원풍", "attention_price": 4520, "sell_std_price": 4250, "buy_std_price": 4100, "noti_count": 0, "noti_type": "buy"}})
+        self.trace_stock_dict.update({'100220': {"name": "비상교육", "attention_price": 10655, "sell_std_price": 7150, "buy_std_price": 6980, "noti_count": 0, "noti_type": "buy"}})
 
     def trace_stock_real_reg(self):
         for code in self.trace_stock_dict.keys():
@@ -325,6 +325,10 @@ class DayTradingKiwoom(ParentKiwoom):
             if sCode in self.trace_stock_dict.keys():
                 current_stock_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
                 current_stock_price = abs(int(current_stock_price.strip()))
+
+                if current_stock_price >= self.trace_stock_dict[sCode]["attention_price"] and self.trace_stock_dict[sCode]["noti_count"] < 3:
+                    self.line.notification("attention time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["attention_price"]), "[TRACE]")
+                    self.trace_stock_dict[sCode]["noti_count"] = self.trace_stock_dict[sCode]["noti_count"] + 1
 
                 if current_stock_price >= self.trace_stock_dict[sCode]["sell_std_price"] and self.trace_stock_dict[sCode]["noti_type"] == "sell" and self.trace_stock_dict[sCode]["noti_count"] < 3:
                     self.line.notification("sell time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["sell_std_price"]), "[TRACE]")
