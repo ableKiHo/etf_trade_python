@@ -185,6 +185,13 @@ def create_moving_average_gap_line(code, target_dict, origin_field, source_field
         row[target_field] = round(ma_gap_value / gap, max_decimal_point)
 
 
+def is_buy_secotrs_position(sectors_code, target_dict, origin_field, source_field, target_field):
+    rows = target_dict[sectors_code][origin_field]
+    first_tic = rows[0]
+    is_available_position = first_tic[source_field] > first_tic[target_field]
+    target_dict[sectors_code].update({"is_available_position": is_available_position})
+
+
 def trendline(data, order=1):
     index = list(range(1, len(data) + 1))
     coeffs = np.polyfit(index, list(map(float, data)), order)
@@ -217,3 +224,7 @@ def get_next_price(target_value):
     elif remainder < 5:
         return target_value + (5 - remainder)
     return target_value
+
+
+def str_find(s, other):
+    return s.find(other) != -1

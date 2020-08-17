@@ -55,6 +55,7 @@ class CustomType():
         self.AMOUNT_OF_TRADING_AVAILABLE = '매매가능수량'
         self.MARTKET_CAP = '시가총액'
         self.STOCK_CODE = '종목코드'
+        self.SECTORS_CODE = '업종코드'
         self.ORDER_EXECUTION = '주문체결'
         self.ORDER_STATUS = '주문상태'
         self.ORDER_CLASSIFICATION = '주문구분'
@@ -88,3 +89,5 @@ class CustomType():
         self.INVERSE = '인버스'
         self.SELL = '매도'
         self.BUY = '매수'
+        self.STD_DATE = '기준일자'
+        self.KOSDAQ = '코스닥'
