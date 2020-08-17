@@ -418,16 +418,15 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.sell_search_stock_code = item[self.customType.STOCK_CODE]
 
-    def get_max_profit_sell_case(self, code, dict):
-        self.logging.logger.info('get_max_profit_sell_case')
+    def get_max_profit_sell_case(self, code, target_dict):
 
-        rows = dict[code]["row"]
+        rows = target_dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
         first_tic = analysis_rows[0]
         current_price = first_tic[self.customType.CURRENT_PRICE]
-        buy_price = dict[code][self.customType.PURCHASE_PRICE]
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
         if current_price > buy_price:
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
