@@ -105,10 +105,10 @@ class DayTradingKiwoom(ParentKiwoom):
         self.hold_stock_check_timer.stop()
         if (self.today + '150000') < currentDate:
             return
-        self.loop_last_price_sell_all_etf_stock()
+        self.loop_sell_hold_etf_stock()
 
-    def loop_last_price_sell_all_etf_stock(self):
-        self.logging.logger.info('loop_last_price_sell_all_etf_stock')
+    def loop_sell_hold_etf_stock(self):
+        self.logging.logger.info('loop_sell_hold_etf_stock')
         self.sell_search_stock_code = ''
         self.analysis_sell_etf_stock_list = []
         for key in self.current_hold_etf_stock_dict.keys():
@@ -117,9 +117,9 @@ class DayTradingKiwoom(ParentKiwoom):
         for key in self.miraeasset_hold_etf_stock_dict.keys():
             self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.miraeasset_hold_etf_stock_dict[key]))
         self.hold_stock_check_timer = default_q_timer_setting(120)
-        self.hold_stock_check_timer.timeout.connect(self.last_candle_hammer_sell_check)
+        self.hold_stock_check_timer.timeout.connect(self.daily_candle_sell_point_check)
 
-    def last_candle_hammer_sell_check(self):
+    def daily_candle_sell_point_check(self):
         if len(self.analysis_sell_etf_stock_list) == 0:
             self.logging.logger.info("analysis_sell_etf_stock_list nothing")
             self.hold_stock_check_timer.stop()
@@ -169,7 +169,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.current_hold_etf_stock_dict[code].update({"sell": "full"})
                 self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
-        self.logging.logger.info('last_candle_hammer_sell_check end')
+        self.logging.logger.info('daily_candle_sell_point_check end')
 
     def loop_analysis_buy_etf(self):
         self.analysis_search_timer = default_q_timer_setting(60)
@@ -182,7 +182,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if (self.today + '150000') <= currentDate and len(self.analysis_goal_etf_stock_dict.keys()) > 0:
             self.analysis_search_timer.stop()
             if self.current_hold_stock_count < self.max_hold_stock_count:
-                self.loop_last_price_buy_goal_etf_stock()
+                self.loop_buy_analysis_goal_etf_stock()
             else:
                 self.call_exit()
                 return
@@ -244,8 +244,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.logging.logger.info('other_target_candle_hammer_check end')
 
-    def loop_last_price_buy_goal_etf_stock(self):
-        self.logging.logger.info('loop_last_price_buy_goal_etf_stock')
+    def loop_buy_analysis_goal_etf_stock(self):
+        self.logging.logger.info('loop_buy_analysis_goal_etf_stock')
         self.goal_buy_search_stock_code = ''
         self.analysis_goal_etf_stock_list = []
         self.search_stock_code = []
@@ -366,25 +366,25 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
-        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exec_()
 
     def get_opt10081_info_all(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
-        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081_all", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exec_()
 
     def get_sell_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
-        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
         self.tr_sell_opt10081_info_event_loop.exec_()
 
     def get_opt10081_info_mirae(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
-        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081_mirae", "opt10081", 0, self.screen_etf_stock)
         self.tr_sell_opt10081_info_event_loop.exec_()
 
@@ -430,7 +430,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if current_price > buy_price:
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-            if profit_rate >= 10:
+            if profit_rate >= 15:
                 self.logging.logger.info("max_profit check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
                 return copy.deepcopy(first_tic)
         return {}
