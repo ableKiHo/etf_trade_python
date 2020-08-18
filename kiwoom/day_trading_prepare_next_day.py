@@ -338,7 +338,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         return copy.deepcopy(first_tic)
 
-
     def get_conform_ma_line_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
 
