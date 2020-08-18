@@ -299,7 +299,7 @@ class NewBuyKiwoom(ParentKiwoom):
         result = self.get_sell_point(rows[:4])
         if result == 'SellCase':
             self.timer2.stop()
-            self.logging.logger.info("get_sell_point [%s]>  %s " % (code, first_tic))
+            self.logging.logger.info("get_add_buy_point [%s]>  %s " % (code, first_tic))
             self.sell_send_order(code, self.buy_point_dict[self.customType.MEME_SCREEN_NUMBER], self.buy_point_dict[self.customType.HOLDING_QUANTITY])
             return
         result = self.get_loss_cut_point(rows[:5])
@@ -420,7 +420,7 @@ class NewBuyKiwoom(ParentKiwoom):
         return None
 
     def get_sell_point(self, rows):
-        self.logging.logger.info("get_sell_point >  %s " % rows)
+        self.logging.logger.info("get_add_buy_point >  %s " % rows)
         purchase_unit_price = self.buy_point_dict[self.customType.PURCHASE_UNIT_PRICE]
         first_low = rows[0]
         first_current_price = first_low[self.customType.CURRENT_PRICE]

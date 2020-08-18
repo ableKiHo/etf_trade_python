@@ -32,6 +32,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.analysis_etf_target_dict = {}
         self.target_etf_stock_dict = {}
+        self.exclude_target_etf_stock_dict = {}
         self.target_etf_day_info_dict = []
         self.event_slots()
 
@@ -49,6 +50,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.file_delete()
         self.get_all_etf_stock()
         self.get_etf_stock_info()
+        self.get_exclude_etf_stock_info()
         self.get_etf_daily_candle_info()
 
         QTest.qWait(5000)
@@ -95,6 +97,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPT10001:
             self.trdata_slot_opt10001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
+        elif sRQName == "tr_opt10001":
+            self.trdata_slot_exclude_opt10001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10081":
             self.trdata_slot_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt20006":
@@ -182,11 +186,42 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                     if code not in self.target_etf_stock_dict:
                         self.target_etf_stock_dict[code] = {}
 
+                if is_match_exclude is True:
+                    if code not in self.exclude_target_etf_stock_dict:
+                        self.exclude_target_etf_stock_dict[code] = {}
+
         if sPrevNext == "2":  # 다음페이지 존재
             self.get_all_etf_stock(sPrevNext="2")
         else:
             self.stop_screen_cancel(self.screen_all_etf_stock)
             self.all_etc_info_event_loop.exit()
+
+    def trdata_slot_exclude_opt10001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
+        code = code.strip()
+        code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_NAME)
+        highest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.HIGHEST_PRICE)
+        lowest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.LOWEST_PRICE)
+        last_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
+        change_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.THE_DAY_BEFORE)
+        change_price = change_price.strip()
+
+        market_cap = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.MARTKET_CAP)
+        market_cap = market_cap.strip()
+
+        self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
+            code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price, market_cap)
+                                 )
+        if int(market_cap) >= 60 and int(change_price) > 0:
+            self.exclude_target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
+            self.exclude_target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
+            self.exclude_target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
+            self.exclude_target_etf_stock_dict[code].update({self.customType.LAST_DAY_LAST_PRICE: abs(int(last_stock_price.strip()))})
+            self.exclude_target_etf_stock_dict[code].update({self.customType.MARTKET_CAP: int(market_cap)})
+        else:
+            del self.exclude_target_etf_stock_dict[code]
+
+        self.etf_info_event_loop.exit()
 
     def trdata_slot_opt10001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
@@ -242,6 +277,15 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                     else:
                         continue
 
+            if self.is_ma_line_analysis(sCode):
+                self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
+                f = open(self.target_etf_file_path, "a", encoding="utf8")
+                f.write("%s\t%s\t%s\t%s\t%s\n" %
+                        (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],
+                         value[self.customType.LAST_DAY_LOWEST_PRICE], value[self.customType.LAST_DAY_LAST_PRICE]))
+                f.close()
+        for sCode in self.exclude_target_etf_stock_dict.keys():
+            value = self.exclude_target_etf_stock_dict[sCode]
             if self.is_ma_line_analysis(sCode):
                 self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
                 f = open(self.target_etf_file_path, "a", encoding="utf8")
@@ -401,9 +445,25 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
             self.etf_info_event_loop.exec_()
 
+    def get_exclude_etf_stock_info(self):
+        copy_dict = copy.deepcopy(self.exclude_target_etf_stock_dict)
+        for sCode in copy_dict.keys():
+            QTest.qWait(5000)
+            self.logging.logger.info("get_exclude_etf_stock_info >> %s" % sCode)
+            self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
+            self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10001", "opt10001", 0, self.screen_etf_stock)
+            self.etf_info_event_loop.exec_()
+
     def get_etf_daily_candle_info(self):
         for code in self.target_etf_stock_dict.keys():
             self.logging.logger.info("get_etf_daily_candle_info >> %s" % code)
+            self.get_individual_etf_daily_candle_info(code)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma60", 60)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma120", 120)
+        for code in self.exclude_target_etf_stock_dict.keys():
             self.get_individual_etf_daily_candle_info(code)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
