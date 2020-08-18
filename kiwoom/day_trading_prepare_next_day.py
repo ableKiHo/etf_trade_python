@@ -272,11 +272,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         if len(empty_gap_list) > 0:
             return {}
 
-        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        self.logging.logger.info("cable_tie_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         ma120_line_up_list = [x for x in analysis_rows if x["ma120"] > x[self.customType.CURRENT_PRICE]]
         if len(ma120_line_up_list) > 0:
-            self.logging.logger.info("ma120_line_up_list check> [%s] >> %s / %s  " % (code, first_tic["일자"], ma120_line_up_list))
+            self.logging.logger.info("ma120_line_up_list check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         compare_rows = analysis_rows[:3]
@@ -294,7 +294,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         min_value = min(min_list)
         gap = 15
         if max_value - min_value > gap:
-            self.logging.logger.info("ma line range check > [%s] >> %s / %s / %s" % (code, first_tic["일자"], max_value, min_value))
+            self.logging.logger.info("cable_tie range check > [%s] >> %s / %s / %s" % (code, first_tic["일자"], max_value, min_value))
             return {}
 
         for field in ma_field_list:
@@ -355,7 +355,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         if len(empty_gap_list) > 0:
             return {}
 
-        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic))
@@ -375,7 +375,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         current_price_position_list = [(x, field) for x in analysis_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
         if len(current_price_position_list) > 0:
-            self.logging.logger.info("lower_gap_list check> [%s] >> %s  " % (code, current_price_position_list))
+            self.logging.logger.info("current_price_position_list check> [%s] >> %s  " % (code, current_price_position_list))
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
