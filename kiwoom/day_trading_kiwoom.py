@@ -152,10 +152,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
         if code in self.miraeasset_hold_etf_stock_dict.keys():
-            # full_sell_point = self.get_sell_case(code, "ma10", self.miraeasset_hold_etf_stock_dict)
             target_rows = self.miraeasset_hold_etf_stock_dict[code]["row"]
         else:
-            # full_sell_point = self.get_sell_case(code, "ma10", self.current_hold_etf_stock_dict)
             target_rows = self.current_hold_etf_stock_dict[code]["row"]
 
         full_sell_point = self.get_sell_point(code, target_rows)
@@ -200,9 +198,9 @@ class DayTradingKiwoom(ParentKiwoom):
             if key not in self.analysis_goal_etf_stock_dict:
                 self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
         self.analysis_search_timer = default_q_timer_setting(30)
-        self.analysis_search_timer.timeout.connect(self.last_target_candle_hammer_check)
+        self.analysis_search_timer.timeout.connect(self.other_target_candle_hammer_check)
 
-    def last_target_candle_hammer_check(self):
+    def other_target_candle_hammer_check(self):
         self.logging.logger.info('other_target_candle_hammer_check')
 
         if len(self.analysis_goal_etf_stock_list) == 0:
@@ -218,12 +216,13 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
         code = self.goal_buy_search_stock_code
-        self.logging.logger.info("analysis_goal_etf_stock_list loop > %s " % code)
+        self.logging.logger.info("analysis_other_target_stock_list loop > %s " % code)
         self.search_stock_code.append(code)
 
         self.get_opt10081_info_all(code)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
         rows = self.target_etf_stock_dict[code]["row"]
         last_price_buy_point = self.get_conform_hammer_case(code, rows)
 
@@ -252,10 +251,10 @@ class DayTradingKiwoom(ParentKiwoom):
         for key in self.analysis_goal_etf_stock_dict.keys():
             self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.analysis_goal_etf_stock_dict[key]))
         self.analysis_search_timer = default_q_timer_setting(30)
-        self.analysis_search_timer.timeout.connect(self.last_candle_hammer_check)
+        self.analysis_search_timer.timeout.connect(self.goal_target_candle_hammer_check)
 
-    def last_candle_hammer_check(self):
-        self.logging.logger.info('goal_etf_last_candle_hammer_check')
+    def goal_target_candle_hammer_check(self):
+        self.logging.logger.info('goal_target_candle_hammer_check')
 
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("market off time day trade target nothing")
@@ -298,7 +297,7 @@ class DayTradingKiwoom(ParentKiwoom):
             else:
                 self.call_exit()
 
-        self.logging.logger.info('goal_etf_last_candle_hammer_check end')
+        self.logging.logger.info('goal_target_candle_hammer_check end')
 
     def get_search_goal_price_etf(self):
         self.read_target_etf_file()
@@ -451,29 +450,6 @@ class DayTradingKiwoom(ParentKiwoom):
         if first_tic["ma20"] > first_tic["ma5"]:
             self.logging.logger.info("first_tic ma20 and ma5 position check > [%s] >> %s " % (code, first_tic))
             return copy.deepcopy(first_tic)
-
-        return {}
-
-    def get_sell_case(self, code, field, target_dict):
-        self.logging.logger.info('get_sell_case %s' % field)
-        rows = target_dict[code]["row"]
-        if len(rows) < 2:
-            return {}
-        analysis_rows = rows[:2]
-        first_tic = analysis_rows[0]
-        second_tic = analysis_rows[1]
-
-        empty_gap_list = [x for x in analysis_rows if x[field] == '']
-        if len(empty_gap_list) > 0:
-            return {}
-
-        self.logging.logger.info("sell_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
-
-        if second_tic[field] >= second_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("second_tic ma10 check > [%s] >> %s " % (code, second_tic))
-            if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
-                self.logging.logger.info("first_tic ma10 check > [%s] >> %s " % (code, first_tic))
-                return copy.deepcopy(first_tic)
 
         return {}
 
