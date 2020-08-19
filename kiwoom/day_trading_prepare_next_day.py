@@ -298,7 +298,37 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         ma_line_buy_point = self.get_conform_ma_line_case(code)
         if not bool(ma_line_buy_point):
             ma_line_buy_point = self.get_conform_cable_tie_case(code)
+        if not bool(ma_line_buy_point):
+            ma_line_buy_point = self.get_conform_cross_candle_case(code)
         return bool(ma_line_buy_point)
+
+    def get_conform_corss_candle_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 4:
+            return {}
+
+        analysis_rows = rows[:4]
+
+        self.logging.logger.info("corss_candle_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        first_tic = analysis_rows[0]
+
+        black_candle_compare_rows = rows[1:]
+        black_candle_list = [x for x in black_candle_compare_rows if x[self.customType.START_PRICE] < x[self.customType.CURRENT_PRICE]]
+        if len(black_candle_list) > 0:
+            self.logging.logger.info("3days black candle check> [%s] >> %s / %s  " % (code, first_tic["일자"], black_candle_list))
+            return {}
+
+        if first_tic[self.customType.LOWEST_PRICE] < first_tic[self.customType.START_PRICE] <= first_tic[self.customType.CURRENT_PRICE]:
+            if first_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.HIGHEST_PRICE]:
+                highest_gap = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
+                lowest_gap = first_tic[self.customType.START_PRICE] - first_tic[self.customType.LOWEST_PRICE]
+                if lowest_gap >= highest_gap:
+                    return copy.deepcopy(first_tic)
+
+        self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
+        return {}
 
     def get_conform_cable_tie_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
