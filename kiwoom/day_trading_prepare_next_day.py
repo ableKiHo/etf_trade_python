@@ -302,7 +302,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             ma_line_buy_point = self.get_conform_cross_candle_case(code)
         return bool(ma_line_buy_point)
 
-    def get_conform_corss_candle_case(self, code):
+    def get_conform_cross_candle_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
 
         if len(rows) < 4:
@@ -313,6 +313,10 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("corss_candle_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
+
+        if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
+            self.logging.logger.info("first_tic position check> [%s] >> %s " % (code, first_tic))
+            return {}
 
         black_candle_compare_rows = rows[1:]
         black_candle_list = [x for x in black_candle_compare_rows if x[self.customType.START_PRICE] < x[self.customType.CURRENT_PRICE]]
