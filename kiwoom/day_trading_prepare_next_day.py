@@ -321,18 +321,22 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         analysis_rows = rows[:4]
 
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
         self.logging.logger.info("corss_candle_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
 
         if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
-            self.logging.logger.info("first_tic position check> [%s] >> %s " % (code, first_tic))
+            self.logging.logger.info("first_tic position check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        black_candle_compare_rows = rows[1:]
+        black_candle_compare_rows = analysis_rows[1:]
         black_candle_list = [x for x in black_candle_compare_rows if x[self.customType.START_PRICE] < x[self.customType.CURRENT_PRICE]]
         if len(black_candle_list) > 0:
-            self.logging.logger.info("3days black candle check> [%s] >> %s / %s  " % (code, first_tic["일자"], black_candle_list))
+            self.logging.logger.info("3days black candle check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         if first_tic[self.customType.LOWEST_PRICE] < first_tic[self.customType.START_PRICE] <= first_tic[self.customType.CURRENT_PRICE]:
@@ -388,41 +392,41 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         for field in ma_field_list:
             if first_tic[field] > first_tic[self.customType.CURRENT_PRICE]:
-                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic["일자"]))
                 return {}
 
         ma120_min_value_list = [x for x in analysis_rows if x["ma120"] > max_value]
         if len(ma120_min_value_list) > 0:
-            self.logging.logger.info("ma120_line min_value check> [%s] >> %s / %s  " % (code, first_tic["일자"], ma120_min_value_list))
+            self.logging.logger.info("ma120_line min_value check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         compare_rows = analysis_rows[:3]
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
         if not is_increase_trend(last_price_list):
-            self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic["일자"], last_price_list))
+            self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
         ma5_list = [item["ma5"] for item in compare_rows]
         if not is_increase_trend(ma5_list):
-            self.logging.logger.info("ma5_list_trend check> [%s] >> %s / %s  " % (code, first_tic["일자"], ma5_list))
+            self.logging.logger.info("ma5_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
         ma10_list = [item["ma10"] for item in compare_rows]
         if not is_increase_trend(ma10_list):
-            self.logging.logger.info("ma10_list_trend check> [%s] >> %s / %s  " % (code, first_tic["일자"], ma10_list))
+            self.logging.logger.info("ma10_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         compare_rows = analysis_rows[:3]
         ma5_position_list = [x for x in compare_rows if x["ma5"] > x["ma20"] and x["ma5"] > x["ma60"]]
         if len(ma5_position_list) <= 0:
-            self.logging.logger.info("ma5_position_list check> [%s] >> %s / %s  " % (code, first_tic["일자"], ma5_position_list))
+            self.logging.logger.info("ma5_position_list check> [%s] >> %s " % (code, first_tic["일자"],))
             return {}
 
         ma10_position_list = [x for x in compare_rows if x["ma10"] > x["ma20"] and x["ma10"] > x["ma60"]]
         if len(ma10_position_list) <= 0:
-            self.logging.logger.info("ma10_position_list check> [%s] >> %s / %s  " % (code, first_tic["일자"], ma10_position_list))
+            self.logging.logger.info("ma10_position_list check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
         if first_tic["ma5"] <= first_tic["ma20"] or first_tic["ma5"] <= first_tic["ma60"] or first_tic["ma10"] <= first_tic["ma20"] or first_tic["ma10"] <= first_tic["ma60"]:
-            self.logging.logger.info("first_tic short line check > [%s] >> %s " % (code, first_tic))
+            self.logging.logger.info("first_tic short line check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         return copy.deepcopy(first_tic)
@@ -447,19 +451,19 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic))
+            self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"]:
             if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
-                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic))
+                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
                 return {}
         else:
             if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"]:
-                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic))
+                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
                 return {}
             if first_tic[self.customType.HIGHEST_PRICE] < first_tic["ma20"]:
-                self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic))
+                self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
                 return {}
 
         current_price_position_list = [(x, field) for x in analysis_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
@@ -470,13 +474,13 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
         inverselist = last_price_list[::-1]
         if not is_increase_trend(inverselist):
-            self.logging.logger.info("is_increase_trend current check> [%s] >> %s  " % (code, inverselist))
+            self.logging.logger.info("is_increase_trend current check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
         last_price_list = [item["ma5"] for item in analysis_rows]
         inverselist = last_price_list[::-1]
         if not is_increase_trend(inverselist):
-            self.logging.logger.info("is_increase_trend ma5 check> [%s] >> %s  " % (code, inverselist))
+            self.logging.logger.info("is_increase_trend ma5 check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
         return copy.deepcopy(first_tic)
