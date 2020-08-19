@@ -44,6 +44,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.current_hold_stock_count = 0
         self.status = "WAIT"
 
+        self.add_hold_etf_dict = {}
         self.today_buy_etf_stock_dict = {}
         self.target_etf_stock_dict = {}
         self.current_hold_etf_stock_dict = {}
@@ -156,21 +157,25 @@ class DayTradingKiwoom(ParentKiwoom):
             target_rows = self.miraeasset_hold_etf_stock_dict[code]["row"]
         else:
             target_rows = self.current_hold_etf_stock_dict[code]["row"]
+        # TODO  self.current_hold_etf_stock_dict[code].update({self.customType.PURCHASE_PRICE: buy_price})
+        add_buy_point = self.get_add_buy_point(code, target_rows)
 
-        full_sell_point = self.get_add_buy_point(code, target_rows)
-        if bool(full_sell_point):
+        if bool(add_buy_point) and code not in self.add_hold_etf_dict.keys():
+            limit_price = add_buy_point[self.customType.CURRENT_PRICE]
             if code in self.miraeasset_hold_etf_stock_dict.keys():
+                self.add_hold_etf_dict.update({code: {self.customType.PURCHASE_PRICE: limit_price}})
                 self.line.notification("miraeasset etf add buy point - ma10", "[TRACE]")
             else:
-                self.hold_stock_check_timer.stop()
-                self.logging.logger.info("add buy point break >> %s" % code)
-                remain_budget = self.max_add_buy_amount_by_stock - self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
-                limit_price = full_sell_point[self.customType.CURRENT_PRICE]
-                quantity = math.trunc(remain_budget / limit_price)
-                if quantity >= 1:
-                    self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-                    self.send_order_limit_stock_price(code, quantity, limit_price)
+                if self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE] > limit_price:
+                    self.hold_stock_check_timer.stop()
+                    self.logging.logger.info("add buy point break >> %s" % code)
+                    remain_budget = self.max_add_buy_amount_by_stock - self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
+                    quantity = math.trunc(remain_budget / limit_price)
+                    if quantity >= 1:
+                        self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
+                        self.add_hold_etf_dict.update({code: {self.customType.PURCHASE_PRICE: limit_price}})
+                        self.send_order_limit_stock_price(code, quantity, limit_price)
 
         self.logging.logger.info('daily_candle_sell_point_check end')
 
