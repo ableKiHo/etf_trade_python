@@ -169,7 +169,8 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.hold_stock_check_timer.stop()
                     self.logging.logger.info("add buy point break >> %s" % code)
                     remain_budget = self.max_add_buy_amount_by_stock - self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
-
+                    if self.max_buy_amount_by_stock < remain_budget:
+                        remain_budget = self.max_buy_amount_by_stock
                     quantity = math.trunc(remain_budget / limit_price)
                     if quantity >= 1:
                         self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
