@@ -157,7 +157,6 @@ class DayTradingKiwoom(ParentKiwoom):
             target_rows = self.miraeasset_hold_etf_stock_dict[code]["row"]
         else:
             target_rows = self.current_hold_etf_stock_dict[code]["row"]
-        # TODO  self.current_hold_etf_stock_dict[code].update({self.customType.PURCHASE_PRICE: buy_price})
         add_buy_point = self.get_add_buy_point(code, target_rows)
 
         if bool(add_buy_point) and code not in self.add_hold_etf_dict.keys():
@@ -474,6 +473,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if first_tic["ma20"] > first_tic["ma5"]:
             self.logging.logger.info("first_tic ma20 and ma5 position check > [%s] >> %s " % (code, first_tic))
+            return copy.deepcopy(first_tic)
+
+        if first_tic[self.customType.CURRENT_PRICE] <= first_tic["ma20"]:
+            self.logging.logger.info("first_tic current_price and ma20 position check > [%s] >> %s " % (code, first_tic))
             return copy.deepcopy(first_tic)
 
         return {}
