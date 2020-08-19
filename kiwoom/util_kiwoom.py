@@ -112,6 +112,8 @@ def cal_goal_stock_price(start_stock_price, last_stock_price, highest_stock_pric
             const_k = 0.4
     else:
         const_k = 0.5
+    if start_stock_price < lowest_stock_price:
+        const_k = 0
 
     goal_stock_price = start_stock_price + (const_k * (highest_stock_price - lowest_stock_price))
     goal_stock_price = round(goal_stock_price, 0)
