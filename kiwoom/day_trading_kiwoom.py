@@ -286,43 +286,45 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("market off time day trade target nothing")
             self.analysis_search_timer.stop()
-            self.loop_check_sell_hold_etf()
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '160000') < currentDate:
             self.logging.logger.info("market off time day trade over")
             self.analysis_search_timer.stop()
             self.call_exit()
+        if len(self.analysis_goal_etf_stock_list) > 0:
 
-        self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
+            self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
-        code = self.goal_buy_search_stock_code
-        self.logging.logger.info("analysis_goal_etf_stock_list loop > %s " % code)
-        self.search_stock_code.append(code)
+            code = self.goal_buy_search_stock_code
+            self.logging.logger.info("analysis_goal_etf_stock_list loop > %s " % code)
+            self.search_stock_code.append(code)
 
-        self.get_opt10081_info(code)
-        create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-        create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
-        rows = self.analysis_goal_etf_stock_dict[code]["row"]
-        last_price_buy_point = self.get_conform_hammer_case(code, rows)
+            self.get_opt10081_info(code)
+            create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+            create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+            create_moving_average_gap_line(code, self.analysis_goal_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+            rows = self.analysis_goal_etf_stock_dict[code]["row"]
+            last_price_buy_point = self.get_conform_hammer_case(code, rows)
 
-        if bool(last_price_buy_point):
-            if self.current_hold_stock_count == self.max_hold_stock_count:
-                self.line.notification("goal_etf_last_price_buy_point break >> %s" % code)
-            else:
-                quantity = math.trunc(self.max_buy_amount_by_stock / last_price_buy_point[self.customType.CURRENT_PRICE])
-                if quantity >= 1:
-                    self.logging.logger.info("goal_etf_last_price_buy_point break >> %s" % code)
-                    self.current_hold_stock_count = self.current_hold_stock_count + 1
-                    self.market_price_send_order(code, quantity)
+            if bool(last_price_buy_point):
+                if self.current_hold_stock_count == self.max_hold_stock_count:
+                    self.line.notification("goal_etf_last_price_buy_point break >> %s" % code)
+                else:
+                    quantity = math.trunc(self.max_buy_amount_by_stock / last_price_buy_point[self.customType.CURRENT_PRICE])
+                    if quantity >= 1:
+                        self.logging.logger.info("goal_etf_last_price_buy_point break >> %s" % code)
+                        self.current_hold_stock_count = self.current_hold_stock_count + 1
+                        self.market_price_send_order(code, quantity)
 
-        if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
-            self.logging.logger.info("goal_etf market price trade search end")
-            self.analysis_search_timer.stop()
-            if self.current_hold_stock_count < self.max_hold_stock_count:
-                self.loop_other_target_buy_etf_stock()
-            else:
-                self.call_exit()
+            if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
+                self.logging.logger.info("goal_etf market price trade search end")
+                self.analysis_search_timer.stop()
+                if self.current_hold_stock_count < self.max_hold_stock_count:
+                    self.loop_other_target_buy_etf_stock()
+                else:
+                    self.call_exit()
+        else:
+            self.loop_other_target_buy_etf_stock()
 
         self.logging.logger.info('goal_target_candle_hammer_check end')
 
