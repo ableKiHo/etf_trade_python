@@ -166,7 +166,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.line.notification("miraeasset etf add buy point - ma10", "[TRACE]")
             else:
                 if self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE] > limit_price:
-                    self.hold_stock_check_timer.stop()
                     self.logging.logger.info("add buy point break >> %s" % code)
                     remain_budget = self.max_add_buy_amount_by_stock - self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
                     if self.max_buy_amount_by_stock < remain_budget:
@@ -176,7 +175,6 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
                         self.add_hold_etf_dict.update({code: {self.customType.PURCHASE_PRICE: limit_price}})
                         self.send_order_limit_stock_price(code, quantity, limit_price)
-                        self.hold_stock_check_timer.start()
 
         self.logging.logger.info('daily_candle_sell_point_check end')
 
