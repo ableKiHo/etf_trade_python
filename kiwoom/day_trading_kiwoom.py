@@ -163,11 +163,11 @@ class DayTradingKiwoom(ParentKiwoom):
         stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_rows)
         if bool(stop_loss_sell_point):
             if code in self.miraeasset_hold_etf_stock_dict.keys():
-                self.line.notification("miraeasset etf sell point - max profit", "[TRACE]")
+                self.line.notification("miraeasset etf sell point - stop_loss profit", "[TRACE]")
             else:
                 self.hold_stock_check_timer.stop()
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                self.logging.logger.info("max_profit_sell_point break >> %s" % code)
+                self.logging.logger.info("stop_loss_sell_point break >> %s" % code)
                 self.current_hold_etf_stock_dict[code].update({"sell": "full"})
                 self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
 
