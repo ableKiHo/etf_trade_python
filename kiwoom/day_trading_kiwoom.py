@@ -509,13 +509,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("sell_point analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
-
-        if first_tic["ma20"] > first_tic["ma5"]:
-            self.logging.logger.info("first_tic ma20 and ma5 position check > [%s] >> %s " % (code, first_tic))
-            return copy.deepcopy(first_tic)
-
-        if first_tic[self.customType.CURRENT_PRICE] <= first_tic["ma20"]:
-            self.logging.logger.info("first_tic current_price and ma20 position check > [%s] >> %s " % (code, first_tic))
+        second_tic = analysis_rows[1]
+        if second_tic["ma20"] <= second_tic["ma5"] and first_tic["ma20"] > first_tic["ma5"]:
+            self.logging.logger.info("first_tic ma5 deviate from ma20 position check > [%s] >> %s " % (code, first_tic))
             return copy.deepcopy(first_tic)
 
         return {}
