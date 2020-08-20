@@ -83,6 +83,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def set_trace_stock_info(self):
         self.trace_stock_dict.update({'008370': {"name": "원풍", "attention_price": 4350, "sell_std_price": 4220, "buy_std_price": 4050, "noti_count": 0, "noti_type": "sell"}})
         self.trace_stock_dict.update({'100220': {"name": "비상교육", "attention_price": 8960, "sell_std_price": 7150, "buy_std_price": 6980, "noti_count": 0, "noti_type": "buy"}})
+        self.trace_stock_dict.update({'252670': {"name": "인버스2X", "attention_price": 4710, "sell_std_price": 4220, "buy_std_price": 4530, "noti_count": 0, "noti_type": "sell"}})
 
     def trace_stock_real_reg(self):
         for code in self.trace_stock_dict.keys():
