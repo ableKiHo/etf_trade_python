@@ -361,7 +361,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("ma120_line_up_list check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        compare_rows = analysis_rows[:3]
+        compare_rows = analysis_rows[1:4]
         max_ma5 = max([item["ma5"] for item in compare_rows])
         min_ma5 = min([item["ma5"] for item in compare_rows])
         max_ma10 = max([item["ma10"] for item in compare_rows])
@@ -374,7 +374,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         min_list = [min_ma5, min_ma10, min_ma20, min_ma60]
         max_value = max(max_list)
         min_value = min(min_list)
-        gap = 15
+        gap = 20
         if max_value - min_value > gap:
             self.logging.logger.info("cable_tie range check > [%s] >> %s / %s / %s" % (code, first_tic["일자"], max_value, min_value))
             return {}
@@ -403,19 +403,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("ma10_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        compare_rows = analysis_rows[:3]
-        ma5_position_list = [x for x in compare_rows if x["ma5"] > x["ma20"] and x["ma5"] > x["ma60"]]
-        if len(ma5_position_list) <= 0:
-            self.logging.logger.info("ma5_position_list check> [%s] >> %s " % (code, first_tic["일자"],))
-            return {}
-
-        ma10_position_list = [x for x in compare_rows if x["ma10"] > x["ma20"] and x["ma10"] > x["ma60"]]
-        if len(ma10_position_list) <= 0:
-            self.logging.logger.info("ma10_position_list check> [%s] >> %s  " % (code, first_tic["일자"]))
-            return {}
-
-        if first_tic["ma5"] <= first_tic["ma20"] or first_tic["ma5"] <= first_tic["ma60"] or first_tic["ma10"] <= first_tic["ma20"] or first_tic["ma10"] <= first_tic["ma60"]:
-            self.logging.logger.info("first_tic short line check > [%s] >> %s " % (code, first_tic["일자"]))
+        if first_tic["ma5"] <= first_tic["ma20"] or first_tic["ma10"] <= first_tic["ma60"]:
+            self.logging.logger.info("first_tic short line position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         return copy.deepcopy(first_tic)
