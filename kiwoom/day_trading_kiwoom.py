@@ -180,7 +180,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info('daily_candle_sell_point_check end')
 
     def send_order_limit_stock_price(self, code, quantity, limit_stock_price):
-        self.logging.logger.info("send_order_limit_stock_price > %s / %s" % code)
+        self.logging.logger.info("send_order_limit_stock_price > %s " % code)
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
             [self.customType.NEW_PURCHASE, self.buy_screen_real_stock, self.account_num, 1, code, quantity, limit_stock_price,
