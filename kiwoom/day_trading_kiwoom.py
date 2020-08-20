@@ -136,12 +136,14 @@ class DayTradingKiwoom(ParentKiwoom):
             self.get_opt10081_info_mirae(code)
             create_moving_average_gap_line(code, self.miraeasset_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
             create_moving_average_gap_line(code, self.miraeasset_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-            max_profit_sell_point = self.get_max_profit_sell_case(code, self.miraeasset_hold_etf_stock_dict)
+            target_dict = self.miraeasset_hold_etf_stock_dict
         else:
             self.get_sell_opt10081_info(code)
             create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
             create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-            max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
+            target_dict = self.current_hold_etf_stock_dict
+
+        max_profit_sell_point = self.get_max_profit_sell_case(code, target_dict)
 
         if bool(max_profit_sell_point):
             if code in self.miraeasset_hold_etf_stock_dict.keys():
@@ -157,6 +159,18 @@ class DayTradingKiwoom(ParentKiwoom):
             target_rows = self.miraeasset_hold_etf_stock_dict[code]["row"]
         else:
             target_rows = self.current_hold_etf_stock_dict[code]["row"]
+
+        stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_rows)
+        if bool(stop_loss_sell_point):
+            if code in self.miraeasset_hold_etf_stock_dict.keys():
+                self.line.notification("miraeasset etf sell point - max profit", "[TRACE]")
+            else:
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                self.logging.logger.info("max_profit_sell_point break >> %s" % code)
+                self.current_hold_etf_stock_dict[code].update({"sell": "full"})
+                self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
+
         add_buy_point = self.get_add_buy_point(code, target_rows)
 
         if bool(add_buy_point) and code not in self.add_hold_etf_dict.keys():
@@ -444,6 +458,27 @@ class DayTradingKiwoom(ParentKiwoom):
             item = self.analysis_sell_etf_stock_list[index + 1]
 
         self.sell_search_stock_code = item[self.customType.STOCK_CODE]
+
+    def get_stop_loss_sell_point(self, code, target_dict):
+        rows = target_dict[code]["row"]
+        if len(rows) < 2:
+            return {}
+        analysis_rows = rows[:2]
+        first_tic = analysis_rows[0]
+        current_price = first_tic[self.customType.CURRENT_PRICE]
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
+        highest_price = target_dict[code][self.customType.HIGHEST_PRICE]
+        stop_rate = 8
+        loss_rate = 7
+
+        if current_price > buy_price:
+            highest_price_profit_rate = round((highest_price - buy_price) / buy_price * 100, 2)
+            if highest_price_profit_rate >= stop_rate:
+                profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+                if profit_rate <= loss_rate:
+                    self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s" % (code, current_price, buy_price, highest_price_profit_rate, profit_rate))
+                    return copy.deepcopy(first_tic)
+        return {}
 
     def get_max_profit_sell_case(self, code, target_dict):
 
