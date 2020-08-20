@@ -26,8 +26,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_opt10080_info = "4060"
         self.screen_sectors_etf_stock = "4100"
 
-        self.exclude_keywords = ['(H)', '일본', 'S&P', '미국', '중국', '(합성)', '인도']
-
         self.main_sectors_dict = {}
 
         self.analysis_etf_target_dict = {}
@@ -254,14 +252,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
             value = self.target_etf_stock_dict[sCode]
-            if self.is_exclude_main_sector_analysis(sCode):
-                self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
-                f = open(self.target_etf_file_path, "a", encoding="utf8")
-                f.write("%s\t%s\t%s\t%s\t%s\n" %
-                        (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],
-                         value[self.customType.LAST_DAY_LOWEST_PRICE], value[self.customType.LAST_DAY_LAST_PRICE]))
-                f.close()
-                continue
+
             if value[self.customType.STOCK_NAME].find(self.customType.KOSDAQ) >= 0:
                 if self.main_sectors_dict['101']['is_available_position']:
                     if value[self.customType.STOCK_NAME].find(self.customType.INVERSE) >= 0:
@@ -295,7 +286,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         for sCode in self.exclude_target_etf_stock_dict.keys():
             value = self.exclude_target_etf_stock_dict[sCode]
 
-            if self.is_exclude_main_sector_analysis(sCode) or self.is_ma_line_analysis(sCode):
+            if self.is_ma_line_analysis(sCode):
                 self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
                 f = open(self.target_etf_file_path, "a", encoding="utf8")
                 f.write("%s\t%s\t%s\t%s\t%s\n" %
@@ -305,10 +296,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def is_ma_line_analysis(self, code):
         ma_line_buy_point = self.get_conform_ma_line_case(code)
-        return bool(ma_line_buy_point)
-
-    def is_exclude_main_sector_analysis(self, code):
-        ma_line_buy_point = self.get_conform_cable_tie_case(code)
+        if not bool(ma_line_buy_point):
+            ma_line_buy_point = self.get_conform_cable_tie_case(code)
         if not bool(ma_line_buy_point):
             ma_line_buy_point = self.get_conform_cross_candle_case(code)
         return bool(ma_line_buy_point)
@@ -330,7 +319,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         first_tic = analysis_rows[0]
 
         if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
-            self.logging.logger.info("first_tic position check> [%s] >> %s " % (code, first_tic["일자"]))
+            self.logging.logger.info("first_tic current price position check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         black_candle_compare_rows = analysis_rows[1:]
@@ -454,16 +443,13 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
+        if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
+            self.logging.logger.info("first_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
+            return {}
+
         if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"]:
             if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
                 self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
-                return {}
-        else:
-            if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"]:
-                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
-                return {}
-            if first_tic[self.customType.HIGHEST_PRICE] < first_tic["ma20"]:
-                self.logging.logger.info("second_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
                 return {}
 
         current_price_position_list = [(x, field) for x in analysis_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
