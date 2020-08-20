@@ -252,29 +252,15 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
             value = self.target_etf_stock_dict[sCode]
+            if value[self.customType.STOCK_NAME].find(self.customType.INVERSE) >= 0:
+                continue
 
             if value[self.customType.STOCK_NAME].find(self.customType.KOSDAQ) >= 0:
-                if self.main_sectors_dict['101']['is_available_position']:
-                    if value[self.customType.STOCK_NAME].find(self.customType.INVERSE) >= 0:
-                        continue
-                    else:
-                        pass
-                else:
-                    if value[self.customType.STOCK_NAME].find(self.customType.INVERSE) >= 0:
-                        pass
-                    else:
-                        continue
+                if not self.main_sectors_dict['101']['is_available_position']:
+                    continue
             else:
-                if self.main_sectors_dict['001']['is_available_position']:
-                    if value[self.customType.STOCK_NAME].find(self.customType.INVERSE) >= 0:
-                        continue
-                    else:
-                        pass
-                else:
-                    if value[self.customType.STOCK_NAME].find(self.customType.INVERSE) >= 0:
-                        pass
-                    else:
-                        continue
+                if not self.main_sectors_dict['001']['is_available_position']:
+                    continue
 
             if self.is_ma_line_analysis(sCode):
                 self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
