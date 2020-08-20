@@ -443,30 +443,18 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        if first_tic[self.customType.LOWEST_PRICE] <= first_tic["ma20"]:
+        if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"] or first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
             self.logging.logger.info("first_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"]:
-            if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"] or second_tic[self.customType.HIGHEST_PRICE] < second_tic["ma20"]:
-                self.logging.logger.info("third_tic range check > [%s] >> %s " % (code, first_tic["일자"]))
-                return {}
-
-        current_price_position_list = [(x, field) for x in analysis_rows for field in ma_field_list if x[field] > x[self.customType.CURRENT_PRICE]]
-        if len(current_price_position_list) > 0:
-            self.logging.logger.info("current_price_position_list check> [%s] >> %s  " % (code, current_price_position_list))
+        if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"]:
+            self.logging.logger.info("second_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
         inverselist = last_price_list[::-1]
         if not is_increase_trend(inverselist):
             self.logging.logger.info("is_increase_trend current check> [%s] >> %s  " % (code, first_tic["일자"]))
-            return {}
-
-        last_price_list = [item["ma5"] for item in analysis_rows]
-        inverselist = last_price_list[::-1]
-        if not is_increase_trend(inverselist):
-            self.logging.logger.info("is_increase_trend ma5 check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
         return copy.deepcopy(first_tic)
