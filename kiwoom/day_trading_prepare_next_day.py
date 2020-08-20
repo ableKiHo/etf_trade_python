@@ -210,7 +210,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
             code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price, market_cap)
                                  )
-        if int(market_cap) >= 60 and int(change_price) > 0:
+        if int(market_cap) >= 80 and int(change_price) > 0:
             self.exclude_target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
             self.exclude_target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
             self.exclude_target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
@@ -237,7 +237,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
             code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price, market_cap)
                                  )
-        if int(market_cap) >= 60 and int(change_price) > 0:
+        if int(market_cap) >= 80 and int(change_price) > 0:
             self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
