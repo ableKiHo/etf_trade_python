@@ -32,7 +32,7 @@ class ParentKiwoom(QAxWidget):
             QTest.qWait(5000)
             sys.exit()
 
-        self.exclude_keywords = ['(H)', '일본', 'S&P', '미국', '중국', '(합성)', '인도']
+        self.exclude_keywords = ['(H)', '일본', 'S&P', '미국', '중국', '(합성)', '인도', '차이나']
         self.screen_my_info = "2000"  # 계좌 관련한 스크린 번호
         self.login_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()  # 예수금 요청용 이벤트 루프
