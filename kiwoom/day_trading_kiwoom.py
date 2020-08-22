@@ -22,9 +22,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.etf_info_event_loop = QEventLoop()
         self.tr_opt10081_info_event_loop = QEventLoop()
-        # self.tr_sell_opt10081_info_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()
-        # self.detail_account_mystock_info_event_loop = QEventLoop()
         self.tr_opt10080_info_event_loop = QEventLoop()
         self.not_account_info_event_loop = QEventLoop()
 
@@ -41,30 +39,20 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = 50000
         self.max_add_buy_amount_by_stock = 100000
 
-        # self.hold_stock_check_timer = QTimer()
         self.analysis_search_timer = QTimer()
-        self.short_trade_check_timer = QTimer()
+        self.system_off_check_timer = QTimer()
 
         self.current_hold_stock_count = 0
-        # self.status = "WAIT"
 
-        # self.add_hold_etf_dict = {}
         self.today_buy_etf_stock_dict = {}
         self.target_etf_stock_dict = {}
-        # self.current_hold_etf_stock_dict = {}
-        # self.miraeasset_hold_etf_stock_dict = {}
         self.analysis_goal_etf_stock_dict = {}
         self.analysis_goal_etf_stock_list = []
-        # self.analysis_sell_etf_stock_list = []
         self.goal_buy_search_stock_code = ''
-        # self.sell_search_stock_code = ''
         self.search_stock_code = []
 
-        # self.trace_stock_dict = {}
         self.short_trade_target_stock_dict = {}
         self.short_trade_stock_order_dict = {}
-        # self.set_trace_stock_info()
-        # self.set_miraeasset_stock_info()
         self.set_short_trade_stock_info()
 
         self.event_slots()
@@ -75,21 +63,13 @@ class DayTradingKiwoom(ParentKiwoom):
         self.detail_account_info()
         QTest.qWait(5000)
 
-        # self.detail_account_mystock()
-
-        # self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
-
-        # if self.current_hold_stock_count < self.max_hold_stock_count:
-        #     self.get_search_goal_price_etf()
-        #     self.loop_analysis_buy_etf()
         self.get_search_goal_price_etf()
         self.loop_analysis_buy_etf()
-        # if self.current_hold_stock_count > 0 or len(self.miraeasset_hold_etf_stock_dict.keys()) > 0:
-        #     self.loop_check_sell_hold_etf()
+        self.loop_system_off()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
-        # self.trace_stock_real_reg()
+
         if len(self.short_trade_target_stock_dict.keys()) > 0:
             self.analysis_short_trade_candle_info()
 
@@ -97,133 +77,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.short_trade_target_stock_dict.update({'122630': {"row": []}})
         self.short_trade_target_stock_dict.update({'252670': {"row": []}})
 
-    # def set_trace_stock_info(self):
-    #     self.trace_stock_dict.update({'008370': {"name": "원풍", "attention_price": 4350, "sell_std_price": 4220, "buy_std_price": 4050, "noti_count": 0, "noti_type": "sell"}})
-    #     self.trace_stock_dict.update({'100220': {"name": "비상교육", "attention_price": 8960, "sell_std_price": 7150, "buy_std_price": 6980, "noti_count": 0, "noti_type": "buy"}})
-
-    # def trace_stock_real_reg(self):
-    #     for code in self.trace_stock_dict.keys():
-    #         self.logging.logger.info("trace_stock_real_reg >> %s" % code)
-    #         fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
-    #         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.buy_screen_real_stock, code, fids, "1")
-
-    # def set_miraeasset_stock_info(self):
-    #     self.miraeasset_hold_etf_stock_dict.update({'161510': {self.customType.STOCK_CODE: '161510',
-    #                                                            self.customType.STOCK_NAME: 'ARIRANG 고배당주',
-    #                                                            self.customType.HOLDING_QUANTITY: 10,
-    #                                                            self.customType.PURCHASE_PRICE: 9475,
-    #                                                            "row": []}})
-
-    # def loop_check_sell_hold_etf(self):
-    #     self.hold_stock_check_timer.stop()
-    #     self.hold_stock_check_timer = default_q_timer_setting()
-    #     self.hold_stock_check_timer.timeout.connect(self.check_sell_hold_etf)
-
-    # def check_sell_hold_etf(self):
-    #     currentDate = get_today_by_format('%Y%m%d%H%M%S')
-    #     self.hold_stock_check_timer.stop()
-    #     if (self.today + '150000') < currentDate:
-    #         return
-    #     self.loop_sell_hold_etf_stock()
-
-    # def loop_sell_hold_etf_stock(self):
-    #     self.logging.logger.info('loop_sell_hold_etf_stock')
-    #     self.sell_search_stock_code = ''
-    #     self.analysis_sell_etf_stock_list = []
-    #     for key in self.current_hold_etf_stock_dict.keys():
-    #         if key not in self.today_buy_etf_stock_dict.keys():
-    #             self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
-    #     for key in self.miraeasset_hold_etf_stock_dict.keys():
-    #         self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.miraeasset_hold_etf_stock_dict[key]))
-    #     self.hold_stock_check_timer = default_q_timer_setting(160)
-    #     self.hold_stock_check_timer.timeout.connect(self.daily_candle_sell_point_check)
-
-    # def daily_candle_sell_point_check(self):
-    #     if len(self.analysis_sell_etf_stock_list) == 0:
-    #         self.logging.logger.info("analysis_sell_etf_stock_list nothing")
-    #         self.hold_stock_check_timer.stop()
-    #         return
-    #
-    #     self.get_sell_next_search_etf_stock_code(len(self.analysis_sell_etf_stock_list))
-    #
-    #     code = self.sell_search_stock_code
-    #     self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
-    #
-    #     if code in self.miraeasset_hold_etf_stock_dict.keys():
-    #         self.get_opt10081_info_mirae(code)
-    #         create_moving_average_gap_line(code, self.miraeasset_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-    #         create_moving_average_gap_line(code, self.miraeasset_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-    #         target_dict = self.miraeasset_hold_etf_stock_dict
-    #     else:
-    #         self.get_sell_opt10081_info(code)
-    #         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-    #         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-    #         target_dict = self.current_hold_etf_stock_dict
-    #
-    #     max_profit_sell_point = self.get_max_profit_sell_case(code, target_dict)
-    #
-    #     if bool(max_profit_sell_point):
-    #         if code in self.miraeasset_hold_etf_stock_dict.keys():
-    #             self.line.notification("miraeasset etf sell point - max profit", "[TRACE]")
-    #         else:
-    #             self.hold_stock_check_timer.stop()
-    #             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-    #             self.logging.logger.info("max_profit_sell_point break >> %s" % code)
-    #             self.current_hold_etf_stock_dict[code].update({"sell": "full"})
-    #             self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
-    #
-    #     if code in self.miraeasset_hold_etf_stock_dict.keys():
-    #         target_rows = self.miraeasset_hold_etf_stock_dict[code]["row"]
-    #     else:
-    #         target_rows = self.current_hold_etf_stock_dict[code]["row"]
-    #
-    #     stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_rows)
-    #     if bool(stop_loss_sell_point):
-    #         if code in self.miraeasset_hold_etf_stock_dict.keys():
-    #             self.line.notification("miraeasset etf sell point - stop_loss profit", "[TRACE]")
-    #         else:
-    #             self.hold_stock_check_timer.stop()
-    #             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-    #             self.logging.logger.info("stop_loss_sell_point break >> %s" % code)
-    #             self.current_hold_etf_stock_dict[code].update({"sell": "full"})
-    #             self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
-    #
-    #     add_buy_point = self.get_add_buy_point(code, target_rows)
-    #
-    #     if bool(add_buy_point) and code not in self.add_hold_etf_dict.keys():
-    #         limit_price = add_buy_point[self.customType.CURRENT_PRICE]
-    #         if code in self.miraeasset_hold_etf_stock_dict.keys():
-    #             self.add_hold_etf_dict.update({code: {self.customType.PURCHASE_PRICE: limit_price}})
-    #             self.line.notification("miraeasset etf add buy point - ma10", "[TRACE]")
-    #         else:
-    #             if self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE] > limit_price:
-    #                 self.logging.logger.info("add buy point break >> %s" % code)
-    #                 remain_budget = self.max_add_buy_amount_by_stock - self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
-    #                 if self.max_buy_amount_by_stock < remain_budget:
-    #                     remain_budget = self.max_buy_amount_by_stock
-    #                 quantity = math.trunc(remain_budget / limit_price)
-    #                 if quantity >= 1:
-    #                     self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-    #                     self.add_hold_etf_dict.update({code: {self.customType.PURCHASE_PRICE: limit_price}})
-    #                     self.send_order_limit_stock_price(code, quantity, limit_price)
-    #
-    #     self.logging.logger.info('daily_candle_sell_point_check end')
-
-    def send_order_limit_stock_price(self, code, quantity, limit_stock_price):
-        self.logging.logger.info("send_order_limit_stock_price > %s " % code)
-        order_success = self.dynamicCall(
-            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_PURCHASE, self.buy_screen_real_stock, self.account_num, 1, code, quantity, limit_stock_price,
-             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
-
-        if order_success == 0:
-            self.logging.logger.info(
-                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity, limit_stock_price, self.purchased_deposit))
-            self.line.notification(
-                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity, limit_stock_price, self.purchased_deposit))
-        else:
-            self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
-            
     def get_conform_hold_stock_last_price(self):
         for code in self.today_buy_etf_stock_dict.keys():
             QTest.qWait(3800)
@@ -244,7 +97,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info('loop short_trade_target_stock_dict: %s' % code)
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
             if (self.today + '150000') < currentDate:
-                self.short_trade_check_timer.stop()
                 for order_code in self.short_trade_stock_order_dict.keys():
                     self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[order_code][self.customType.HOLDING_QUANTITY])
                 loop_flag = False
@@ -279,7 +131,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         continue
 
             else:
-                if (self.today + '145000') <= currentDate:
+                if (self.today + '140000') <= currentDate:
                     continue
 
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
@@ -387,7 +239,6 @@ class DayTradingKiwoom(ParentKiwoom):
     def analysis_day_candle_info(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        # self.logging.logger.info('analysis_day_candle_info >> %s' % len(self.analysis_goal_etf_stock_dict.keys()))
         if (self.today + '150000') <= currentDate:
             if len(self.analysis_goal_etf_stock_dict.keys()) > 0 or (len(self.analysis_goal_etf_stock_dict.keys()) == 0 and len(self.target_etf_stock_dict.keys()) > 0):
                 self.analysis_search_timer.stop()
@@ -411,13 +262,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("market off time day trade target nothing")
             self.analysis_search_timer.stop()
-            # self.loop_check_sell_hold_etf()
             return
-        # currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        # if (self.today + '160000') < currentDate:
-        #     self.logging.logger.info("market off time day trade over")
-        #     self.analysis_search_timer.stop()
-        #     self.call_exit()
 
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
@@ -445,7 +290,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("market price trade all search end")
             self.analysis_search_timer.stop()
-            self.call_exit()
+            return
 
         self.logging.logger.info('other_target_candle_hammer_check end')
 
@@ -462,14 +307,6 @@ class DayTradingKiwoom(ParentKiwoom):
     def goal_target_candle_hammer_check(self):
         self.logging.logger.info('goal_target_candle_hammer_check')
 
-        # if len(self.analysis_goal_etf_stock_list) == 0:
-        #     self.logging.logger.info("market off time day trade target nothing")
-        #     self.analysis_search_timer.stop()
-        # currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        # if (self.today + '160000') < currentDate:
-        #     self.logging.logger.info("market off time day trade over")
-        #     self.analysis_search_timer.stop()
-        #     self.call_exit()
         if len(self.analysis_goal_etf_stock_list) > 0:
 
             self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
@@ -527,43 +364,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
                 self.get_conform_hold_stock_last_price()
-                # self.status = "END"
-
-        # elif sRealType == self.customType.STOCK_CONCLUSION:
-        #     if sCode in self.trace_stock_dict.keys():
-        #         current_stock_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
-        #         current_stock_price = abs(int(current_stock_price.strip()))
-        #
-        #         if current_stock_price >= self.trace_stock_dict[sCode]["attention_price"] and self.trace_stock_dict[sCode]["noti_count"] < 3:
-        #             self.line.notification("attention time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["attention_price"]), "[TRACE]")
-        #             self.trace_stock_dict[sCode]["noti_count"] = self.trace_stock_dict[sCode]["noti_count"] + 1
-        #
-        #         if current_stock_price >= self.trace_stock_dict[sCode]["sell_std_price"] and self.trace_stock_dict[sCode]["noti_type"] == "sell" and self.trace_stock_dict[sCode]["noti_count"] < 3:
-        #             self.line.notification("sell time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["sell_std_price"]), "[TRACE]")
-        #             self.trace_stock_dict[sCode]["noti_count"] = self.trace_stock_dict[sCode]["noti_count"] + 1
-        #
-        #         if current_stock_price < self.trace_stock_dict[sCode]["buy_std_price"] and self.trace_stock_dict[sCode]["noti_type"] == "buy" and self.trace_stock_dict[sCode]["noti_count"] < 3:
-        #             self.line.notification("[TRACE] buy time [%s] >> %s / %s" % (self.trace_stock_dict[sCode]["name"], current_stock_price, self.trace_stock_dict[sCode]["buy_std_price"]), "[TRACE]")
-        #             self.trace_stock_dict[sCode]["noti_count"] = self.trace_stock_dict[sCode]["noti_count"] + 1
-        #
-        #     if self.status == "SEARCH":
-        #         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        #         if sCode in self.target_etf_stock_dict.keys() and (self.today + '150000') > currentDate:
-        #             current_stock_price = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
-        #             current_stock_price = abs(int(current_stock_price.strip()))
-        #             # self.logging.logger.info('STOCK_CONCLUSION [%s]>> %s / %s' % (sCode, current_stock_price, self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]))
-        #             if sCode in self.target_etf_stock_dict.keys():
-        #                 if sCode not in self.analysis_goal_etf_stock_dict.keys() and current_stock_price >= self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]:
-        #                     self.logging.logger.info("pass goal price [%s] >> %s" % (sCode, self.target_etf_stock_dict[sCode]))
-        #                     self.dynamicCall("SetRealRemove(QString, QString)", self.target_etf_stock_dict[sCode][self.customType.SCREEN_NUMBER], sCode)
-        #                     self.analysis_goal_etf_stock_dict.update(
-        #                         {sCode: {self.customType.STOCK_CODE: sCode, self.customType.GOAL_PRICE: self.target_etf_stock_dict[sCode][self.customType.GOAL_PRICE]}})
-        #
-        #         if (self.today + '150000') <= currentDate:
-        #             self.logging.logger.info("max time over stock conclusion realdata callback")
-        #             self.hold_stock_check_timer.stop()
-        #             if len(self.target_etf_stock_dict.keys()) > 0:
-        #                 self.all_real_remove()
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
@@ -576,18 +376,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081_all", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exec_()
-
-    # def get_sell_opt10081_info(self, code):
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
-    #     self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
-    #     self.tr_sell_opt10081_info_event_loop.exec_()
-
-    # def get_opt10081_info_mirae(self, code):
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
-    #     self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081_mirae", "opt10081", 0, self.screen_etf_stock)
-    #     self.tr_sell_opt10081_info_event_loop.exec_()
 
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
@@ -603,78 +391,6 @@ class DayTradingKiwoom(ParentKiwoom):
             item = self.analysis_goal_etf_stock_list[index + 1]
 
         self.goal_buy_search_stock_code = item[self.customType.STOCK_CODE]
-
-    # def get_sell_next_search_etf_stock_code(self, max_index=4):
-    #     if self.sell_search_stock_code == '':
-    #         item = self.analysis_sell_etf_stock_list[0]
-    #     else:
-    #         index = next((index for (index, d) in enumerate(self.analysis_sell_etf_stock_list) if d[self.customType.STOCK_CODE] == self.sell_search_stock_code), None)
-    #         if index < 0 or index > max_index:
-    #             self.logging.logger.info("not found next stock code > index:[%s] " % index)
-    #             sys.exit()
-    #
-    #         if index == len(self.analysis_sell_etf_stock_list) - 1:
-    #             index = -1
-    #         item = self.analysis_sell_etf_stock_list[index + 1]
-    #
-    #     self.sell_search_stock_code = item[self.customType.STOCK_CODE]
-
-    # def get_stop_loss_sell_point(self, code, target_dict):
-    #     rows = target_dict[code]["row"]
-    #     if len(rows) < 2:
-    #         return {}
-    #     analysis_rows = rows[:2]
-    #     first_tic = analysis_rows[0]
-    #     current_price = first_tic[self.customType.CURRENT_PRICE]
-    #     buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-    #     highest_price = target_dict[code][self.customType.HIGHEST_PRICE]
-    #     stop_rate = 8
-    #     loss_rate = 7
-    #
-    #     if current_price > buy_price:
-    #         highest_price_profit_rate = round((highest_price - buy_price) / buy_price * 100, 2)
-    #         if highest_price_profit_rate >= stop_rate:
-    #             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-    #             if profit_rate <= loss_rate:
-    #                 self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s" % (code, current_price, buy_price, highest_price_profit_rate, profit_rate))
-    #                 return copy.deepcopy(first_tic)
-    #     return {}
-
-    # def get_max_profit_sell_case(self, code, target_dict):
-    #
-    #     rows = target_dict[code]["row"]
-    #     if len(rows) < 2:
-    #         return {}
-    #     analysis_rows = rows[:2]
-    #     first_tic = analysis_rows[0]
-    #     current_price = first_tic[self.customType.CURRENT_PRICE]
-    #     buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-    #
-    #     if current_price > buy_price:
-    #         profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-    #         if profit_rate >= 10:
-    #             self.logging.logger.info("max_profit check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
-    #             return copy.deepcopy(first_tic)
-    #     return {}
-
-    # def get_add_buy_point(self, code, rows):
-    #     if len(rows) < 2:
-    #         return {}
-    #     analysis_rows = rows[:2]
-    #
-    #     empty_gap_list = [x for x in analysis_rows if x["ma5"] == '' or x["ma20"] == '']
-    #     if len(empty_gap_list) > 0:
-    #         return {}
-    #
-    #     self.logging.logger.info("sell_point analysis_rows > [%s] >> %s " % (code, analysis_rows))
-    #
-    #     first_tic = analysis_rows[0]
-    #     second_tic = analysis_rows[1]
-    #     if second_tic["ma20"] <= second_tic["ma5"] and first_tic["ma20"] > first_tic["ma5"]:
-    #         self.logging.logger.info("first_tic ma5 deviate from ma20 position check > [%s] >> %s " % (code, first_tic))
-    #         return copy.deepcopy(first_tic)
-    #
-    #     return {}
 
     def get_conform_hammer_case(self, code, rows):
 
@@ -762,16 +478,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.detail_account_info_event_loop.exec_()
 
-    # def detail_account_mystock(self, sPrevNext="0"):
-    #     self.logging.logger.info("detail_account_mystock")
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.ACCOUNT_NUMBER, self.account_num)
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.PASSWORD, self.account_pw)
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.CLASSIFICATION_OF_PASSWORD_INPUT_MEDIA, "00")
-    #     self.dynamicCall("SetInputValue(QString, QString)", self.customType.CLASSIFICATION, "1")
-    #     self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPW00018, "opw00018", sPrevNext, self.screen_my_info)
-    #
-    #     self.detail_account_mystock_info_event_loop.exec_()
-
     def tr_opt10080_info(self, code, sPrevNext="0"):
         self.logging.logger.info('tr_opt10080_info > [%s]' % code)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
@@ -799,14 +505,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.trdata_slot_opt10001_today(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10081":
             self.trdata_slot_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-        # elif sRQName == "tr_sell_opt10081":
-        #     self.trdata_slot_sell_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10081_all":
             self.trdata_slot_opt10081_all(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-        # elif sRQName == "tr_sell_opt10081_mirae":
-        #     self.trdata_slot_sell_mirae_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-        # elif sRQName == self.customType.OPW00018:
-        #     self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10080":
             self.trdata_slot_opt10080(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "실시간미체결요청":
@@ -873,54 +573,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.stop_screen_cancel(self.screen_opt10080_info)
         self.tr_opt10080_info_event_loop.exit()
 
-    # def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-    #
-    #     rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)  # 최대 20개 카운트
-    #     for i in range(rows):
-    #         code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NUMBER)
-    #         code = code.strip()[1:]
-    #
-    #         code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NAME)
-    #         code_nm = code_nm.strip()
-    #         stock_quantity = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HOLDING_QUANTITY)
-    #         buy_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.PURCHASE_PRICE)
-    #         learn_rate = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.YIELD)
-    #         current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
-    #         total_chegual_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.PURCHASE_AMOUNT)
-    #         possible_quantity = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.AMOUNT_OF_TRADING_AVAILABLE)
-    #
-    #         self.logging.logger.info(self.logType.OPW00018_DETAIL_LOG % (code, code_nm, stock_quantity, buy_price, learn_rate, current_price))
-    #
-    #         if code in self.current_hold_etf_stock_dict:
-    #             pass
-    #         else:
-    #             self.current_hold_etf_stock_dict[code] = {}
-    #
-    #         stock_quantity = int(stock_quantity.strip())
-    #         buy_price = int(buy_price.strip())
-    #         learn_rate = float(learn_rate.strip())
-    #         current_price = int(current_price.strip())
-    #         total_chegual_price = int(total_chegual_price.strip())
-    #         possible_quantity = int(possible_quantity.strip())
-    #
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.STOCK_CODE: code})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.HOLDING_QUANTITY: stock_quantity})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.PURCHASE_PRICE: buy_price})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.YIELD: learn_rate})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.CURRENT_PRICE: current_price})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.PURCHASE_AMOUNT: total_chegual_price})
-    #         self.current_hold_etf_stock_dict[code].update({self.customType.AMOUNT_OF_TRADING_AVAILABLE: possible_quantity})
-    #         self.current_hold_etf_stock_dict[code].update({"row": []})
-    #
-    #         self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
-    #
-    #     if sPrevNext == "2":
-    #         self.detail_account_mystock(sPrevNext="2")
-    #     else:
-    #         self.stop_screen_cancel(self.screen_my_info)
-    #         self.detail_account_mystock_info_event_loop.exit()
-
     def trdata_slot_opw00001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.DEPOSIT)
         self.deposit = int(deposit)
@@ -951,72 +603,16 @@ class DayTradingKiwoom(ParentKiwoom):
     def trdata_slot_opt10001_today(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         code = code.strip()
-        # start_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.START_PRICE)
         current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
-        # highest_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.HIGHEST_PRICE)
         if code in self.today_buy_etf_stock_dict.keys():
-
-            if current_price < self.today_buy_etf_stock_dict[code][self.customType.PURCHASE_PRICE]:
-                quantity = int(self.max_add_buy_amount_by_stock / current_price)
-                self.send_order_market_off_price_stock_price(self.code, quantity)
+            today_buy_etf = self.today_buy_etf_stock_dict[code]
+            if current_price < today_buy_etf[self.customType.PURCHASE_PRICE]:
+                remain_budget = self.max_add_buy_amount_by_stock - today_buy_etf[self.customType.TOTAL_PURCHASE_PRICE]
+                if remain_budget > 0:
+                    quantity = int(remain_budget / current_price)
+                    self.send_order_market_off_price_stock_price(self.code, quantity)
 
         self.etf_info_event_loop.exit()
-
-    # def trdata_slot_sell_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-    #     stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
-    #     stock_code = stock_code.strip()
-    #
-    #     if stock_code not in self.current_hold_etf_stock_dict.keys():
-    #         self.current_hold_etf_stock_dict.update({stock_code: {"row": []}})
-    #
-    #     new_rows = []
-    #     cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
-    #
-    #     for i in range(cnt):
-    #         a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
-    #         a = abs(int(a.strip()))
-    #         b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
-    #         b = abs(int(b.strip()))
-    #         c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
-    #         c = c.strip()
-    #         d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
-    #         d = abs(int(d.strip()))
-    #
-    #         row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
-    #         new_rows.append(row)
-    #
-    #     self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
-    #
-    #     self.stop_screen_cancel(self.screen_etf_stock)
-    #     self.tr_sell_opt10081_info_event_loop.exit()
-
-    # def trdata_slot_sell_mirae_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
-    #     stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
-    #     stock_code = stock_code.strip()
-    #
-    #     if stock_code not in self.miraeasset_hold_etf_stock_dict.keys():
-    #         self.miraeasset_hold_etf_stock_dict.update({stock_code: {"row": []}})
-    #
-    #     new_rows = []
-    #     cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
-    #
-    #     for i in range(cnt):
-    #         a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
-    #         a = abs(int(a.strip()))
-    #         b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
-    #         b = abs(int(b.strip()))
-    #         c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
-    #         c = c.strip()
-    #         d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
-    #         d = abs(int(d.strip()))
-    #
-    #         row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
-    #         new_rows.append(row)
-    #
-    #     self.miraeasset_hold_etf_stock_dict[stock_code].update({"row": new_rows})
-    #
-    #     self.stop_screen_cancel(self.screen_etf_stock)
-    #     self.tr_sell_opt10081_info_event_loop.exit()
 
     def trdata_slot_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
@@ -1089,7 +685,6 @@ class DayTradingKiwoom(ParentKiwoom):
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
                     last_stock_price = ls[4].rstrip('\n')
-                    # if stock_code not in self.current_hold_etf_stock_dict.keys() and stock_code not in self.short_trade_target_stock_dict.keys():
                     if stock_code not in self.short_trade_target_stock_dict.keys():
                         self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_CODE: stock_code,
                                                                         self.customType.STOCK_NAME: stock_name,
@@ -1141,15 +736,20 @@ class DayTradingKiwoom(ParentKiwoom):
 
             cnt += 1
 
-    # def stock_real_reg(self):
-    #     self.logging.logger.info("stock_real_reg")
-    #     for code in self.target_etf_stock_dict.keys():
-    #         if self.target_etf_stock_dict[code][self.customType.GOAL_PRICE] > 0 and code not in self.analysis_goal_etf_stock_dict.keys():
-    #             screen_num = self.target_etf_stock_dict[code][self.customType.SCREEN_NUMBER]
-    #             fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
-    #             self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
-    #
-    #     self.status = "SEARCH"
+    def send_order_limit_stock_price(self, code, quantity, limit_stock_price):
+        self.logging.logger.info("send_order_limit_stock_price > %s " % code)
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_PURCHASE, self.buy_screen_real_stock, self.account_num, 1, code, quantity, limit_stock_price,
+             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], ""])
+
+        if order_success == 0:
+            self.logging.logger.info(
+                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity, limit_stock_price, self.purchased_deposit))
+            self.line.notification(
+                self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity, limit_stock_price, self.purchased_deposit))
+        else:
+            self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
 
     def send_order_market_off_price_stock_price(self, code, quantity):
         self.logging.logger.info("send_order_market_price_stock_price > %s " % code)
@@ -1240,24 +840,12 @@ class DayTradingKiwoom(ParentKiwoom):
             self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
             if meme_gubun == self.customType.SELL:
-                # if holding_quantity > 0:
-                #     self.current_hold_etf_stock_dict[sCode].update({self.customType.HOLDING_QUANTITY: holding_quantity})
-                # else:
-                #     del self.current_hold_etf_stock_dict[sCode]
-                #     self.check_sell_hold_etf()
                 pass
             else:
-                # if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
-                #     self.today_buy_etf_stock_dict.update({sCode: {}})
-                #     self.check_sell_hold_etf()
                 if sCode not in self.today_buy_etf_stock_dict.keys():
                     self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                   self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                   self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
-                # if sCode not in self.current_hold_etf_stock_dict.keys() and sCode not in self.short_trade_stock_order_dict.keys():
-                #     if holding_quantity > 0:
-                #         self.current_hold_etf_stock_dict[sCode].update({self.customType.HOLDING_QUANTITY: holding_quantity})
-                #         self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price})
                 if sCode in self.short_trade_stock_order_dict.keys():
                     if holding_quantity > 0:
                         self.short_trade_stock_order_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
@@ -1266,6 +854,17 @@ class DayTradingKiwoom(ParentKiwoom):
     def call_exit(self):
         self.logging.logger.info("시스템 종료")
         sys.exit()
+
+    def loop_system_off(self):
+        self.system_off_check_timer = default_q_timer_setting(60)
+        self.system_off_check_timer.timeout.connect(self.check_system_off_time)
+
+    def check_system_off_time(self):
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '160000') < currentDate:
+            self.logging.logger.info("market off time day trade over")
+            self.system_off_check_timer.stop()
+            self.call_exit()
 
     def create_analysis_target_etf_file(self):
         self.logging.logger.info("create_analysis_target_etf_file")
