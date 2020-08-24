@@ -94,7 +94,7 @@ class DayTradingKiwoom(ParentKiwoom):
         loop_flag = True
         short_trade_stock_order_list = list(self.short_trade_stock_order_dict.keys())
         for code in self.short_trade_target_stock_dict.keys():
-            self.logging.logger.info('loop short_trade_target_stock_dict: %s' % code)
+
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
             if (self.today + '145900') < currentDate:
                 for order_code in short_trade_stock_order_list:
@@ -112,10 +112,12 @@ class DayTradingKiwoom(ParentKiwoom):
             self.get_opt10080_info(code)
 
             if code in short_trade_stock_order_list:
+                self.logging.logger.info('loop short_trade_stock_order_list: %s' % code)
                 if self.short_trade_stock_order_dict[code][self.customType.ORDER_STATUS] == 'wait':
                     tightening_time = self.short_trade_stock_order_dict[code][self.customType.TIGHTENING_TIME]
                     buy_after_tic_rows = [x for x in self.short_trade_target_stock_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > tightening_time]
                     if len(buy_after_tic_rows) > 0:
+                        self.logging.logger.info('not_concluded_account: %s' % buy_after_tic_rows)
                         self.not_concluded_account()
                         continue
 
@@ -125,20 +127,23 @@ class DayTradingKiwoom(ParentKiwoom):
                     current_price = first_tic[self.customType.CURRENT_PRICE]
                     buy_price = self.short_trade_stock_order_dict[code][self.customType.PURCHASE_PRICE]
                     if self.short_trade_max_profit_case(current_price, buy_price):
+                        self.logging.logger.info('short_trade_max_profit_case: %s / %s' % (current_price, buy_price))
                         self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[code][self.customType.HOLDING_QUANTITY])
                         del self.short_trade_stock_order_dict[code]
                         continue
+
                     create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
                     short_trade_sell_point = self.short_trade_sell_case()
                     if not bool(short_trade_sell_point):
+                        self.logging.logger.info('short_trade_sell_point: %s' % short_trade_sell_point)
                         self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[code][self.customType.HOLDING_QUANTITY])
                         del self.short_trade_stock_order_dict[code]
                         continue
             else:
                 if (self.today + '140100') < currentDate:
                     continue
-
+                self.logging.logger.info('loop short_trade_target_stock_dict: %s' % code)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
