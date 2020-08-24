@@ -92,12 +92,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def analysis_short_trade_candle_info(self):
         loop_flag = True
+        short_trade_stock_order_list = list(self.short_trade_stock_order_dict.keys())
         for code in self.short_trade_target_stock_dict.keys():
             self.logging.logger.info('loop short_trade_target_stock_dict: %s' % code)
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
             if (self.today + '145900') < currentDate:
-                for order_code in self.short_trade_stock_order_dict.keys():
-                    self.logging.logger.info('short_trade sell send order: %s' % order_code)
+                for order_code in short_trade_stock_order_list:
+                    self.logging.logger.info('short_trade time over sell send order: %s' % order_code)
                     loop_sleep = QEventLoop()
                     QTimer.singleShot(3 * 1000, loop_sleep.quit)
                     loop_sleep.exec_()
@@ -110,7 +111,7 @@ class DayTradingKiwoom(ParentKiwoom):
             loop_sleep.exec_()
             self.get_opt10080_info(code)
 
-            if code in self.short_trade_stock_order_dict.keys():
+            if code in short_trade_stock_order_list:
                 if self.short_trade_stock_order_dict[code][self.customType.ORDER_STATUS] == 'wait':
                     tightening_time = self.short_trade_stock_order_dict[code][self.customType.TIGHTENING_TIME]
                     buy_after_tic_rows = [x for x in self.short_trade_target_stock_dict[code]["row"] if x[self.customType.TIGHTENING_TIME] > tightening_time]
@@ -125,14 +126,15 @@ class DayTradingKiwoom(ParentKiwoom):
                     buy_price = self.short_trade_stock_order_dict[code][self.customType.PURCHASE_PRICE]
                     if self.short_trade_max_profit_case(current_price, buy_price):
                         self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[code][self.customType.HOLDING_QUANTITY])
+                        del self.short_trade_stock_order_dict[code]
                         continue
                     create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
                     short_trade_sell_point = self.short_trade_sell_case()
                     if not bool(short_trade_sell_point):
                         self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[code][self.customType.HOLDING_QUANTITY])
+                        del self.short_trade_stock_order_dict[code]
                         continue
-
             else:
                 if (self.today + '140100') < currentDate:
                     continue
@@ -207,16 +209,21 @@ class DayTradingKiwoom(ParentKiwoom):
     def short_trade_sell_case(self, code):
         rows = self.short_trade_target_stock_dict[code]["row"]
         first_tic = rows[0]
+        if first_tic["ma20"] == '':
+            return {}
+
+        self.logging.logger.info("short_trade_sell_case first_tic > [%s] >> %s " % (code, first_tic))
         current_price = first_tic[self.customType.CURRENT_PRICE]
         buy_price = self.short_trade_stock_order_dict[code][self.customType.PURCHASE_PRICE]
+        first_tic_ma20 = first_tic["ma20"]
         if current_price < buy_price:
-            return {}
+            if first_tic_ma20 >= current_price:
+                return copy.deepcopy(first_tic)
 
         tightening_time = self.short_trade_stock_order_dict[code][self.customType.TIGHTENING_TIME]
 
         buy_after_tic_rows = [x for x in rows if x[self.customType.TIGHTENING_TIME] > tightening_time]
         max_highest_price = max([item[self.customType.HIGHEST_PRICE] for item in buy_after_tic_rows])
-        first_tic_ma20 = first_tic["ma20"]
         goni_price = buy_price + ((max_highest_price - buy_price) / 2)
         if first_tic_ma20 < goni_price:
             std_price = first_tic_ma20
@@ -524,7 +531,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     if order_success == 0:
                         self.logging.logger.debug(self.logType.CANCLE_ORDER_BUY_SUCCESS_LOG)
-                        del self.self.short_trade_stock_order_dict[code]
+                        del self.short_trade_stock_order_dict[code]
                     else:
                         self.logging.logger.debug(self.logType.CANCLE_ORDER_BUY_FAIL_LOG)
 
