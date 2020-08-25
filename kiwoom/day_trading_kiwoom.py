@@ -106,12 +106,12 @@ class DayTradingKiwoom(ParentKiwoom):
                 loop_flag = False
                 break
 
-            loop_sleep = QEventLoop()
-            QTimer.singleShot(15 * 1000, loop_sleep.quit)
-            loop_sleep.exec_()
-            self.get_opt10080_info(code)
-
             if code in short_trade_stock_order_list:
+                loop_sleep = QEventLoop()
+                QTimer.singleShot(15 * 1000, loop_sleep.quit)
+                loop_sleep.exec_()
+                self.get_opt10080_info(code)
+
                 self.logging.logger.info('loop short_trade_stock_order_list: %s' % code)
                 if self.short_trade_stock_order_dict[code][self.customType.ORDER_STATUS] == 'wait':
                     tightening_time = self.short_trade_stock_order_dict[code][self.customType.TIGHTENING_TIME]
@@ -143,6 +143,12 @@ class DayTradingKiwoom(ParentKiwoom):
             else:
                 if (self.today + '140100') < currentDate:
                     continue
+
+                loop_sleep = QEventLoop()
+                QTimer.singleShot(15 * 1000, loop_sleep.quit)
+                loop_sleep.exec_()
+                self.get_opt10080_info(code)
+
                 self.logging.logger.info('loop short_trade_target_stock_dict: %s' % code)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
