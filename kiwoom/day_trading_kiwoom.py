@@ -627,7 +627,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 remain_budget = self.max_add_buy_amount_by_stock - today_buy_etf[self.customType.TOTAL_PURCHASE_PRICE]
                 if remain_budget > 0:
                     quantity = int(remain_budget / current_price)
-                    self.send_order_market_off_price_stock_price(self.code, quantity)
+                    if quantity >= 1:
+                        self.send_order_market_off_price_stock_price(self.code, quantity)
 
         self.etf_info_event_loop.exit()
 
