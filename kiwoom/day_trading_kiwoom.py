@@ -647,8 +647,10 @@ class DayTradingKiwoom(ParentKiwoom):
             c = c.strip()
             d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
             d = abs(int(d.strip()))
+            e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
+            e = abs(int(e.strip()))
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '', "ma10": ''}
             new_rows.append(row)
 
         self.analysis_goal_etf_stock_dict[stock_code].update({"row": new_rows})
@@ -672,8 +674,10 @@ class DayTradingKiwoom(ParentKiwoom):
             c = c.strip()
             d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
             d = abs(int(d.strip()))
+            e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
+            e = abs(int(e.strip()))
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, "ma20": '', "ma5": '', "ma10": ''}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '', "ma10": ''}
             new_rows.append(row)
 
         self.target_etf_stock_dict[stock_code].update({"row": new_rows})
