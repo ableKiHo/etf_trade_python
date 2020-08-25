@@ -559,17 +559,17 @@ class DayTradingKiwoom(ParentKiwoom):
 
         for i in range(cnt):
             a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
-            a = int(a.strip())
+            a = abs(int(a.strip()))
             b = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.VOLUME)
-            b = int(b.strip())
+            b = abs(int(b.strip()))
             c = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.TIGHTENING_TIME)
             c = c.strip()
             d = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.START_PRICE)
-            d = int(d.strip())
+            d = abs(int(d.strip()))
             e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.HIGHEST_PRICE)
-            e = int(e.strip())
+            e = abs(int(e.strip()))
             f = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
-            f = int(f.strip())
+            f = abs(int(f.strip()))
 
             row = {self.customType.CURRENT_PRICE: a, self.customType.VOLUME: b, self.customType.TIGHTENING_TIME: c, self.customType.START_PRICE: d, self.customType.HIGHEST_PRICE: e,
                    self.customType.LOWEST_PRICE: f, "ma20": '', "ma5": '', "ma10": ''}
@@ -611,6 +611,7 @@ class DayTradingKiwoom(ParentKiwoom):
         code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
         code = code.strip()
         current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
+        current_price = abs(int(current_price.strip()))
         if code in self.today_buy_etf_stock_dict.keys():
             today_buy_etf = self.today_buy_etf_stock_dict[code]
             if current_price < today_buy_etf[self.customType.PURCHASE_PRICE]:
