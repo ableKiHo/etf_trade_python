@@ -171,6 +171,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         first_tic = analysis_rows[0]
         second_tic = analysis_rows[1]
+        third_tic = analysis_rows[2]
         ma_field_list = ["ma20", "ma5", "ma10"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
@@ -200,8 +201,10 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
 
-        if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"]:
-            self.logging.logger.info("second_tic position check > [%s] " % code)
+        if second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[self.customType.HIGHEST_PRICE]:
+            pass
+        else:
+            self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
             return {}
 
         if second_tic["ma20"] < second_tic["ma5"] or second_tic["ma20"] < second_tic["ma10"]:
@@ -209,7 +212,7 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         self.logging.logger.info("hammer_case_candle check> [%s] >> %s" % (code, first_tic))
-        return {}
+        return copy.deepcopy(first_tic)
 
     def short_trade_sell_case(self, code):
         rows = self.short_trade_target_stock_dict[code]["row"]
