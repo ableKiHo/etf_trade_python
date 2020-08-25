@@ -167,7 +167,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(rows) < 40:
             return {}
 
-        analysis_rows = rows[:20]
+        analysis_rows = rows[:10]
         compare_rows = analysis_rows[:3]
 
         first_tic = compare_rows[0]
