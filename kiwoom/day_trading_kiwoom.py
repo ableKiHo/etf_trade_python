@@ -164,21 +164,28 @@ class DayTradingKiwoom(ParentKiwoom):
             self.loop_analysis_short_trade_buy_etf()
 
     def get_conform_short_trade_buy_case(self, code, rows):
-        if len(rows) < 3:
+        if len(rows) < 40:
             return {}
 
-        analysis_rows = rows[:3]
+        analysis_rows = rows[:20]
+        compare_rows = analysis_rows[:3]
 
-        first_tic = analysis_rows[0]
-        second_tic = analysis_rows[1]
-        third_tic = analysis_rows[2]
+        first_tic = compare_rows[0]
+        second_tic = compare_rows[1]
+        third_tic = compare_rows[2]
         ma_field_list = ["ma20", "ma5", "ma10"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
         if len(empty_gap_list) > 0:
             return {}
 
-        self.logging.logger.info("short_trade_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        self.logging.logger.info("short_trade_buy_case analysis_rows > [%s] >> %s " % (code, compare_rows))
+
+        ma20_list = [item["ma20"] for item in analysis_rows]
+        inverselist = ma20_list[::-1]
+        if not is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend ma20 check> [%s]  " % code)
+            return {}
 
         if first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"]:
             pass
@@ -186,7 +193,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("is regular arrangement check> [%s]" % code)
             return {}
 
-        last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
+        last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
         inverselist = last_price_list[::-1]
         if not is_increase_trend(inverselist):
             self.logging.logger.info("is_increase_trend check> [%s]  " % code)
@@ -209,10 +216,6 @@ class DayTradingKiwoom(ParentKiwoom):
             pass
         else:
             self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
-            return {}
-
-        if second_tic["ma20"] < second_tic["ma5"] or second_tic["ma20"] < second_tic["ma10"]:
-            self.logging.logger.info("second_tic ma line check > [%s] " % code)
             return {}
 
         self.logging.logger.info("hammer_case_candle check> [%s] >> %s" % (code, first_tic))
