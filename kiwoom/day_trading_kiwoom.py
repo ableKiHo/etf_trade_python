@@ -197,6 +197,10 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("first_tic current_price check > [%s]" % code)
                 return {}
 
+        if first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"] > 40:
+            self.logging.logger.info("first_tic max gap with ma20 check > [%s]" % code)
+            return {}
+
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
