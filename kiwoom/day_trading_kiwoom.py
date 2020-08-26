@@ -864,8 +864,8 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                   self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
                 if sCode in self.short_trade_stock_order_dict.keys():
                     if holding_quantity > 0:
-                        self.short_trade_stock_order_dict.update({self.customType.ORDER_STATUS: self.customType.BALANCE})
-                        self.short_trade_stock_order_dict.update({self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S')})
+                        self.short_trade_stock_order_dict[sCode].update({self.customType.ORDER_STATUS: self.customType.BALANCE})
+                        self.short_trade_stock_order_dict[sCode].update({self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S')})
 
     def call_exit(self):
         self.logging.logger.info("시스템 종료")
