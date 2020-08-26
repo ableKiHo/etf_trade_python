@@ -234,7 +234,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.logging.logger.info("short_trade_sell_case first_tic > [%s] >> %s " % (code, first_tic))
         current_price = first_tic[self.customType.CURRENT_PRICE]
-        lowest_price = first_tic[self.customType.LOWEST_PRICE]
         buy_price = self.short_trade_stock_order_dict[code][self.customType.PURCHASE_PRICE]
         first_tic_ma20 = first_tic["ma20"]
         if current_price < buy_price:
@@ -254,7 +253,7 @@ class DayTradingKiwoom(ParentKiwoom):
             else:
                 std_price = goni_price
 
-        if std_price >= current_price > lowest_price:
+        if std_price >= current_price:
             return copy.deepcopy(first_tic)
 
         return {}
