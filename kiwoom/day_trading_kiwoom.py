@@ -95,21 +95,20 @@ class DayTradingKiwoom(ParentKiwoom):
         short_trade_stock_order_list = list(self.short_trade_stock_order_dict.keys())
         for code in self.short_trade_target_stock_dict.keys():
 
+            loop_sleep = QEventLoop()
+            QTimer.singleShot(3 * 1000, loop_sleep.quit)
+            loop_sleep.exec_()
+
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
             if (self.today + '145900') < currentDate:
                 for order_code in short_trade_stock_order_list:
                     self.logging.logger.info('short_trade time over sell send order: %s' % order_code)
-                    loop_sleep = QEventLoop()
-                    QTimer.singleShot(3 * 1000, loop_sleep.quit)
-                    loop_sleep.exec_()
+
                     self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[order_code][self.customType.HOLDING_QUANTITY])
                 loop_flag = False
                 break
 
             if code in short_trade_stock_order_list:
-                loop_sleep = QEventLoop()
-                QTimer.singleShot(15 * 1000, loop_sleep.quit)
-                loop_sleep.exec_()
                 self.get_opt10080_info(code)
 
                 self.logging.logger.info('loop short_trade_stock_order_list: %s' % code)
@@ -144,9 +143,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 if (self.today + '140100') < currentDate:
                     continue
 
-                loop_sleep = QEventLoop()
-                QTimer.singleShot(15 * 1000, loop_sleep.quit)
-                loop_sleep.exec_()
                 self.get_opt10080_info(code)
 
                 self.logging.logger.info('loop short_trade_target_stock_dict: %s' % code)
