@@ -87,8 +87,11 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_short_trade_candle_info()
 
     def loop_analysis_buy_etf(self):
-        self.analysis_search_timer = default_q_timer_setting(60)
-        self.analysis_search_timer.timeout.connect(self.analysis_day_candle_info)
+        if self.weekend.isFriday is False:
+            self.analysis_search_timer = default_q_timer_setting(60)
+            self.analysis_search_timer.timeout.connect(self.analysis_day_candle_info)
+        else:
+            self.logging.logger.info('Friday is not buy auto trade day')
 
     def analysis_short_trade_candle_info(self):
         loop_flag = True
@@ -166,7 +169,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.loop_analysis_short_trade_buy_etf()
 
     def get_conform_short_trade_buy_case(self, code, rows):
-        if len(rows) < 40:
+        if len(rows) < 10:
             return {}
 
         analysis_rows = rows[:10]
