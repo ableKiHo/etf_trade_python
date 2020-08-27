@@ -248,7 +248,7 @@ class DayTradingKiwoom(ParentKiwoom):
             max_highest_price = max([item[self.customType.HIGHEST_PRICE] for item in buy_after_tic_rows])
 
             goni_price = buy_price + ((max_highest_price - buy_price) / 2)
-            if goni_price >= buy_price + 20:
+            if goni_price >= buy_price + 15:
                 if buy_price + 5 > first_tic_ma20:
                     std_price = goni_price
                 else:
