@@ -128,7 +128,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     first_tic = rows[0]
                     current_price = first_tic[self.customType.CURRENT_PRICE]
                     buy_price = self.short_trade_stock_order_dict[code][self.customType.PURCHASE_PRICE]
-                    if self.short_trade_max_profit_case(current_price, buy_price):
+                    if self.short_trade_max_profit_case(code, current_price, buy_price):
                         self.logging.logger.info('short_trade_max_profit_case: %s / %s' % (current_price, buy_price))
                         self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[code][self.customType.HOLDING_QUANTITY])
                         del self.short_trade_stock_order_dict[code]
