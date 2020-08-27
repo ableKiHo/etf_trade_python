@@ -70,7 +70,7 @@ class DayTradingKiwoom(ParentKiwoom):
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
 
         if len(self.short_trade_target_stock_dict.keys()) > 0:
-            self.analysis_short_trade_candle_info()
+            self.loop_analysis_short_trade_buy_etf()
 
     def set_short_trade_stock_info(self):
         self.short_trade_target_stock_dict.update({'122630': {"row": []}})
@@ -84,7 +84,9 @@ class DayTradingKiwoom(ParentKiwoom):
             self.etf_info_event_loop.exec_()
 
     def loop_analysis_short_trade_buy_etf(self):
-        self.analysis_short_trade_candle_info()
+        result = True
+        while result:
+            result = self.analysis_short_trade_candle_info()
 
     def loop_analysis_buy_etf(self):
         if self.weekend.isFriday is False:
@@ -94,7 +96,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info('Friday is not buy auto trade day')
 
     def analysis_short_trade_candle_info(self):
-        loop_flag = True
         short_trade_stock_order_list = list(self.short_trade_stock_order_dict.keys())
         for code in self.short_trade_target_stock_dict.keys():
 
@@ -108,8 +109,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.logging.logger.info('short_trade time over sell send order: %s' % order_code)
 
                     self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[order_code][self.customType.HOLDING_QUANTITY])
-                loop_flag = False
-                break
+                return False
 
             if code in short_trade_stock_order_list:
                 self.get_opt10080_info(code)
@@ -165,8 +165,8 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.short_trade_stock_order_dict.update({code: {self.customType.TIGHTENING_TIME: currentDate, self.customType.PURCHASE_PRICE: limit_price,
                                                                          self.customType.HOLDING_QUANTITY: quantity, self.customType.ORDER_STATUS: "wait"}})
                         self.send_order_limit_stock_price(code, quantity, limit_price)
-        if loop_flag is True:
-            self.loop_analysis_short_trade_buy_etf()
+
+        return True
 
     def get_conform_short_trade_buy_case(self, code, rows):
         if len(rows) < 10:
