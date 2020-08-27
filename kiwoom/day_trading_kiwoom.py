@@ -243,21 +243,24 @@ class DayTradingKiwoom(ParentKiwoom):
         tightening_time = self.short_trade_stock_order_dict[code][self.customType.TIGHTENING_TIME]
 
         buy_after_tic_rows = [x for x in rows if x[self.customType.TIGHTENING_TIME] > tightening_time]
-        max_highest_price = max([item[self.customType.HIGHEST_PRICE] for item in buy_after_tic_rows])
-        goni_price = buy_price + ((max_highest_price - buy_price) / 2)
-        if goni_price >= buy_price + 20:
-            if buy_price + 5 > first_tic_ma20:
-                std_price = goni_price
-            else:
-                if first_tic_ma20 < goni_price:
-                    std_price = first_tic_ma20
-                else:
-                    std_price = goni_price
-        else:
-            std_price = first_tic_ma20
+        if len(buy_after_tic_rows) > 0:
 
-        if std_price >= current_price:
-            return copy.deepcopy(first_tic)
+            max_highest_price = max([item[self.customType.HIGHEST_PRICE] for item in buy_after_tic_rows])
+
+            goni_price = buy_price + ((max_highest_price - buy_price) / 2)
+            if goni_price >= buy_price + 20:
+                if buy_price + 5 > first_tic_ma20:
+                    std_price = goni_price
+                else:
+                    if first_tic_ma20 < goni_price:
+                        std_price = first_tic_ma20
+                    else:
+                        std_price = goni_price
+            else:
+                std_price = first_tic_ma20
+
+            if std_price >= current_price:
+                return copy.deepcopy(first_tic)
 
         return {}
 
