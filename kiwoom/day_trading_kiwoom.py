@@ -100,7 +100,7 @@ class DayTradingKiwoom(ParentKiwoom):
         for code in self.short_trade_target_stock_dict.keys():
 
             loop_sleep = QEventLoop()
-            QTimer.singleShot(3 * 1000, loop_sleep.quit)
+            QTimer.singleShot(4 * 1000, loop_sleep.quit)
             loop_sleep.exec_()
 
             currentDate = get_today_by_format('%Y%m%d%H%M%S')
