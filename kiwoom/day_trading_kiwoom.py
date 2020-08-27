@@ -136,7 +136,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
-                    short_trade_sell_point = self.short_trade_sell_case()
+                    short_trade_sell_point = self.short_trade_sell_case(code)
                     if not bool(short_trade_sell_point):
                         self.logging.logger.info('short_trade_sell_point: %s' % short_trade_sell_point)
                         self.sell_send_order(code, self.sell_screen_meme_stock, self.short_trade_stock_order_dict[code][self.customType.HOLDING_QUANTITY])
