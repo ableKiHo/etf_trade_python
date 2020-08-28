@@ -198,7 +198,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("is regular arrangement check> [%s]" % code)
             return {}
 
-        last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+        last_price_list = [item["ma5"] for item in compare_rows]
         inverselist = last_price_list[::-1]
         if not is_increase_trend(inverselist):
             self.logging.logger.info("is_increase_trend check> [%s]  " % code)
@@ -209,7 +209,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("first_tic current_price check > [%s]" % code)
                 return {}
 
-        if first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"] > 30:
+        if first_tic[self.customType.LOWEST_PRICE] - first_tic["ma20"] > 30:
             self.logging.logger.info("first_tic max gap with ma20 check > [%s]" % code)
             return {}
 
@@ -223,7 +223,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
             return {}
 
-        self.logging.logger.info("hammer_case_candle check> [%s] >> %s" % (code, first_tic))
+        self.logging.logger.info("short_trade_buy_case check> [%s] >> %s" % (code, first_tic))
         return copy.deepcopy(first_tic)
 
     def short_trade_sell_case(self, code):
@@ -253,9 +253,9 @@ class DayTradingKiwoom(ParentKiwoom):
                     std_price = goni_price
                 else:
                     if first_tic_ma20 < goni_price:
-                        std_price = first_tic_ma20
-                    else:
                         std_price = goni_price
+                    else:
+                        std_price = first_tic_ma20
             else:
                 std_price = first_tic_ma20
 
