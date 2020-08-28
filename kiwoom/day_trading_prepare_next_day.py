@@ -146,7 +146,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
             code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price, market_cap)
                                  )
-        if int(market_cap) >= 80 and int(change_price) > 0:
+        if int(market_cap) >= 80 :
             self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
@@ -177,7 +177,53 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             buy_point = self.get_conform_cable_tie_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_cross_candle2_case(code)
         return bool(buy_point)
+
+    def get_conform_cross_candle2_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 4:
+            return {}
+
+        analysis_rows = rows[:4]
+
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("cross_candle2_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        first_tic = analysis_rows[0]
+
+        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic white candle check > [%s]" % code)
+            return {}
+
+        if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
+            self.logging.logger.info("first_tic current price position check> [%s] >> %s " % (code, first_tic["일자"]))
+            return {}
+
+        compare_rows = analysis_rows[:3]
+        ma20_list = [item["ma20"] for item in compare_rows]
+        if not is_increase_trend(ma20_list):
+            self.logging.logger.info("is_increase_ma20 check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"] and first_tic[self.customType.LOWEST_PRICE] - first_tic["ma20"] > first_tic[self.customType.CURRENT_PRICE] * 0.005:
+            self.logging.logger.info("second_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
+            return {}
+
+        if first_tic[self.customType.LOWEST_PRICE] < first_tic[self.customType.START_PRICE] <= first_tic[self.customType.CURRENT_PRICE]:
+            if first_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.HIGHEST_PRICE]:
+                highest_gap = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
+                lowest_gap = first_tic[self.customType.START_PRICE] - first_tic[self.customType.LOWEST_PRICE]
+                if lowest_gap >= highest_gap:
+                    return copy.deepcopy(first_tic)
+
+        self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
+        return {}
 
     def get_conform_cross_candle_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
