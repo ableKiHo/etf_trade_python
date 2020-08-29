@@ -241,6 +241,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         first_tic = analysis_rows[0]
 
+        ma20_list = [item["ma20"] for item in analysis_rows]
+        inverselist = ma20_list[::-1]
+        if not is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend ma20 check> [%s]  " % code)
+            return {}
+
         if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
             self.logging.logger.info("first_tic current price position check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
@@ -389,15 +395,16 @@ class DayTradingPrepareNextDay(ParentKiwoom):
     def get_conform_ma_line_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
 
-        if len(rows) < 3:
+        if len(rows) < 5:
             return {}
 
-        analysis_rows = rows[:2]
+        analysis_rows = rows[:5]
+        compare_rows = rows[:2]
 
-        first_tic = analysis_rows[0]
-        second_tic = analysis_rows[1]
+        first_tic = compare_rows[0]
+        second_tic = compare_rows[1]
 
-        ma_field_list = ["ma20", "ma5"]
+        ma_field_list = ["ma20", "ma5", "ma10"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
         if len(empty_gap_list) > 0:
@@ -405,15 +412,30 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
+        ma20_list = [item["ma20"] for item in analysis_rows]
+        inverselist = ma20_list[::-1]
+        if not is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend ma20 check> [%s]  " % code)
+            return {}
+
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        if first_tic[self.customType.LOWEST_PRICE] > first_tic["ma20"] or first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
+        if first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"]:
+            pass
+        else:
+            self.logging.logger.info("is regular arrangement check> [%s]" % code)
+            return {}
+
+        if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
             self.logging.logger.info("first_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        if second_tic[self.customType.LOWEST_PRICE] > second_tic["ma20"]:
+        second_tic_max_value = max([second_tic["ma5"], second_tic["ma10"], second_tic["ma20"]])
+        second_tic_min_value = min([second_tic["ma5"], second_tic["ma10"], second_tic["ma20"]])
+
+        if second_tic[self.customType.LOWEST_PRICE] > second_tic_min_value or second_tic[self.customType.HIGHEST_PRICE] < second_tic_max_value:
             self.logging.logger.info("second_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
