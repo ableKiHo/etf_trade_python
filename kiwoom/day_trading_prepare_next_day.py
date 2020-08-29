@@ -338,11 +338,10 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         analysis_rows = rows[:10]
-        compare_rows = analysis_rows[:3]
+        compare_rows = analysis_rows[:2]
 
-        first_tic = compare_rows[0]
-        second_tic = compare_rows[1]
-        third_tic = compare_rows[2]
+        first_tic = compare_rows[1]
+        second_tic = compare_rows[2]
         ma_field_list = ["ma20", "ma5", "ma10"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
@@ -374,15 +373,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                 self.logging.logger.info("first_tic current_price check > [%s]" % code)
                 return {}
 
-        if first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"] > 40:
-            self.logging.logger.info("first_tic max gap with ma20 check > [%s]" % code)
-            return {}
-
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
 
-        if second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[self.customType.HIGHEST_PRICE]:
+        if first_tic[self.customType.LOWEST_PRICE] < first_tic["ma20"] < first_tic[self.customType.HIGHEST_PRICE] or second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[self.customType.HIGHEST_PRICE]:
             pass
         else:
             self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
