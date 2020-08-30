@@ -115,7 +115,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             code_nm = code_nm.strip()
             last_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
             last_price = last_price.strip()
-            if abs(int(volume)) >= 25000 and abs(int(last_price)) <= 50000:
+            if abs(int(volume)) >= 25000 and abs(int(last_price)) <= 45000:
                 for exclude in self.exclude_keywords:
                     if str_find(code_nm, exclude):
                         is_match_exclude = True
@@ -146,7 +146,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
             code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price, market_cap)
                                  )
-        if int(market_cap) >= 80 :
+        if int(market_cap) >= 80:
             self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
@@ -174,7 +174,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line2_case(code)
         if not bool(buy_point):
+            buy_point = self.get_conform_ma_line3_case(code)
+        if not bool(buy_point):
             buy_point = self.get_conform_cable_tie_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_cable_tie2_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle_case(code)
         if not bool(buy_point):
@@ -196,6 +200,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("cross_candle2_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
+
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        if ma20_percent > 1.99:
+            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+            return {}
 
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
@@ -241,6 +250,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         first_tic = analysis_rows[0]
 
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        if ma20_percent > 1.99:
+            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+            return {}
+
         ma20_list = [item["ma20"] for item in analysis_rows]
         inverselist = ma20_list[::-1]
         if not is_increase_trend(inverselist):
@@ -266,6 +280,49 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
         return {}
+
+    def get_conform_cable_tie2_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 7:
+            return {}
+
+        analysis_rows = rows[:7]
+
+        first_tic = analysis_rows[0]
+
+        ma_field_list = ["ma20", "ma5", "ma10", "ma60", "ma120"]
+
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '' or x["ma60"] == '' or x["ma120"] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+        for field in ma_field_list:
+            if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic current_price check > [%s]" % code)
+                return {}
+
+        self.logging.logger.info("cable_tie_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        compare_rows = analysis_rows[:3]
+        ma5_list = [item["ma5"] for item in compare_rows]
+        if not is_increase_trend(ma5_list):
+            self.logging.logger.info("ma5_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
+            return {}
+        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic white candle check > [%s]" % code)
+            return {}
+
+        ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
+        ma10_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma10"]) / first_tic["ma10"] * 100
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        ma60_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma60"]) / first_tic["ma60"] * 100
+        ma120_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma120"]) / first_tic["ma120"] * 100
+        percent_list = [ma5_percent, ma10_percent, ma20_percent, ma60_percent, ma120_percent]
+        if max(percent_list) > 0.99:
+            self.logging.logger.info("ma5_percent check> [%s]" % code)
+            return {}
+
+        return copy.deepcopy(first_tic)
 
     def get_conform_cable_tie_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
@@ -338,16 +395,70 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         return copy.deepcopy(first_tic)
 
-    def get_conform_ma_line2_case(self, code):
+    def get_conform_ma_line3_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
-        if len(rows) < 10:
+        if len(rows) < 5:
+            return {}
+        analysis_rows = rows[:5]
+        compare_rows = analysis_rows[:3]
+
+        first_tic = compare_rows[0]
+        ma_field_list = ["ma20", "ma5", "ma10"]
+
+        empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
+        if len(empty_gap_list) > 0:
             return {}
 
-        analysis_rows = rows[:10]
+        self.logging.logger.info("ma_line3_case analysis_rows > [%s] >> %s " % (code, compare_rows))
+
+        for field in ma_field_list:
+            if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic current_price check > [%s]" % code)
+                return {}
+
+        ma20_list = [item["ma20"] for item in analysis_rows]
+        ma20_inverselist = ma20_list[::-1]
+        if not is_increase_trend(ma20_inverselist):
+            self.logging.logger.info("is_increase_trend ma20 check> [%s]  " % code)
+            return {}
+
+        ma5_list = [item["ma5"] for item in analysis_rows]
+        ma5_inverselist = ma5_list[::-1]
+        if not is_increase_trend(ma5_inverselist):
+            self.logging.logger.info("is_increase_trend ma5 check> [%s]  " % code)
+            return {}
+
+        if first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"]:
+            pass
+        else:
+            self.logging.logger.info("is regular arrangement check> [%s]" % code)
+            return {}
+
+        ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
+        if ma5_percent > 0.8:
+            self.logging.logger.info("ma5_percent check> [%s]" % code)
+            return {}
+        ma10_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma10"]) / first_tic["ma10"] * 100
+        if ma10_percent > 1.3:
+            self.logging.logger.info("ma10_percent check> [%s]" % code)
+            return {}
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        if ma20_percent > 1.8:
+            self.logging.logger.info("ma20_percent check> [%s]" % code)
+            return {}
+
+        return copy.deepcopy(first_tic)
+
+    def get_conform_ma_line2_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 5:
+            return {}
+
+        analysis_rows = rows[:5]
         compare_rows = analysis_rows[:2]
 
-        first_tic = compare_rows[1]
-        second_tic = compare_rows[2]
+        first_tic = compare_rows[0]
+        second_tic = compare_rows[1]
         ma_field_list = ["ma20", "ma5", "ma10"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
@@ -355,6 +466,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("ma_line2_case analysis_rows > [%s] >> %s " % (code, compare_rows))
+
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        if ma20_percent > 1.99:
+            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+            return {}
 
         ma20_list = [item["ma20"] for item in analysis_rows]
         inverselist = ma20_list[::-1]
@@ -383,7 +499,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
 
-        if first_tic[self.customType.LOWEST_PRICE] < first_tic["ma20"] < first_tic[self.customType.HIGHEST_PRICE] or second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[self.customType.HIGHEST_PRICE]:
+        if first_tic[self.customType.LOWEST_PRICE] < first_tic["ma20"] < first_tic[self.customType.HIGHEST_PRICE] or second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[
+            self.customType.HIGHEST_PRICE]:
             pass
         else:
             self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
@@ -402,7 +519,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         compare_rows = rows[:2]
 
         first_tic = compare_rows[0]
-        second_tic = compare_rows[1]
 
         ma_field_list = ["ma20", "ma5", "ma10"]
 
@@ -412,31 +528,29 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        if ma20_percent > 1.99:
+            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+            return {}
+
         ma20_list = [item["ma20"] for item in analysis_rows]
         inverselist = ma20_list[::-1]
         if not is_increase_trend(inverselist):
             self.logging.logger.info("is_increase_trend ma20 check> [%s]  " % code)
             return {}
 
+        ma5_list = [item["ma5"] for item in analysis_rows]
+        ma5_inverselist = ma5_list[::-1]
+        if not is_increase_trend(ma5_inverselist):
+            self.logging.logger.info("is_increase_trend ma5 check> [%s]  " % code)
+            return {}
+
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        if first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"]:
-            pass
-        else:
-            self.logging.logger.info("is regular arrangement check> [%s]" % code)
-            return {}
-
         if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
             self.logging.logger.info("first_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
-            return {}
-
-        second_tic_max_value = max([second_tic["ma5"], second_tic["ma10"], second_tic["ma20"]])
-        second_tic_min_value = min([second_tic["ma5"], second_tic["ma10"], second_tic["ma20"]])
-
-        if second_tic[self.customType.LOWEST_PRICE] > second_tic_min_value or second_tic[self.customType.HIGHEST_PRICE] < second_tic_max_value:
-            self.logging.logger.info("second_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]

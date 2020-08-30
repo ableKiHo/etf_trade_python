@@ -287,8 +287,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
 
-        if second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[
-            self.customType.HIGHEST_PRICE]:
+        if second_tic[self.customType.LOWEST_PRICE] < second_tic["ma20"] < second_tic[self.customType.HIGHEST_PRICE] or third_tic[self.customType.LOWEST_PRICE] < third_tic["ma20"] < third_tic[self.customType.HIGHEST_PRICE]:
             pass
         else:
             self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
@@ -371,8 +370,10 @@ class DayTradingKiwoom(ParentKiwoom):
         analysis_rows = rows[:2]
         first_tic = analysis_rows[0]
         current_price = first_tic[self.customType.CURRENT_PRICE]
+        highest_price = first_tic[self.customType.HIGHEST_PRICE]
+
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-        highest_price = target_dict[code][self.customType.HIGHEST_PRICE]
+
         stop_rate = 11
         loss_rate = 10
 
@@ -413,7 +414,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.analysis_goal_etf_stock_list = []
             self.search_stock_code = []
             for key in self.target_etf_stock_dict.keys():
-                self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
+                if key not in self.current_hold_etf_stock_dict.keys():
+                    self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
             self.analysis_search_timer = default_q_timer_setting(5)
             self.analysis_search_timer.timeout.connect(self.other_target_candle_analysis_check)
 
