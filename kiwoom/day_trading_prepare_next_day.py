@@ -25,6 +25,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_opt10080_info = "4060"
 
         self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}}
+        self.recommand_keyword_list = ['TR', '고배당', 'TOP10', '저변동', '성장', '블루칩']
 
         self.analysis_etf_target_dict = {}
         self.target_etf_stock_dict = {}
@@ -182,7 +183,10 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                             (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],
                              value[self.customType.LAST_DAY_LOWEST_PRICE], value[self.customType.LAST_DAY_LAST_PRICE]))
                     f.close()
-                    self.line.notification("OPEN API SUGGEST STOCK [%s][%s]" % (sCode, value[self.customType.STOCK_NAME]))
+
+                    for keyword in self.recommand_keyword_list:
+                        if value[self.customType.STOCK_NAME].find(keyword) >= 0:
+                            self.line.notification("OPEN API SUGGEST STOCK [%s][%s]" % (sCode, value[self.customType.STOCK_NAME]))
 
     def is_ma_line_analysis(self, code):
         buy_point = self.get_conform_ma_line_case(code)
