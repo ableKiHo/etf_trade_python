@@ -506,7 +506,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.logging.logger.info("hammer_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
-        if first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"]:
+        if first_tic["ma5"] >= first_tic["ma20"]:
             pass
         else:
             self.logging.logger.info("is regular arrangement check> [%s] >> %s " % (code, first_tic["일자"]))
