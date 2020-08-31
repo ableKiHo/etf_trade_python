@@ -91,5 +91,6 @@ class CustomType():
         self.BUY = '매수'
         self.STD_DATE = '기준일자'
         self.KOSDAQ = '코스닥'
+        self.KOSPI = '코스피'
         self.MODIFIED_SHARE_PRICE = '수정주가구분'
         self.TIC_RANGE = '틱범위'
