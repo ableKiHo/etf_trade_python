@@ -213,7 +213,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         del self.short_trade_stock_order_dict[code]
                         continue
             else:
-                if (self.today + '140100') < currentDate:
+                if (self.today + '143100') < currentDate:
                     continue
 
                 self.get_opt10080_info(code)

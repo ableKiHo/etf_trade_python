@@ -118,7 +118,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             code_nm = code_nm.strip()
             last_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
             last_price = last_price.strip()
-            if abs(int(volume)) >= 25000 and abs(int(last_price)) <= 45000:
+            if abs(int(volume)) >= 25000 and abs(int(last_price)) <= 50000:
                 for exclude in self.exclude_keywords:
                     if str_find(code_nm, exclude):
                         is_match_exclude = True
