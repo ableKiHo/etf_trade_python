@@ -24,6 +24,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_etf_day_stock = "4050"
         self.screen_opt10080_info = "4060"
 
+        self.represent_keyword_dict = {'코스피': {}, '코스닥': {}}
+
         self.analysis_etf_target_dict = {}
         self.target_etf_stock_dict = {}
         self.target_etf_day_info_dict = []
