@@ -525,19 +525,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        first_tic_body = first_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.START_PRICE]
-        first_tic_head_tail = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
-        if first_tic_body * 0.05 < first_tic_head_tail:
-            self.logging.logger.info("first_tic hammer candle check > [%s] >> %s " % (code, first_tic))
-            return {}
-
-        if first_tic[self.customType.LOWEST_PRICE] < first_tic[self.customType.START_PRICE] <= first_tic[self.customType.CURRENT_PRICE]:
-            if first_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.HIGHEST_PRICE]:
-                highest_gap = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
-                lowest_gap = first_tic[self.customType.START_PRICE] - first_tic[self.customType.LOWEST_PRICE]
-                if lowest_gap >= highest_gap:
-                    return copy.deepcopy(first_tic)
-
         self.logging.logger.info("hammer_case_candle check> [%s] >> %s" % (code, first_tic))
         return {}
 
