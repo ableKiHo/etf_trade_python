@@ -528,8 +528,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        self.logging.logger.info("hammer_case_candle check> [%s] >> %s" % (code, first_tic))
-        return {}
+
+        return copy.deepcopy(first_tic)
 
     def get_all_etf_info(self):
         self.logging.logger.info('get_all_etf_info_opt10001')
