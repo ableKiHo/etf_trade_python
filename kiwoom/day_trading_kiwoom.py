@@ -225,6 +225,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
                 create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
+                create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma60", 60)
+                create_moving_average_gap_line(code, self.short_trade_target_stock_dict, "row", self.customType.CURRENT_PRICE, "ma120", 120)
 
                 rows = self.short_trade_target_stock_dict[code]["row"]
                 short_trade_buy_point = self.get_conform_short_trade_buy_case(code, rows)
@@ -251,7 +253,7 @@ class DayTradingKiwoom(ParentKiwoom):
         first_tic = compare_rows[0]
         second_tic = compare_rows[1]
         third_tic = compare_rows[2]
-        ma_field_list = ["ma20", "ma5", "ma10"]
+        ma_field_list = ["ma20", "ma5", "ma10", "ma60", "ma120"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
         if len(empty_gap_list) > 0:
