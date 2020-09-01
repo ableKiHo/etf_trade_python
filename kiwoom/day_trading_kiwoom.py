@@ -424,6 +424,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
             self.analysis_search_timer2 = default_q_timer_setting(5)
             self.analysis_search_timer2.timeout.connect(self.other_target_candle_analysis_check)
+            self.analysis_search_timer1.start()
 
     def other_target_candle_analysis_check(self):
         if self.current_hold_stock_count == self.max_hold_stock_count:
