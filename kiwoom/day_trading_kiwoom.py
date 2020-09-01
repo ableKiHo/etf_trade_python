@@ -412,13 +412,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def loop_other_target_buy_etf_stock(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100000') == currentDate or (self.today + '110000') == currentDate:
+        if (self.today + '100000') == currentDate or (self.today + '110000') == currentDate or (self.today + '120000') == currentDate:
             self.analysis_search_timer.stop()
             self.goal_buy_search_stock_code = ''
             self.analysis_goal_etf_stock_list = []
             self.search_stock_code = []
             for key in self.target_etf_stock_dict.keys():
-                if key not in self.current_hold_etf_stock_dict.keys():
+                if key not in self.current_hold_etf_stock_dict.keys() and key not in self.today_buy_etf_stock_dict.keys():
                     self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
             self.analysis_search_timer2 = default_q_timer_setting(5)
             self.analysis_search_timer.timeout.connect(self.other_target_candle_analysis_check)
