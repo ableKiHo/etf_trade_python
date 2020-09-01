@@ -412,7 +412,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def loop_other_target_buy_etf_stock(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100000') == currentDate or (self.today + '110000') == currentDate or (self.today + '120000') == currentDate:
+        if (self.today + '100000') <= currentDate <= (self.today + '100100') or (self.today + '110000') <= currentDate <= (self.today + '110100') or (self.today + '120000') <= currentDate <= (self.today + '120100') :
             self.analysis_search_timer.stop()
             self.goal_buy_search_stock_code = ''
             self.analysis_goal_etf_stock_list = []
