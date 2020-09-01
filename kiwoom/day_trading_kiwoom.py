@@ -35,7 +35,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_etf_stock = "4020"
         self.screen_opt10080_info = "4030"
 
-        self.max_hold_stock_count = 8
+        self.max_hold_stock_count = 2
         self.max_buy_amount_by_stock = 50000
 
         self.analysis_search_timer1 = QTimer()
@@ -72,26 +72,11 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_search_goal_price_etf()
         QTest.qWait(5000)
 
-        if self.current_hold_stock_count > 0:
-            self.loop_check_sell_hold_etf()
-
         self.loop_analysis_buy_etf()
         self.loop_system_off()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
-
-    def loop_check_sell_hold_etf(self):
-        self.hold_stock_check_timer.stop()
-        self.hold_stock_check_timer = default_q_timer_setting()
-        self.hold_stock_check_timer.timeout.connect(self.check_sell_hold_etf)
-
-    def check_sell_hold_etf(self):
-        currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        self.hold_stock_check_timer.stop()
-        if (self.today + '150000') < currentDate:
-            return
-        self.loop_sell_hold_etf_stock()
 
     def loop_sell_hold_etf_stock(self):
         self.logging.logger.info('loop_sell_hold_etf_stock')
@@ -99,7 +84,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_sell_etf_stock_list = []
         for key in self.current_hold_etf_stock_dict.keys():
             self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
-        self.hold_stock_check_timer = default_q_timer_setting(300)
+        self.hold_stock_check_timer = default_q_timer_setting(4)
         self.hold_stock_check_timer.timeout.connect(self.daily_candle_sell_point_check)
 
     def daily_candle_sell_point_check(self):
@@ -114,33 +99,49 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
 
         self.get_sell_opt10081_info(code)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
         target_dict = self.current_hold_etf_stock_dict
-
         max_profit_sell_point = self.get_max_profit_sell_case(code, target_dict)
         if bool(max_profit_sell_point):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("max_profit_sell_point break >> %s" % code)
-            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
+            self.sell_send_order_market_off_price(code, self.sell_screen_meme_stock, quantity)
             del self.current_hold_etf_stock_dict[code]
+            return
 
-        stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_dict)
-        if bool(stop_loss_sell_point):
-            self.hold_stock_check_timer.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("stop_loss_sell_point break >> %s" % code)
-            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
+        stop_rate_list = [11, 8, 6]
+        for stop_rate in stop_rate_list:
+            stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_dict, stop_rate)
+            if bool(stop_loss_sell_point):
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                self.logging.logger.info("stop_loss_sell_point break >> %s" % code)
+                self.sell_send_order_market_off_price(code, self.sell_screen_meme_stock, quantity)
+                del self.current_hold_etf_stock_dict[code]
+                return
 
-        ma20_line_sell_point = self.get_ma20_line_sell_point(code, target_dict)
-        if bool(ma20_line_sell_point):
-            self.hold_stock_check_timer.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("ma20_line_sell_point break >> %s" % code)
-            self.sell_send_order(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
+        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+
+        ma5_add_buy_point = self.get_add_buy_point(code, target_dict, "ma5", 50000)
+        if bool(ma5_add_buy_point):
+            limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
+            self.logging.logger.info("add buy point break >> %s" % code)
+            quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+            if quantity >= 1:
+                self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
+                self.send_order_market_off_price_stock_price(code, quantity)
+                return
+
+        ma20_add_buy_point = self.get_add_buy_point(code, target_dict, "ma20", 100000)
+        if bool(ma20_add_buy_point):
+            limit_price = ma20_add_buy_point[self.customType.CURRENT_PRICE]
+            self.logging.logger.info("add buy point break >> %s" % code)
+            quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+            if quantity >= 1:
+                self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
+                self.send_order_market_off_price_stock_price(code, quantity)
+                return
 
         self.logging.logger.info('daily_candle_sell_point_check end')
 
@@ -148,47 +149,50 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_search_timer1 = default_q_timer_setting(60)
         self.analysis_search_timer1.timeout.connect(self.loop_other_target_buy_etf_stock)
 
-    def get_ma20_line_sell_point(self, code, target_dict):
+    def get_add_buy_point(self, code, target_dict, target_field, target_amount):
         rows = target_dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
-        first_tic = analysis_rows[0]
-        current_price = first_tic[self.customType.CURRENT_PRICE]
-        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-        ma20_price = first_tic["ma20"]
 
-        if buy_price > current_price:
-            if ma20_price > current_price:
-                self.logging.logger.info("loss ma20_price check > [%s] >> %s / %s" % (code, current_price, ma20_price))
-                return copy.deepcopy(first_tic)
-        else:
-            if (ma20_price - 5) > current_price:
-                self.logging.logger.info("profit ma20_price check > [%s] >> %s / %s" % (code, current_price, ma20_price))
-                return copy.deepcopy(first_tic)
+        empty_gap_list = [x for x in analysis_rows if x[target_field] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("sell_point analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        today_tic = analysis_rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
+        total_chegual_price = self.target_dict[code][self.customType.PURCHASE_AMOUNT]
+        if total_chegual_price <= target_amount and buy_price > current_price:
+            if today_tic[target_field] > current_price:
+                self.logging.logger.info("today_tic ma5 deviate check > [%s] >> %s " % (code, today_tic))
+                return copy.deepcopy(today_tic)
+
         return {}
 
-    def get_stop_loss_sell_point(self, code, target_dict):
+    def get_stop_loss_sell_point(self, code, target_dict, stop_rate):
         rows = target_dict[code]["row"]
         if len(rows) < 2:
             return {}
         analysis_rows = rows[:2]
-        first_tic = analysis_rows[0]
-        current_price = first_tic[self.customType.CURRENT_PRICE]
-        highest_price = first_tic[self.customType.HIGHEST_PRICE]
+        today_tic = analysis_rows[0]
+        last_day_tic = analysis_rows[1]
+
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        last_day_price = last_day_tic[self.customType.CURRENT_PRICE]
 
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
-        stop_rate = 11
-        loss_rate = 10
+        loss_rate = stop_rate - 1
 
         if current_price > buy_price:
-            highest_price_profit_rate = round((highest_price - buy_price) / buy_price * 100, 2)
-            if highest_price > current_price and highest_price_profit_rate >= stop_rate:
+            last_day_price_profit_rate = round((last_day_price - buy_price) / buy_price * 100, 2)
+            if last_day_price > current_price and last_day_price_profit_rate >= stop_rate:
                 profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
                 if profit_rate <= loss_rate:
-                    self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s" % (code, current_price, buy_price, highest_price_profit_rate, profit_rate))
-                    return copy.deepcopy(first_tic)
+                    self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s" % (code, current_price, buy_price, last_day_price_profit_rate, profit_rate))
+                    return copy.deepcopy(today_tic)
         return {}
 
     def get_max_profit_sell_case(self, code, target_dict):
@@ -251,7 +255,7 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
         rows = self.target_etf_stock_dict[code]["row"]
-        buy_point = self.get_conform_hammer_case(code, rows)
+        buy_point = self.get_conform_buy_case(code, rows)
 
         if bool(buy_point):
             if self.current_hold_stock_count < self.max_hold_stock_count:
@@ -276,9 +280,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def get_search_goal_price_etf(self):
         self.get_default_price_info()
-        # self.get_goal_price_etf()
-        # self.create_analysis_target_etf_file()
-        # QTest.qWait(5000)
         self.screen_number_setting(self.target_etf_stock_dict)
 
     def realdata_slot(self, sCode, sRealType, sRealData):
@@ -288,6 +289,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if value == '4':
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
+                self.loop_sell_hold_etf_stock()
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
@@ -301,7 +303,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081_all", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10081_info_event_loop.exec_()
 
-    def get_conform_hammer_case(self, code, rows):
+    def get_conform_buy_case(self, code, rows):
 
         if len(rows) < 3:
             return {}
@@ -309,6 +311,7 @@ class DayTradingKiwoom(ParentKiwoom):
         analysis_rows = rows[:3]
 
         first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
         ma_field_list = ["ma20", "ma5", "ma10"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
@@ -324,9 +327,13 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         for field in ma_field_list:
-            if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
-                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+            if first_tic[field] >= first_tic[self.customType.START_PRICE]:
+                self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
                 return {}
+
+        if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+            return {}
 
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
@@ -383,12 +390,10 @@ class DayTradingKiwoom(ParentKiwoom):
             self.trdata_slot_opw00001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPT10001:
             self.trdata_slot_opt10001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-
         elif sRQName == "tr_opt10081":
             self.trdata_slot_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_opt10081_all":
             self.trdata_slot_opt10081_all(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
-
         elif sRQName == self.customType.OPW00018:
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_sell_opt10081":
@@ -576,24 +581,6 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                         "row": []}})
             f.close()
 
-    def get_goal_price_etf(self):
-        self.logging.logger.info("get_goal_price_etf")
-        for code in self.target_etf_stock_dict.keys():
-            value = self.target_etf_stock_dict[code]
-            goal_stock_price = cal_goal_stock_price(value[self.customType.START_PRICE], value[self.customType.LAST_DAY_LAST_PRICE], value[self.customType.LAST_DAY_HIGHEST_PRICE],
-                                                    value[self.customType.LAST_DAY_LOWEST_PRICE])
-            if goal_stock_price > 0:
-                self.target_etf_stock_dict[code].update({self.customType.GOAL_PRICE: goal_stock_price})
-                self.logging.logger.info("pass goal_price_priority_etf[%s] >> %s" % (code, self.target_etf_stock_dict[code]))
-                if goal_stock_price <= value[self.customType.HIGHEST_PRICE]:
-                    self.logging.logger.info("pass highest price [%s] >> %s" % (code, self.target_etf_stock_dict[code]))
-                    self.analysis_goal_etf_stock_dict.update({code: {self.customType.STOCK_CODE: code, self.customType.GOAL_PRICE: goal_stock_price, "row": []}})
-
-            else:
-                self.target_etf_stock_dict[code].update({"stat": "del"})
-
-        for key in [key for key in self.target_etf_stock_dict if self.target_etf_stock_dict[key]["stat"] == "del"]: del self.target_etf_stock_dict[key]
-
     def screen_number_setting(self, cal_dict):
         self.logging.logger.info("screen_number_setting")
 
@@ -630,6 +617,18 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logType.ORDER_BUY_SUCCESS_STATUS_LOG % (code, quantity, limit_stock_price, self.purchased_deposit))
         else:
             self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
+
+    def sell_send_order_market_off_price(self, sCode, quantity):
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_STOCK_SELL, self.buy_screen_real_stock, self.account_num, 2, sCode, quantity, 0,
+             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.MARKET_OFF_TIME_LAST_PRICE], ""])
+        if order_success == 0:
+            self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
+        else:
+            self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
+
+        return order_success
 
     def send_order_market_off_price_stock_price(self, code, quantity):
         self.logging.logger.info("send_order_market_price_stock_price > %s " % code)
@@ -740,21 +739,6 @@ class DayTradingKiwoom(ParentKiwoom):
         if (self.today + '160000') < currentDate:
             self.system_off_check_timer.stop()
             self.call_exit()
-
-    def create_analysis_target_etf_file(self):
-        self.logging.logger.info("create_analysis_target_etf_file")
-        nowDate = get_today_by_format('%Y-%m-%d')
-        parent_path = self.sallAnalysisEtfFilePath
-        if not os.path.isdir(parent_path):
-            os.mkdir(parent_path)
-        path = self.sallAnalysisEtfFilePath + '/' + 'target_etf_info' + '_' + nowDate + '.txt'
-
-        for sCode in self.target_etf_stock_dict.keys():
-            value = self.target_etf_stock_dict[sCode]
-            f = open(path, "a", encoding="utf8")
-            f.write("%s\t%s\n" %
-                    (sCode, value))
-            f.close()
 
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
