@@ -156,6 +156,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def set_short_trade_stock_info(self):
         self.short_trade_target_stock_dict.update({'122630': {"row": []}})
         self.short_trade_target_stock_dict.update({'252670': {"row": []}})
+        self.short_trade_target_stock_dict.update({'233740': {"row": []}})
 
     def loop_analysis_short_trade_buy_etf(self):
         result = True
