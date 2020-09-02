@@ -116,9 +116,17 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             code = code.strip()
             code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_NAME)
             code_nm = code_nm.strip()
+            stock_type = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_TYPE)
+            stock_type = stock_type.strip()
             last_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LAST_PRICE)
             last_price = last_price.strip()
-            if abs(int(volume)) >= 25000 and abs(int(last_price)) <= 50000:
+            trace_sector_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.TRACE_SECTOR_CODE)
+            trace_sector_code = trace_sector_code.strip()
+            trace_sector_name = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.TRACE_SECTOR_NAME)
+            trace_sector_name = trace_sector_name.strip()
+
+            self.logging.logger.info(self.logType.OPT40004_STATUS_LOG % (code, code_nm, stock_type, trace_sector_code, trace_sector_name, volume))
+            if abs(int(volume)) >= 10000 and abs(int(last_price)) <= 50000:
                 for exclude in self.exclude_keywords:
                     if str_find(code_nm, exclude):
                         is_match_exclude = True
@@ -138,18 +146,19 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         code = code.strip()
         code_nm = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_NAME)
         highest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.HIGHEST_PRICE)
+        highest_stock_price = highest_stock_price.strip()
         lowest_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.LOWEST_PRICE)
+        lowest_stock_price = lowest_stock_price.strip()
         last_stock_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.CURRENT_PRICE)
+        last_stock_price = last_stock_price.strip()
         change_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.THE_DAY_BEFORE)
         change_price = change_price.strip()
 
         market_cap = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.MARTKET_CAP)
         market_cap = market_cap.strip()
 
-        self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (
-            code, highest_stock_price.strip(), lowest_stock_price.strip(), last_stock_price.strip(), change_price, market_cap)
-                                 )
-        if int(market_cap) >= 80:
+        self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (code, highest_stock_price, lowest_stock_price, last_stock_price, change_price, market_cap))
+        if int(market_cap) >= 60:
             self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
@@ -584,7 +593,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         copy_dict = copy.deepcopy(self.target_etf_stock_dict)
         for sCode in copy_dict.keys():
             QTest.qWait(5000)
-            self.logging.logger.info("get_etf_stock_info >> %s" % sCode)
             self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, sCode)
             self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT10001, "opt10001", 0, self.screen_etf_stock)
             self.etf_info_event_loop.exec_()

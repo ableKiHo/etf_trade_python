@@ -14,6 +14,7 @@ class LogType():
         self.ORDER_BUY_FAIL_STATUS_LOG = "[%s] > 매수주문 불가 [주문가능 수량 부족] [ 보유잔액: %s / 주문수량: %s / 총주문가: %s ]"
         self.ORDER_BUY_FAIL_NOT_POSSIBLE = "매수주문 불가 [주문가능 수량 부족]"
         self.OPT10001_STATUS_LOG = "종목번호: %s / 고가: %s / 저가: %s / 종가: %s / 전일대비: %s / 시가총액: %s"
+        self.OPT40004_STATUS_LOG = "종목번호: %s / 종목명: %s / 종목분류: %s / 추적지수코드: %s / 추적지수명: %s / 거래량: %s"
         self.ORDER_SELL_SUCCESS_LOG = "매도주문 전달 성공 [%s]"
         self.ORDER_SELL_FAIL_LOG = "매도주문 전달 실패 [%s]"
         self.OPW00018_SUMMARY_LOG = "계좌평가잔고내역요청 싱글데이터 : 총매입금액: %s / 총평가손익금액: %s / 총수익률: %s"

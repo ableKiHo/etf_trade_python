@@ -125,7 +125,7 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
-        stop_rate_list = [11, 8, 6]
+        stop_rate_list = [12, 9, 7]
         for stop_rate in stop_rate_list:
             stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_dict, stop_rate)
             if bool(stop_loss_sell_point):
@@ -204,7 +204,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
-        loss_rate = stop_rate - 1
+        loss_rate = stop_rate - 0.9
 
         if current_price > buy_price:
             last_day_price_profit_rate = round((last_day_price - buy_price) / buy_price * 100, 2)
