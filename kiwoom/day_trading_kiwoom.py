@@ -183,7 +183,7 @@ class DayTradingKiwoom(ParentKiwoom):
         today_tic = analysis_rows[0]
         current_price = today_tic[self.customType.CURRENT_PRICE]
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-        total_chegual_price = self.target_dict[code][self.customType.PURCHASE_AMOUNT]
+        total_chegual_price = target_dict[code][self.customType.PURCHASE_AMOUNT]
         if total_chegual_price <= target_amount and buy_price > current_price:
             if today_tic[target_field] > current_price:
                 self.logging.logger.info("today_tic ma5 deviate check > [%s] >> %s " % (code, today_tic))
