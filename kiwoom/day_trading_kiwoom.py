@@ -35,8 +35,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_etf_stock = "4020"
         self.screen_opt10080_info = "4030"
 
-        self.max_hold_stock_count = 2
+        self.max_hold_stock_count = 4
         self.max_buy_amount_by_stock = 50000
+        self.current_hold_stock_amount = 0
 
         self.analysis_search_timer1 = QTimer()
         self.analysis_search_timer2 = QTimer()
@@ -44,6 +45,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.hold_stock_check_timer = QTimer()
 
         self.current_hold_stock_count = 0
+        self.add_buy_count = 0
 
         self.current_hold_etf_stock_dict = {}
 
@@ -68,6 +70,10 @@ class DayTradingKiwoom(ParentKiwoom):
         self.detail_account_mystock()
         QTest.qWait(5000)
         self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
+
+        for code in self.current_hold_etf_stock_dict.keys():
+            value = self.current_hold_etf_stock_dict[code]
+            self.current_hold_stock_amount = self.current_hold_stock_amount + value[self.customType.PURCHASE_AMOUNT]
 
         self.get_search_goal_price_etf()
         QTest.qWait(5000)
@@ -130,28 +136,32 @@ class DayTradingKiwoom(ParentKiwoom):
                 del self.current_hold_etf_stock_dict[code]
                 return
 
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+        if self.current_hold_stock_amount <= (self.max_buy_amount_by_stock * 5):
 
-        ma5_add_buy_point = self.get_add_buy_point(code, target_dict, "ma5", 50000)
-        if bool(ma5_add_buy_point):
-            limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
-            self.logging.logger.info("add buy point break >> %s" % code)
-            quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
-            if quantity >= 1:
-                self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-                self.send_order_market_off_price_stock_price(code, quantity)
-                return
+            create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+            create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
-        ma20_add_buy_point = self.get_add_buy_point(code, target_dict, "ma20", 100000)
-        if bool(ma20_add_buy_point):
-            limit_price = ma20_add_buy_point[self.customType.CURRENT_PRICE]
-            self.logging.logger.info("add buy point break >> %s" % code)
-            quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
-            if quantity >= 1:
-                self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-                self.send_order_market_off_price_stock_price(code, quantity)
-                return
+            ma5_add_buy_point = self.get_add_buy_point(code, target_dict, "ma5", self.max_buy_amount_by_stock)
+            if bool(ma5_add_buy_point) and self.add_buy_count == 0:
+                limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
+                self.logging.logger.info("add buy point break >> %s" % code)
+                quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+                if quantity >= 1:
+                    self.add_buy_count = self.add_buy_count + 1
+                    self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
+                    self.send_order_market_off_price_stock_price(code, quantity)
+                    return
+
+            ma20_add_buy_point = self.get_add_buy_point(code, target_dict, "ma20", (self.max_buy_amount_by_stock * 2))
+            if bool(ma20_add_buy_point) and self.add_buy_count == 0:
+                limit_price = ma20_add_buy_point[self.customType.CURRENT_PRICE]
+                self.logging.logger.info("add buy point break >> %s" % code)
+                quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+                if quantity >= 1:
+                    self.add_buy_count = self.add_buy_count + 1
+                    self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
+                    self.send_order_market_off_price_stock_price(code, quantity)
+                    return
 
         self.logging.logger.info('daily_candle_sell_point_check end')
 
