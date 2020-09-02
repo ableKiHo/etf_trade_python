@@ -204,7 +204,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
-        loss_rate = stop_rate - 0.9
+        loss_rate = stop_rate - 1
 
         if current_price > buy_price:
             last_day_price_profit_rate = round((last_day_price - buy_price) / buy_price * 100, 2)
