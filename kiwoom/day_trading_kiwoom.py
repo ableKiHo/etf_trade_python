@@ -58,6 +58,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.analysis_sell_etf_stock_list = []
         self.sell_search_stock_code = ''
+        self.sell_search_stock_code_list = []
 
         self.event_slots()
         self.real_event_slot()
@@ -86,6 +87,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def loop_sell_hold_etf_stock(self):
         self.logging.logger.info('loop_sell_hold_etf_stock')
+        self.sell_search_stock_code_list = []
         self.sell_search_stock_code = ''
         self.analysis_sell_etf_stock_list = []
         for key in self.current_hold_etf_stock_dict.keys():
@@ -103,6 +105,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         code = self.sell_search_stock_code
         self.logging.logger.info("analysis_sell_etf_stock_list loop > %s " % code)
+        self.sell_search_stock_code_list.append(code)
 
         self.get_sell_opt10081_info(code)
         target_dict = self.current_hold_etf_stock_dict
@@ -163,7 +166,10 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.send_order_market_off_price_stock_price(code, quantity)
                     return
 
-        self.logging.logger.info('daily_candle_sell_point_check end')
+        if len(self.sell_search_stock_code_list) == len(self.analysis_goal_etf_stock_list):
+            self.logging.logger.info("daily_candle_sell_point_check end")
+            self.hold_stock_check_timer.stop()
+            return
 
     def loop_analysis_buy_etf(self):
         self.analysis_search_timer1 = default_q_timer_setting(60)
