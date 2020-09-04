@@ -85,7 +85,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
 
+    def analysis_hold_etf_stock(self):
+        self.hold_stock_check_timer = default_q_timer_setting(120)
+        self.hold_stock_check_timer.timeout.connect(self.loop_sell_hold_etf_stock)
+
     def loop_sell_hold_etf_stock(self):
+        self.hold_stock_check_timer.stop()
         self.logging.logger.info('loop_sell_hold_etf_stock')
         self.sell_search_stock_code_list = []
         self.sell_search_stock_code = ''
@@ -329,7 +334,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if value == '4':
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
-                self.loop_sell_hold_etf_stock()
+                self.analysis_hold_etf_stock()
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
