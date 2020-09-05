@@ -81,15 +81,21 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.loop_analysis_buy_etf()
         self.loop_system_off()
+        self.loop_sell_hold_etf_stock()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
 
-    def analysis_hold_etf_stock(self):
-        self.hold_stock_check_timer = default_q_timer_setting(120)
-        self.hold_stock_check_timer.timeout.connect(self.loop_sell_hold_etf_stock)
-
     def loop_sell_hold_etf_stock(self):
+        self.hold_stock_check_timer = default_q_timer_setting(120)
+        self.hold_stock_check_timer.timeout.connect(self.analysis_hold_etf_stock)
+
+    def analysis_hold_etf_stock(self):
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '150000') <= currentDate <= (self.today + '150500'):
+            pass
+        else:
+            return
         self.hold_stock_check_timer.stop()
         self.logging.logger.info('loop_sell_hold_etf_stock')
         self.sell_search_stock_code_list = []
@@ -113,9 +119,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code_list.append(code)
 
         self.get_sell_opt10081_info(code)
-        target_dict = self.current_hold_etf_stock_dict
 
-        max_loss_sell_point = self.get_max_loss_sell_case(code, target_dict)
+        max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_loss_sell_point):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -124,7 +129,7 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
-        max_profit_sell_point = self.get_max_profit_sell_case(code, target_dict)
+        max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_profit_sell_point):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -135,7 +140,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         stop_rate_list = [11, 8, 6]
         for stop_rate in stop_rate_list:
-            stop_loss_sell_point = self.get_stop_loss_sell_point(code, target_dict, stop_rate)
+            stop_loss_sell_point = self.get_stop_loss_sell_point(code, self.current_hold_etf_stock_dict, stop_rate)
             if bool(stop_loss_sell_point):
                 self.hold_stock_check_timer.stop()
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -149,7 +154,7 @@ class DayTradingKiwoom(ParentKiwoom):
             create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
             create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
-            ma5_add_buy_point = self.get_add_buy_point(code, target_dict, "ma5", self.max_buy_amount_by_stock)
+            ma5_add_buy_point = self.get_add_buy_point(code, self.current_hold_etf_stock_dict, "ma5", self.max_buy_amount_by_stock)
             if bool(ma5_add_buy_point) and self.add_buy_count == 0:
                 limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
                 self.logging.logger.info("add buy point break >> %s" % code)
@@ -157,18 +162,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 if quantity >= 1:
                     self.add_buy_count = self.add_buy_count + 1
                     self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-                    self.send_order_market_off_price_stock_price(code, quantity)
-                    return
-
-            ma20_add_buy_point = self.get_add_buy_point(code, target_dict, "ma20", (self.max_buy_amount_by_stock * 2))
-            if bool(ma20_add_buy_point) and self.add_buy_count == 0:
-                limit_price = ma20_add_buy_point[self.customType.CURRENT_PRICE]
-                self.logging.logger.info("add buy point break >> %s" % code)
-                quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
-                if quantity >= 1:
-                    self.add_buy_count = self.add_buy_count + 1
-                    self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-                    self.send_order_market_off_price_stock_price(code, quantity)
+                    self.send_order_limit_stock_price(code, quantity, limit_price)
                     return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_goal_etf_stock_list):
@@ -192,12 +186,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.logging.logger.info("sell_point analysis_rows > [%s] >> %s " % (code, analysis_rows))
         today_tic = analysis_rows[0]
+        yesterday_tic = analysis_rows[1]
         current_price = today_tic[self.customType.CURRENT_PRICE]
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
         total_chegual_price = target_dict[code][self.customType.PURCHASE_AMOUNT]
         if total_chegual_price <= target_amount and buy_price > current_price:
-            if today_tic[target_field] > current_price:
-                self.logging.logger.info("today_tic ma5 deviate check > [%s] >> %s " % (code, today_tic))
+            if yesterday_tic[target_field] > yesterday_tic[self.customType.CURRENT_PRICE] and today_tic[target_field] <= current_price:
+                self.logging.logger.info("today current price pass to ma5 line check > [%s] >> %s " % (code, today_tic))
                 return copy.deepcopy(today_tic)
 
         return {}
@@ -304,11 +299,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if bool(buy_point):
             if self.current_hold_stock_count < self.max_hold_stock_count:
-                quantity = math.trunc(self.max_buy_amount_by_stock / buy_point[self.customType.CURRENT_PRICE])
+                limit_price = buy_point[self.customType.CURRENT_PRICE]
+                quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
                 if quantity >= 1:
                     self.logging.logger.info("conform_hammer_case buy_point break >> %s" % code)
                     self.current_hold_stock_count = self.current_hold_stock_count + 1
-                    self.market_price_send_order(code, quantity)
+                    self.send_order_limit_stock_price(code, quantity, limit_price)
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
@@ -334,7 +330,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if value == '4':
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
-                self.analysis_hold_etf_stock()
+                self.analysis_search_timer1.stop()
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
