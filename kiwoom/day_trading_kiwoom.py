@@ -35,7 +35,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_etf_stock = "4020"
         self.screen_opt10080_info = "4030"
 
-        self.max_hold_stock_count = 4
+        self.max_hold_stock_count = 6
         self.max_buy_amount_by_stock = 50000
         self.current_hold_stock_amount = 0
 
@@ -149,21 +149,21 @@ class DayTradingKiwoom(ParentKiwoom):
                 del self.current_hold_etf_stock_dict[code]
                 return
 
-        if self.current_hold_stock_amount <= (self.max_buy_amount_by_stock * 5):
-
-            create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-            create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-
-            ma5_add_buy_point = self.get_add_buy_point(code, self.current_hold_etf_stock_dict, "ma5", self.max_buy_amount_by_stock)
-            if bool(ma5_add_buy_point) and self.add_buy_count == 0:
-                limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
-                self.logging.logger.info("add buy point break >> %s" % code)
-                quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
-                if quantity >= 1:
-                    self.add_buy_count = self.add_buy_count + 1
-                    self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-                    self.send_order_limit_stock_price(code, quantity, limit_price)
-                    return
+        # if self.current_hold_stock_amount <= (self.max_buy_amount_by_stock * 5):
+        #
+        #     create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        #     create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
+        #
+        #     ma5_add_buy_point = self.get_add_buy_point(code, self.current_hold_etf_stock_dict, "ma5", self.max_buy_amount_by_stock)
+        #     if bool(ma5_add_buy_point) and self.add_buy_count == 0:
+        #         limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
+        #         self.logging.logger.info("add buy point break >> %s" % code)
+        #         quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+        #         if quantity >= 1:
+        #             self.add_buy_count = self.add_buy_count + 1
+        #             self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
+        #             self.send_order_limit_stock_price(code, quantity, limit_price)
+        #             return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("daily_candle_sell_point_check end")
@@ -230,7 +230,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if current_price < buy_price:
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-            if profit_rate <= -10:
+            if profit_rate <= -7:
                 self.logging.logger.info("max_loss check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
                 return copy.deepcopy(first_tic)
         return {}
