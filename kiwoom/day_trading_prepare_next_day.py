@@ -24,7 +24,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_etf_day_stock = "4050"
         self.screen_opt10080_info = "4060"
 
-        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}}
+        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '반도체':{}, 'KRX300':{}}
         self.recommand_keyword_list = ['TR', '고배당', 'TOP10', '저변동', '성장', '블루칩', '우선주', '배당성장']
 
         self.analysis_etf_target_dict = {}
@@ -173,18 +173,15 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("create_target_etf_stock_file")
         for sCode in self.target_etf_stock_dict.keys():
             value = self.target_etf_stock_dict[sCode]
-            create_flag = False
+            create_flag = True
             if self.is_ma_line_analysis(sCode):
                 self.logging.logger.info("pass is_ma_line_analysis %s " % sCode)
 
-                if value[self.customType.STOCK_NAME].find(self.customType.KOSDAQ) >= 0 and not bool(self.represent_keyword_dict[self.customType.KOSDAQ]):
-                    self.represent_keyword_dict[self.customType.KOSDAQ] = copy.deepcopy(value)
-                    create_flag = True
-                elif value[self.customType.STOCK_NAME].find(self.customType.KOSPI) >= 0 and not bool(self.represent_keyword_dict[self.customType.KOSPI]):
-                    self.represent_keyword_dict[self.customType.KOSPI] = copy.deepcopy(value)
-                    create_flag = True
-                elif value[self.customType.STOCK_NAME].find(self.customType.KOSDAQ) < 0 and value[self.customType.STOCK_NAME].find(self.customType.KOSPI) < 0:
-                    create_flag = True
+                for keyword in self.represent_keyword_dict.keys():
+                    if value[self.customType.STOCK_NAME].find(keyword) >= 0 and bool(self.represent_keyword_dict[keyword]):
+                        create_flag = False
+                    elif value[self.customType.STOCK_NAME].find(keyword) >= 0 and not bool(self.represent_keyword_dict[keyword]):
+                        self.represent_keyword_dict[keyword] = copy.deepcopy(value)
 
                 if create_flag is True:
                     f = open(self.target_etf_file_path, "a", encoding="utf8")
