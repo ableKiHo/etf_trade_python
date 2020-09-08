@@ -268,7 +268,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_goal_etf_stock_list = []
         self.search_stock_code = []
         for key in self.target_etf_stock_dict.keys():
-            if key not in self.current_hold_etf_stock_dict.keys() and key not in self.today_buy_etf_stock_dict.keys():
+            if key not in self.current_hold_etf_stock_dict.keys():
                 self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
         self.analysis_search_timer2 = default_q_timer_setting(5)
         self.analysis_search_timer2.timeout.connect(self.other_target_candle_analysis_check)
@@ -276,8 +276,8 @@ class DayTradingKiwoom(ParentKiwoom):
     def other_target_candle_analysis_check(self):
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max buy stock")
-            self.analysis_search_timer2.stop()
-            return
+            # self.analysis_search_timer2.stop()
+            # return
 
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("other_target_candle_analysis nothing")
@@ -298,13 +298,17 @@ class DayTradingKiwoom(ParentKiwoom):
         buy_point = self.get_conform_buy_case(code, rows)
 
         if bool(buy_point):
-            if self.current_hold_stock_count < self.max_hold_stock_count:
+            if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
                 limit_price = buy_point[self.customType.CURRENT_PRICE]
                 quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
                 if quantity >= 1:
-                    self.logging.logger.info("conform_hammer_case buy_point break >> %s" % code)
+                    self.logging.logger.info("conform_buy_case buy_point break >> %s" % code)
                     self.current_hold_stock_count = self.current_hold_stock_count + 1
                     self.send_order_limit_stock_price(code, quantity, limit_price)
+            else:
+                currentDate = get_today_by_format('%Y%m%d%H%M%S')
+                if (self.today + '120000') <= currentDate <= (self.today + '120500'):
+                    self.line.notification('OPEN API SUGGEST STOCK [%s]' % code)
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
