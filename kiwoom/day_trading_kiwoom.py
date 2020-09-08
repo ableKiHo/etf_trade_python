@@ -206,13 +206,13 @@ class DayTradingKiwoom(ParentKiwoom):
         last_day_tic = analysis_rows[1]
 
         current_price = today_tic[self.customType.CURRENT_PRICE]
-        last_day_price = last_day_tic[self.customType.CURRENT_PRICE]
+        last_day_highest_price = last_day_tic[self.customType.HIGHEST_PRICE]
 
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
         if current_price > buy_price:
-            last_day_price_profit_rate = round((last_day_price - buy_price) / buy_price * 100, 2)
-            if last_day_price > current_price and last_day_price_profit_rate >= stop_rate:
+            last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
+            if last_day_highest_price > current_price and last_day_price_profit_rate >= stop_rate:
                 profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
                 if profit_rate < stop_rate:
                     self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s" % (code, current_price, buy_price, last_day_price_profit_rate, profit_rate))
