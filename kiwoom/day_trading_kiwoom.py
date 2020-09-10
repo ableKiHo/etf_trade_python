@@ -165,7 +165,7 @@ class DayTradingKiwoom(ParentKiwoom):
         #             self.send_order_limit_stock_price(code, quantity, limit_price)
         #             return
 
-        if len(self.sell_search_stock_code_list) == len(self.analysis_goal_etf_stock_list):
+        if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_sell_point_check end")
             self.hold_stock_check_timer.stop()
             return
