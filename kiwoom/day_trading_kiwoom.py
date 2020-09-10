@@ -125,7 +125,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("max_loss_sell_point break >> %s" % code)
-            self.sell_send_order_market_off_price(code, self.sell_screen_meme_stock, quantity)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
             del self.current_hold_etf_stock_dict[code]
             return
 
@@ -134,7 +134,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.hold_stock_check_timer.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("max_profit_sell_point break >> %s" % code)
-            self.sell_send_order_market_off_price(code, self.sell_screen_meme_stock, quantity)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
             del self.current_hold_etf_stock_dict[code]
             return
 
@@ -145,7 +145,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.hold_stock_check_timer.stop()
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
                 self.logging.logger.info("stop_loss_sell_point break >> %s" % code)
-                self.sell_send_order_market_off_price(code, self.sell_screen_meme_stock, quantity)
+                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
                 del self.current_hold_etf_stock_dict[code]
                 return
 
@@ -706,6 +706,19 @@ class DayTradingKiwoom(ParentKiwoom):
             self.line.notification(self.logType.ORDER_BUY_SUCCESS_LOG)
         else:
             self.logging.logger.info(self.logType.ORDER_BUY_FAIL_LOG)
+
+    def sell_send_order_favorable_limit_price(self, sCode, screen_number, quantity):
+        order_success = self.dynamicCall(
+            "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.FAVORABLE_LIMIT_PRICE],
+             ""]
+        )
+        if order_success == 0:
+            self.logging.logger.info(self.logType.ORDER_SELL_SUCCESS_LOG % sCode)
+        else:
+            self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
+
+        return order_success
 
     def sell_send_order(self, sCode, screen_number, quantity):
         order_success = self.dynamicCall(
