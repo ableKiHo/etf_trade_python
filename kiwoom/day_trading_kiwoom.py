@@ -119,6 +119,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code_list.append(code)
 
         self.get_sell_opt10081_info(code)
+        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
 
         max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_loss_sell_point):
@@ -214,8 +215,8 @@ class DayTradingKiwoom(ParentKiwoom):
             last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
             if last_day_highest_price > current_price and last_day_price_profit_rate >= stop_rate:
                 profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                if profit_rate < stop_rate:
-                    self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s" % (code, current_price, buy_price, last_day_price_profit_rate, profit_rate))
+                if profit_rate < stop_rate and today_tic["ma5"] > current_price:
+                    self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
                     return copy.deepcopy(today_tic)
         return {}
 
