@@ -35,7 +35,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_etf_stock = "4020"
         self.screen_opt10080_info = "4030"
 
-        self.max_hold_stock_count = 6
+        self.max_hold_stock_count = 7
         self.max_buy_amount_by_stock = 50000
         self.current_hold_stock_amount = 0
 
@@ -150,6 +150,15 @@ class DayTradingKiwoom(ParentKiwoom):
                 del self.current_hold_etf_stock_dict[code]
                 return
 
+        big_loss_sell_point = self.get_stop_big_loss_sell_point(code, self.current_hold_etf_stock_dict)
+        if bool(big_loss_sell_point):
+            self.hold_stock_check_timer.stop()
+            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            self.logging.logger.info("stop_big_loss_sell_point break >> %s" % code)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            del self.current_hold_etf_stock_dict[code]
+            return
+
         # if self.current_hold_stock_amount <= (self.max_buy_amount_by_stock * 5):
         #
         #     create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
@@ -197,6 +206,31 @@ class DayTradingKiwoom(ParentKiwoom):
                 return copy.deepcopy(today_tic)
 
         return {}
+
+    def get_stop_big_loss_sell_point(self, code, target_dict):
+        min_profit_rate = 3.5
+        big_loss_rate = 2
+        rows = target_dict[code]["row"]
+        if len(rows) < 2:
+            return {}
+        analysis_rows = rows[:2]
+        today_tic = analysis_rows[0]
+        last_day_tic = analysis_rows[1]
+
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        last_day_highest_price = last_day_tic[self.customType.HIGHEST_PRICE]
+
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
+
+        if current_price > buy_price:
+            last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
+            if last_day_highest_price > current_price and last_day_price_profit_rate >= min_profit_rate:
+                profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+                if 1 <= profit_rate <= (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
+                    self.logging.logger.info("stop_big_loss check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
+                    return copy.deepcopy(today_tic)
+        return {}
+
 
     def get_stop_loss_sell_point(self, code, target_dict, stop_rate):
         rows = target_dict[code]["row"]
@@ -255,11 +289,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def loop_other_target_buy_etf_stock(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100000') <= currentDate <= (self.today + '100500'):
+        if (self.today + '100100') <= currentDate <= (self.today + '100500'):
             pass
-        elif (self.today + '110000') <= currentDate <= (self.today + '110500'):
+        elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
             pass
-        elif (self.today + '120000') <= currentDate <= (self.today + '120500'):
+        elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
             pass
         else:
             return
