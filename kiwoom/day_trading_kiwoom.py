@@ -25,6 +25,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop = QEventLoop()
         self.detail_account_mystock_info_event_loop = QEventLoop()
         self.tr_sell_opt10081_info_event_loop = QEventLoop()
+        self.not_account_info_event_loop = QEventLoop()
 
         self.today = get_today_by_format('%Y%m%d')
 
@@ -43,6 +44,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_search_timer2 = QTimer()
         self.system_off_check_timer = QTimer()
         self.hold_stock_check_timer = QTimer()
+        self.cancle_check_timer = QTimer()
 
         self.current_hold_stock_count = 0
         self.add_buy_count = 0
@@ -82,9 +84,28 @@ class DayTradingKiwoom(ParentKiwoom):
         self.loop_analysis_buy_etf()
         self.loop_system_off()
         self.loop_sell_hold_etf_stock()
+        self.loop_cancle_buy_etf()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
+
+    def loop_cancle_buy_etf(self):
+        self.cancle_check_timer = default_q_timer_setting(120)
+        self.cancle_check_timer.timeout.connect(self.cancle_buy_etf)
+
+    def cancle_buy_etf(self):
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '105700') <= currentDate <= (self.today + '110000'):
+            pass
+        elif (self.today + '115700') <= currentDate <= (self.today + '120000'):
+            pass
+        elif (self.today + '125700') <= currentDate <= (self.today + '130000'):
+            pass
+        else:
+            return
+
+        self.cancle_check_timer.stop()
+        self.not_concluded_account()
 
     def loop_sell_hold_etf_stock(self):
         self.hold_stock_check_timer = default_q_timer_setting(120)
@@ -230,7 +251,6 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.logging.logger.info("stop_big_loss check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
                     return copy.deepcopy(today_tic)
         return {}
-
 
     def get_stop_loss_sell_point(self, code, target_dict, stop_rate):
         rows = target_dict[code]["row"]
@@ -465,6 +485,15 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
         self.tr_sell_opt10081_info_event_loop.exec_()
 
+    def not_concluded_account(self, sPrevNext="0"):
+        self.logging.logger.info("not_concluded_account")
+        self.dynamicCall("SetInputValue(QString, QString)", self.customType.ACCOUNT_NUMBER, self.account_num)
+        self.dynamicCall("SetInputValue(QString, QString)", "체결구분", "1")
+        self.dynamicCall("SetInputValue(QString, QString)", "매매구분", "0")
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "실시간미체결요청", "opt10075", sPrevNext, self.screen_etf_stock)
+
+        self.not_account_info_event_loop.exec_()
+
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         if sRQName == self.customType.OPW00001:
             self.trdata_slot_opw00001(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
@@ -478,6 +507,34 @@ class DayTradingKiwoom(ParentKiwoom):
             self.trdata_slot_opw00018(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == "tr_sell_opt10081":
             self.trdata_slot_sell_opt10081(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
+        elif sRQName == "실시간미체결요청":
+            self.trdata_slot_opt10075(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
+
+    def trdata_slot_opt10075(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+        for i in range(rows):
+            code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.STOCK_CODE)
+            order_no = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.ORDER_NO)
+            order_gubun = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.ORDER_CLASSIFICATION)
+
+            code = code.strip()
+            order_no = int(order_no.strip())
+            order_gubun = order_gubun.strip().lstrip('+').lstrip('-')
+
+            if order_gubun == self.customType.BUY:
+                order_success = self.dynamicCall(
+                    "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
+                    [self.customType.BUY_CANCLE, self.buy_screen_real_stock, self.account_num, 3, code, 0, 0,
+                     self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS], order_no]
+                )
+
+                if order_success == 0:
+                    self.logging.logger.debug(self.logType.CANCLE_ORDER_BUY_SUCCESS_LOG)
+                    self.current_hold_stock_count = self.current_hold_stock_count - 1
+                else:
+                    self.logging.logger.debug(self.logType.CANCLE_ORDER_BUY_FAIL_LOG)
+
+        self.not_account_info_event_loop.exit()
 
     def trdata_slot_sell_opt10081(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
         stock_code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.STOCK_CODE)
@@ -745,7 +802,8 @@ class DayTradingKiwoom(ParentKiwoom):
     def sell_send_order_favorable_limit_price(self, sCode, screen_number, quantity):
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.FAVORABLE_LIMIT_PRICE],
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, 0,
+             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.FAVORABLE_LIMIT_PRICE],
              ""]
         )
         if order_success == 0:
