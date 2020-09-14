@@ -104,7 +104,6 @@ class DayTradingKiwoom(ParentKiwoom):
         else:
             return
 
-        self.cancle_check_timer.stop()
         self.not_concluded_account()
 
     def loop_sell_hold_etf_stock(self):
