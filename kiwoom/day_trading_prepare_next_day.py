@@ -460,15 +460,15 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
-        if ma5_percent > 0.4:
+        if ma5_percent > 0.3:
             self.logging.logger.info("ma5_percent check> [%s]" % code)
             return {}
         ma10_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma10"]) / first_tic["ma10"] * 100
-        if ma10_percent > 0.8:
+        if ma10_percent > 0.7:
             self.logging.logger.info("ma10_percent check> [%s]" % code)
             return {}
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 1.2:
+        if ma20_percent > 1.0:
             self.logging.logger.info("ma20_percent check> [%s]" % code)
             return {}
 
