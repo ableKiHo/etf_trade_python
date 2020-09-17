@@ -229,8 +229,7 @@ class DayTradingKiwoom(ParentKiwoom):
         return {}
 
     def get_stop_big_loss_sell_point(self, code, target_dict):
-        min_profit_rate = 3.5
-        big_loss_rate = 2
+        big_loss_rate = 2.5
         rows = target_dict[code]["row"]
         if len(rows) < 2:
             return {}
@@ -249,9 +248,9 @@ class DayTradingKiwoom(ParentKiwoom):
                 return copy.deepcopy(today_tic)
             else:
                 last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
-                if last_day_highest_price > current_price and last_day_price_profit_rate >= min_profit_rate:
+                if last_day_highest_price > current_price:
                     profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                    if 1 <= profit_rate <= (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
+                    if profit_rate < (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
                         self.logging.logger.info("stop_big_loss rate check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
                         return copy.deepcopy(today_tic)
 
