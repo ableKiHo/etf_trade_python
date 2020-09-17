@@ -45,8 +45,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.system_off_check_timer = QTimer()
         self.hold_stock_check_timer = QTimer()
         self.cancle_check_timer = QTimer()
-        self.hold_stock_ma_line_check_timer1 = QTimer()
-        self.hold_stock_ma_line_check_timer2 = QTimer()
 
         self.current_hold_stock_count = 0
         self.add_buy_count = 0
@@ -63,10 +61,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_sell_etf_stock_list = []
         self.sell_search_stock_code = ''
         self.sell_search_stock_code_list = []
-
-        self.analysis_ma_line_etf_stock_list = []
-        self.ma_line_search_stock_code = ''
-        self.ma_line_search_stock_code_list = []
 
         self.event_slots()
         self.real_event_slot()
@@ -91,7 +85,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.loop_system_off()
         self.loop_sell_hold_etf_stock()
         self.loop_cancle_buy_etf()
-        self.loop_hold_stock_ma_line_check()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
@@ -112,58 +105,6 @@ class DayTradingKiwoom(ParentKiwoom):
             return
 
         self.not_concluded_account()
-
-    def loop_hold_stock_ma_line_check(self):
-        self.hold_stock_ma_line_check_timer1 = default_q_timer_setting(120)
-        self.hold_stock_ma_line_check_timer1.timeout.connect(self.analysis_hold_etf_stock_ma_line_check)
-
-    def analysis_hold_etf_stock_ma_line_check(self):
-
-        currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '150000') > currentDate:
-            pass
-        else:
-            return
-
-        self.hold_stock_ma_line_check_timer1.stop()
-        self.logging.logger.info('loop_hold_stock_ma_line_check')
-        self.ma_line_search_stock_code_list = []
-        self.ma_line_search_stock_code = ''
-        self.analysis_ma_line_etf_stock_list = []
-        for key in self.current_hold_etf_stock_dict.keys():
-            self.analysis_ma_line_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
-        self.hold_stock_ma_line_check_timer2 = default_q_timer_setting(4)
-        self.hold_stock_ma_line_check_timer2.timeout.connect(self.daily_candle_ma_line_point_check)
-
-    def daily_candle_ma_line_point_check(self):
-        if len(self.analysis_ma_line_etf_stock_list) == 0:
-            self.logging.logger.info("analysis_ma_line_etf_stock_list nothing")
-            self.hold_stock_ma_line_check_timer2.stop()
-            return
-
-        self.get_ma_line_next_search_etf_stock_code(len(self.analysis_ma_line_etf_stock_list))
-
-        code = self.ma_line_search_stock_code
-        self.logging.logger.info("analysis_ma_line_etf_stock_list loop > %s " % code)
-        self.ma_line_search_stock_code_list.append(code)
-
-        self.get_sell_opt10081_info(code)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma7", 7)
-
-        stop_big_loss_ma_line_point = self.get_stop_big_loss_ma_line_point(code, self.current_hold_etf_stock_dict)
-        if bool(stop_big_loss_ma_line_point):
-            self.hold_stock_check_timer.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("stop_big_loss_ma_line_point break >> %s" % code)
-            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
-            return
-
-        if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
-            self.logging.logger.info("daily_candle_sell_point_check end")
-            self.hold_stock_ma_line_check_timer2.stop()
-            self.hold_stock_ma_line_check_timer1.start()
-            return
 
     def loop_sell_hold_etf_stock(self):
         self.hold_stock_check_timer = default_q_timer_setting(120)
@@ -200,6 +141,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma7", 7)
+        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
         max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_loss_sell_point):
@@ -316,14 +258,20 @@ class DayTradingKiwoom(ParentKiwoom):
         last_day_highest_price = last_day_tic[self.customType.HIGHEST_PRICE]
 
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-
+        profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
         if current_price > buy_price:
-            last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
-            if last_day_highest_price > current_price:
-                profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                if 1 < profit_rate < (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
-                    self.logging.logger.info("stop_big_loss rate check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
-                    return copy.deepcopy(today_tic)
+            if 1 < profit_rate and today_tic["ma20"] > current_price:
+                self.logging.logger.info("stop_big_loss ma7 check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, today_tic["ma7"]))
+                return copy.deepcopy(today_tic)
+            else:
+                last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
+                if last_day_highest_price > current_price:
+
+                    if 1 < profit_rate < (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
+                        self.logging.logger.info(
+                            "stop_big_loss rate check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
+                        return copy.deepcopy(today_tic)
+
         return {}
 
     def get_stop_loss_sell_point(self, code, target_dict, stop_rate):
@@ -994,18 +942,3 @@ class DayTradingKiwoom(ParentKiwoom):
             item = self.analysis_sell_etf_stock_list[index + 1]
 
         self.sell_search_stock_code = item[self.customType.STOCK_CODE]
-
-    def get_ma_line_next_search_etf_stock_code(self, max_index=4):
-        if self.ma_line_search_stock_code == '':
-            item = self.analysis_ma_line_etf_stock_list[0]
-        else:
-            index = next((index for (index, d) in enumerate(self.analysis_ma_line_etf_stock_list) if d[self.customType.STOCK_CODE] == self.ma_line_search_stock_code), None)
-            if index < 0 or index > max_index:
-                self.logging.logger.info("not found next stock code > index:[%s] " % index)
-                sys.exit()
-
-            if index == len(self.analysis_ma_line_etf_stock_list) - 1:
-                index = -1
-            item = self.analysis_ma_line_etf_stock_list[index + 1]
-
-        self.ma_line_search_stock_code = item[self.customType.STOCK_CODE]
