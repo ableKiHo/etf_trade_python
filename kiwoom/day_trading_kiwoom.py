@@ -229,22 +229,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         return {}
 
-    def get_stop_big_loss_ma_line_point(self, code, target_dict):
-        rows = target_dict[code]["row"]
-        if len(rows) < 2:
-            return {}
-        analysis_rows = rows[:2]
-        today_tic = analysis_rows[0]
-
-        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
-        current_price = today_tic[self.customType.CURRENT_PRICE]
-
-        if current_price > buy_price:
-            profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-            if 1 < profit_rate and today_tic["ma7"] > current_price:
-                self.logging.logger.info("stop_big_loss ma7 check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, today_tic["ma7"]))
-                return copy.deepcopy(today_tic)
-
     def get_stop_big_loss_sell_point(self, code, target_dict):
         big_loss_rate = 2.5
         rows = target_dict[code]["row"]
