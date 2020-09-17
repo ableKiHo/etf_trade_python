@@ -298,7 +298,8 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = today_tic[self.customType.CURRENT_PRICE]
 
         if current_price > buy_price:
-            if today_tic["ma7"] > current_price:
+            profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+            if 1 < profit_rate and today_tic["ma7"] > current_price:
                 self.logging.logger.info("stop_big_loss ma7 check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, today_tic["ma7"]))
                 return copy.deepcopy(today_tic)
 
@@ -320,7 +321,7 @@ class DayTradingKiwoom(ParentKiwoom):
             last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
             if last_day_highest_price > current_price:
                 profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                if profit_rate < (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
+                if 1 < profit_rate < (last_day_price_profit_rate - big_loss_rate) and today_tic["ma5"] > current_price:
                     self.logging.logger.info("stop_big_loss rate check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], last_day_price_profit_rate, profit_rate))
                     return copy.deepcopy(today_tic)
         return {}
