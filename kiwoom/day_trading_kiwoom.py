@@ -38,7 +38,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.max_hold_stock_count = 7
         self.max_buy_amount_by_stock = 50000
-        self.current_hold_stock_amount = 0
 
         self.analysis_search_timer1 = QTimer()
         self.analysis_search_timer2 = QTimer()
@@ -74,9 +73,10 @@ class DayTradingKiwoom(ParentKiwoom):
         QTest.qWait(5000)
         self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
 
-        for code in self.current_hold_etf_stock_dict.keys():
-            value = self.current_hold_etf_stock_dict[code]
-            self.current_hold_stock_amount = self.current_hold_stock_amount + value[self.customType.PURCHASE_AMOUNT]
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '160000') < currentDate:
+            self.check_system_off_time()
+            return
 
         self.get_search_goal_price_etf()
         QTest.qWait(5000)
@@ -180,22 +180,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
             del self.current_hold_etf_stock_dict[code]
             return
-
-        # if self.current_hold_stock_amount <= (self.max_buy_amount_by_stock * 5):
-        #
-        #     create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        #     create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-        #
-        #     ma5_add_buy_point = self.get_add_buy_point(code, self.current_hold_etf_stock_dict, "ma5", self.max_buy_amount_by_stock)
-        #     if bool(ma5_add_buy_point) and self.add_buy_count == 0:
-        #         limit_price = ma5_add_buy_point[self.customType.CURRENT_PRICE]
-        #         self.logging.logger.info("add buy point break >> %s" % code)
-        #         quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
-        #         if quantity >= 1:
-        #             self.add_buy_count = self.add_buy_count + 1
-        #             self.logging.logger.info("add buy point break send order quantity [%s]>> %s" % (code, quantity))
-        #             self.send_order_limit_stock_price(code, quantity, limit_price)
-        #             return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_sell_point_check end")
@@ -380,6 +364,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def get_default_price_info(self):
         self.read_target_etf_file()
         QTest.qWait(5000)
+        self.read_hold_etf_file()
 
         self.get_all_etf_info()
         QTest.qWait(5000)
@@ -724,6 +709,22 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                         "row": []}})
             f.close()
 
+    def read_hold_etf_file(self):
+        self.logging.logger.info("read_hold_etf_file")
+        if os.path.exists(self.hold_etf_file_path):
+            f = open(self.hold_etf_file_path, "r", encoding="utf8")
+
+            lines = f.readlines()
+            for line in lines:
+                if line != "":
+                    ls = line.split("\t")
+
+                    stock_code = ls[0]
+                    purchase_date = ls[1].rstrip('\n')
+                    if stock_code in self.current_hold_etf_stock_dict.keys():
+                        self.target_etf_stock_dict[stock_code].update({self.customType.DATE: purchase_date})
+            f.close()
+
     def screen_number_setting(self, cal_dict):
         self.logging.logger.info("screen_number_setting")
 
@@ -894,8 +895,29 @@ class DayTradingKiwoom(ParentKiwoom):
     def check_system_off_time(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '160000') < currentDate:
+            self.create_current_hold_etf_stock_info()
             self.system_off_check_timer.stop()
-            self.call_exit()
+            self.system_off_check_timer = default_q_timer_setting(60)
+            self.system_off_check_timer.timeout.connect(self.call_exit)
+
+    def create_current_hold_etf_stock_info(self):
+        self.logging.logger.info("create_current_hold_etf_stock_info")
+
+        purchase_date = self.today
+        for code in self.current_hold_etf_stock_dict.keys():
+            value = self.current_hold_etf_stock_dict[code]
+            if self.customType.DATE in value.keys():
+                purchase_date = value[self.customType.DATE]
+
+            f = open(self.hold_etf_file_path, "a", encoding="utf8")
+            f.write("%s\t%s\n" %
+                    (code, purchase_date))
+            f.close()
+        for code in self.today_buy_etf_stock_dict.keys():
+            f = open(self.hold_etf_file_path, "a", encoding="utf8")
+            f.write("%s\t%s\n" %
+                    (code, purchase_date))
+            f.close()
 
     def get_next_search_etf_stock_code(self, max_index=4):
         if self.goal_buy_search_stock_code == '':
