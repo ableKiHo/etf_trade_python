@@ -970,10 +970,17 @@ class DayTradingKiwoom(ParentKiwoom):
     def check_system_off_time(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '160000') < currentDate:
+            self.file_delete()
             self.create_current_hold_etf_stock_info()
             self.system_off_check_timer.stop()
             self.system_off_check_timer = default_q_timer_setting(60)
             self.system_off_check_timer.timeout.connect(self.call_exit)
+
+    def file_delete(self):
+        self.logging.logger.info("file_delete")
+        if os.path.isfile(self.hold_etf_file_path):
+            os.remove(self.hold_etf_file_path)
+            self.logging.logger.info("remove %s" % self.hold_etf_file_path)
 
     def create_current_hold_etf_stock_info(self):
         self.logging.logger.info("create_current_hold_etf_stock_info")
