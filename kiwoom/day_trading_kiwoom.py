@@ -143,7 +143,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code_list.append(code)
 
         self.get_sell_opt10081_info(code)
-        self.logging.logger.info(self.current_hold_etf_stock_dict)
         goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
         if bool(goni_sell_point):
             self.analysis_goni_timer2.stop()
