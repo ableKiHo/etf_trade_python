@@ -143,7 +143,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code_list.append(code)
 
         self.get_sell_opt10081_info(code)
-
+        self.logging.logger.info(self.current_hold_etf_stock_dict)
         goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
         if bool(goni_sell_point):
             self.analysis_goni_timer2.stop()
@@ -268,6 +268,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def get_stop_goni_sell_point(self, code, target_dict):
         rows = target_dict[code]["row"]
+        self.logging.logger.info("get_stop_goni_sell_point rows > [%s] >> %s " % (code, rows))
+        self.logging.logger.info("target_dict > [%s] >> %s " % (code, target_dict))
         if len(rows) < 2:
             return {}
         buy_after_rows = [x for x in rows if x[self.customType.DATE] > target_dict[self.customType.DATE]]
