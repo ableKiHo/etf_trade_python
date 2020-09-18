@@ -268,11 +268,9 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def get_stop_goni_sell_point(self, code, target_dict):
         rows = target_dict[code]["row"]
-        self.logging.logger.info("get_stop_goni_sell_point rows > [%s] >> %s " % (code, rows))
-        self.logging.logger.info("target_dict > [%s] >> %s " % (code, target_dict))
         if len(rows) < 2:
             return {}
-        buy_after_rows = [x for x in rows if x[self.customType.DATE] > target_dict[self.customType.DATE]]
+        buy_after_rows = [x for x in rows if x[self.customType.DATE] > target_dict[code][self.customType.DATE]]
         if len(buy_after_rows) < 1:
             return {}
 
