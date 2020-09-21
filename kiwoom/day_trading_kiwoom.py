@@ -35,6 +35,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.buy_screen_real_stock = "6000"
         self.screen_etf_stock = "4020"
         self.screen_opt10080_info = "4030"
+        self.screen_sell_opt10081_info = "4040"
 
         self.max_hold_stock_count = 7
         self.max_buy_amount_by_stock = 50000
@@ -372,6 +373,7 @@ class DayTradingKiwoom(ParentKiwoom):
         return {}
 
     def loop_other_target_buy_etf_stock(self):
+        self.analysis_search_timer1.start(1000 * 60)
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '100100') <= currentDate <= (self.today + '100500'):
             pass
@@ -432,7 +434,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
             self.analysis_search_timer2.stop()
-            self.analysis_search_timer1.start()
+            self.analysis_search_timer1.start(1000 * 300)
             return
 
     def get_default_price_info(self):
@@ -547,7 +549,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def get_sell_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MODIFIED_SHARE_PRICE, "1")
-        self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_etf_stock)
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_sell_opt10081", "opt10081", 0, self.screen_sell_opt10081_info)
         self.tr_sell_opt10081_info_event_loop.exec_()
 
     def not_concluded_account(self, sPrevNext="0"):
@@ -625,7 +627,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
 
-        self.stop_screen_cancel(self.screen_etf_stock)
+        self.stop_screen_cancel(self.screen_sell_opt10081_info)
         self.tr_sell_opt10081_info_event_loop.exit()
 
     def trdata_slot_opw00018(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
