@@ -163,7 +163,6 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
-        # TODO min stop loss sell point
         goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
         if bool(goni_sell_point):
             self.analysis_goni_timer2.stop()
@@ -226,6 +225,23 @@ class DayTradingKiwoom(ParentKiwoom):
             return
 
         # TODO 3일 연속 종가 5일선 돌파 실패시 매도
+        # maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
+        # if bool(maintain_under_ma5_line):
+        #     self.hold_stock_check_timer.stop()
+        #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+        #     self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
+        #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+        #     del self.current_hold_etf_stock_dict[code]
+        #     return
+
+        maintain_under_one_percent = self.get_maintain_under_one_percent(code, self.current_hold_etf_stock_dict)
+        if bool(maintain_under_one_percent):
+            self.hold_stock_check_timer.stop()
+            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            self.logging.logger.info("maintain_under_one_percent_sell_point break >> %s" % code)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            del self.current_hold_etf_stock_dict[code]
+            return
 
         max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_profit_sell_point):
@@ -310,6 +326,27 @@ class DayTradingKiwoom(ParentKiwoom):
             if 1.1 <= highest_profit_rate < 2.0 and profit_rate < 1.1:
                 self.logging.logger.info("min_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
+        return {}
+
+    def get_maintain_under_one_percent(self, code, target_dict):
+        rows = target_dict[code]["row"]
+        if len(rows) < 2:
+            return {}
+        buy_after_rows = [x for x in rows if x[self.customType.DATE] > target_dict[code][self.customType.DATE]]
+        if len(buy_after_rows) < 5:
+            return {}
+
+        analysis_rows = rows[:2]
+        today_tic = analysis_rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
+        profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+
+        if buy_price < current_price < today_tic["ma5"]:
+            if 0.5 <= profit_rate < 1.0:
+                self.logging.logger.info("maintain_under_one_percent check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
+                return copy.deepcopy(today_tic)
+
         return {}
 
     def get_stop_goni_sell_point(self, code, target_dict):
@@ -406,6 +443,21 @@ class DayTradingKiwoom(ParentKiwoom):
             if profit_rate <= -7:
                 self.logging.logger.info("max_loss check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
                 return copy.deepcopy(first_tic)
+        return {}
+
+    def get_maintain_under_ma5_line(self, code, target_dict):
+        rows = target_dict[code]["row"]
+        if len(rows) < 3:
+            return {}
+        analysis_rows = rows[:3]
+        today_tic = analysis_rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
+
+        under_ma5_last_price_list = [x for x in analysis_rows if x[self.customType.CURRENT_PRICE] < x["ma5"]]
+        if current_price < buy_price and len(under_ma5_last_price_list) == 3:
+            self.logging.logger.info("maintain_under_ma5_line check > [%s] >> %s / %s " % (code, current_price, buy_price))
+            return copy.deepcopy(today_tic)
         return {}
 
     def get_max_profit_sell_case(self, code, target_dict):
@@ -675,7 +727,8 @@ class DayTradingKiwoom(ParentKiwoom):
             e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             e = abs(int(e.strip()))
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, self.customType.DATE: c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '', "ma7": {}}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, self.customType.DATE: c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '',
+                   "ma7": {}}
             new_rows.append(row)
 
         self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
