@@ -225,6 +225,8 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
+        # TODO 3일 연속 종가 5일선 돌파 실패시 매도
+
         max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_profit_sell_point):
             self.hold_stock_check_timer.stop()
@@ -305,7 +307,7 @@ class DayTradingKiwoom(ParentKiwoom):
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
         if buy_price < current_price < today_tic["ma5"]:
-            if 1.5 <= highest_profit_rate < 2.0 and profit_rate < 1.1:
+            if 1.1 <= highest_profit_rate < 2.0 and profit_rate < 1.1:
                 self.logging.logger.info("min_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
         return {}
