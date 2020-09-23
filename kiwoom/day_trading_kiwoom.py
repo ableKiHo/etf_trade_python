@@ -455,7 +455,7 @@ class DayTradingKiwoom(ParentKiwoom):
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
         under_ma5_last_price_list = [x for x in analysis_rows if x[self.customType.CURRENT_PRICE] < x["ma5"]]
-        if current_price < buy_price and len(under_ma5_last_price_list) == 3:
+        if current_price < buy_price and len(under_ma5_last_price_list) == 3 and current_price < today_tic["ma20"]:
             self.logging.logger.info("maintain_under_ma5_line check > [%s] >> %s / %s " % (code, current_price, buy_price))
             return copy.deepcopy(today_tic)
         return {}
