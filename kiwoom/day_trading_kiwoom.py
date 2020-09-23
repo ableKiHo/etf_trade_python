@@ -39,6 +39,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.max_hold_stock_count = 7
         self.max_buy_amount_by_stock = 50000
+        self.max_invest_amount = 350000
+        self.total_invest_amount = 0
 
         self.analysis_search_timer1 = QTimer()
         self.analysis_search_timer2 = QTimer()
@@ -50,7 +52,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_goni_timer2 = QTimer()
 
         self.current_hold_stock_count = 0
-        self.add_buy_count = 0
 
         self.current_hold_etf_stock_dict = {}
 
@@ -79,7 +80,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.detail_account_mystock()
         QTest.qWait(5000)
-        self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
+        self.init_stock_values()
 
         self.get_search_goal_price_etf()
         QTest.qWait(5000)
@@ -92,6 +93,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
+
+    def init_stock_values(self):
+        self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
+        able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / self.max_buy_amount_by_stock)
+        if able_addbuy_stock_count > 0:
+            self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
 
     def loop_cancle_buy_etf(self):
         self.cancle_check_timer = default_q_timer_setting(120)
@@ -777,6 +784,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.current_hold_etf_stock_dict[code].update({"row": []})
 
             self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
+            self.total_invest_amount = self.total_invest_amount + total_chegual_price
 
         if sPrevNext == "2":
             self.detail_account_mystock(sPrevNext="2")
