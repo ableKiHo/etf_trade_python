@@ -37,7 +37,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_opt10080_info = "4030"
         self.screen_sell_opt10081_info = "4040"
 
-        self.max_hold_stock_count = 7
+        self.max_hold_stock_count = 0
         self.max_buy_amount_by_stock = 50000
         self.max_invest_amount = 350000
         self.total_invest_amount = 0
@@ -99,6 +99,8 @@ class DayTradingKiwoom(ParentKiwoom):
         able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / self.max_buy_amount_by_stock)
         if able_addbuy_stock_count > 0:
             self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
+        else:
+            self.max_hold_stock_count = self.current_hold_stock_count
 
     def loop_cancle_buy_etf(self):
         self.cancle_check_timer = default_q_timer_setting(120)
@@ -231,7 +233,7 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
-        # TODO 3일 연속 종가 5일선 돌파 실패시 매도
+        # 3일 연속 종가 5일선 돌파 실패시 매도
         # maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
         # if bool(maintain_under_ma5_line):
         #     self.hold_stock_check_timer.stop()
@@ -888,15 +890,14 @@ class DayTradingKiwoom(ParentKiwoom):
                     highest_stock_price = ls[2]
                     lowest_stock_price = ls[3]
                     last_stock_price = ls[4].rstrip('\n')
-                    if stock_code not in self.current_hold_etf_stock_dict.keys():
-                        self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_CODE: stock_code,
-                                                                        self.customType.STOCK_NAME: stock_name,
-                                                                        self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
-                                                                        self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
-                                                                        self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
-                                                                        self.customType.GOAL_PRICE: '',
-                                                                        "stat": '',
-                                                                        "row": []}})
+                    self.target_etf_stock_dict.update({stock_code: {self.customType.STOCK_CODE: stock_code,
+                                                                    self.customType.STOCK_NAME: stock_name,
+                                                                    self.customType.LAST_DAY_HIGHEST_PRICE: highest_stock_price,
+                                                                    self.customType.LAST_DAY_LOWEST_PRICE: lowest_stock_price,
+                                                                    self.customType.LAST_DAY_LAST_PRICE: last_stock_price,
+                                                                    self.customType.GOAL_PRICE: '',
+                                                                    "stat": '',
+                                                                    "row": []}})
             f.close()
 
     def read_hold_etf_file(self):
@@ -1073,6 +1074,10 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                   self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                   self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
+                if sCode in self.current_hold_etf_stock_dict.keys():
+                    self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
+                                                                    self.customType.HOLDING_QUANTITY: holding_quantity,
+                                                                    self.customType.PURCHASE_AMOUNT: total_buy_price})
 
     def call_exit(self):
         self.logging.logger.info("시스템 종료")
