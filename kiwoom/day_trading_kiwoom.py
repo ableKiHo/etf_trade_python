@@ -39,7 +39,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.max_hold_stock_count = 0
         self.max_buy_amount_by_stock = 50000
-        self.max_invest_amount = 350000
+        self.max_invest_amount = 300000
         self.total_invest_amount = 0
 
         self.analysis_search_timer1 = QTimer()
