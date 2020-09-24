@@ -34,6 +34,7 @@ class ParentKiwoom(QAxWidget):
 
         # self.exclude_keywords = ['(H)', '일본', 'S&P', '미국', '중국', '(합성', '인도', '차이나', '인버스', 'TRF', '라틴', '싱가포르', '채권']
         self.exclude_keywords = ['레버리지', '2X', '채권']
+        self.inverse_stock_list = ['114800']
         self.screen_my_info = "2000"  # 계좌 관련한 스크린 번호
         self.login_event_loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()  # 예수금 요청용 이벤트 루프

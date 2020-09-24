@@ -224,24 +224,27 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma7", 7)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
-        max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
-        if bool(max_loss_sell_point):
-            self.hold_stock_check_timer.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("max_loss_sell_point break >> %s" % code)
-            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
-            return
+        if code not in self.inverse_stock_list:
 
-        # 3일 연속 종가 5일선 돌파 실패시 매도
-        # maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
-        # if bool(maintain_under_ma5_line):
-        #     self.hold_stock_check_timer.stop()
-        #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-        #     self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
-        #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-        #     del self.current_hold_etf_stock_dict[code]
-        #     return
+            max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
+            if bool(max_loss_sell_point):
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                self.logging.logger.info("max_loss_sell_point break >> %s" % code)
+                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+                del self.current_hold_etf_stock_dict[code]
+                return
+
+            maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
+            if bool(maintain_under_ma5_line):
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                quantity = int(quantity / 2)
+                if quantity > 1:
+                    self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
+                    self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+                    del self.current_hold_etf_stock_dict[code]
+                return
 
         maintain_under_one_percent = self.get_maintain_under_one_percent(code, self.current_hold_etf_stock_dict)
         if bool(maintain_under_one_percent):
@@ -549,7 +552,50 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("other_target_candle_analysis_check end")
             self.analysis_search_timer2.stop()
             self.analysis_search_timer1.start(1000 * 300)
+            self.inverse_stock_candle_analysis_check()
             return
+
+    def inverse_stock_candle_analysis_check(self):
+        if self.weekend.isMonday is False:
+            return
+
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '100100') <= currentDate <= (self.today + '100500'):
+            pass
+        else:
+            return
+        code = self.inverse_stock_list[0]
+        self.get_opt10081_info_all(code)
+        rows = self.target_etf_stock_dict[code]["row"]
+        buy_point = self.get_conform_inverse_buy_case(code, rows)
+
+        if bool(buy_point):
+            self.logging.logger.info("inverse_stock_candle_analysis buy_point break >> %s" % code)
+            limit_price = buy_point[self.customType.CURRENT_PRICE]
+            self.send_order_limit_stock_price(code, 1, limit_price)
+
+    def get_conform_inverse_buy_case(self, code, rows):
+        if len(rows) < 6:
+            return {}
+
+        today_tic = rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        analysis_rows = rows[1:]
+        last_day_tic = analysis_rows[0]
+        last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
+        last_min_price = min(last_price_list)
+        purchase_price = last_day_tic[self.customType.CURRENT_PRICE]
+        if code in self.current_hold_etf_stock_dict.keys():
+            current_dict_info = self.current_hold_etf_stock_dict[code]
+            purchase_amount = current_dict_info[self.customType.PURCHASE_AMOUNT]
+            if self.max_buy_amount_by_stock < purchase_amount + current_price:
+                return
+            purchase_price = current_dict_info[self.customType.PURCHASE_PRICE]
+
+        if (purchase_price > current_price) and (last_min_price > current_price):
+            return copy.deepcopy(today_tic)
+
+        return {}
 
     def get_default_price_info(self):
         self.read_target_etf_file()
