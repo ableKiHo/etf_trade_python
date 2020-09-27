@@ -88,7 +88,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.loop_analysis_buy_etf()
         self.loop_system_off()
         self.loop_sell_hold_etf_stock()
-        self.loop_cancle_buy_etf()
+        #self.loop_cancle_buy_etf()
         self.loop_goni_hold_etf_stock()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
@@ -223,7 +223,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma7", 7)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
         if code not in self.inverse_stock_list:
@@ -452,7 +451,7 @@ class DayTradingKiwoom(ParentKiwoom):
         profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
         if current_price > buy_price:
             if 1 < profit_rate and today_tic["ma20"] > current_price:
-                self.logging.logger.info("stop_big_loss ma7 check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, today_tic["ma7"]))
+                self.logging.logger.info("stop_big_loss ma7 check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, today_tic["ma20"]))
                 return copy.deepcopy(today_tic)
             else:
                 last_day_price_profit_rate = round((last_day_highest_price - buy_price) / buy_price * 100, 2)
@@ -597,13 +596,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_opt10081_info_all(code)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma7", 7)
         rows = self.target_etf_stock_dict[code]["row"]
         buy_point = self.get_conform_buy_case(code, rows)
 
         if bool(buy_point):
             if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
-                limit_price = buy_point[self.customType.CURRENT_PRICE]
+                limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
                 quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
                 if quantity >= 1:
                     self.logging.logger.info("conform_buy_case buy_point break >> %s" % code)
@@ -622,8 +620,6 @@ class DayTradingKiwoom(ParentKiwoom):
             return
 
     def inverse_stock_candle_analysis_check(self):
-        if self.weekend.isMonday is False:
-            return
 
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '100100') <= currentDate <= (self.today + '100500'):
@@ -632,32 +628,41 @@ class DayTradingKiwoom(ParentKiwoom):
             return
         code = self.inverse_stock_list[0]
         self.get_opt10081_info_all(code)
+        create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
+
         rows = self.target_etf_stock_dict[code]["row"]
         buy_point = self.get_conform_inverse_buy_case(code, rows)
 
         if bool(buy_point):
             self.logging.logger.info("inverse_stock_candle_analysis buy_point break >> %s" % code)
-            limit_price = buy_point[self.customType.CURRENT_PRICE]
+            limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
             self.send_order_limit_stock_price(code, 1, limit_price)
 
     def get_conform_inverse_buy_case(self, code, rows):
         if len(rows) < 6:
             return {}
 
+        analysis_rows = rows[:6]
         today_tic = rows[0]
         current_price = today_tic[self.customType.CURRENT_PRICE]
-        purchase_price = 0
+        compare_rows = analysis_rows[:3]
+        ma3_list = [item["ma3"] for item in compare_rows]
+        if not is_increase_trend(ma3_list):
+            self.logging.logger.info("ma3_list_trend check> [%s] " % code)
+            return {}
+        today_ma3 = today_tic["ma3"]
+        if today_ma3 > current_price:
+            self.logging.logger.info("ma3_position check> [%s] " % code)
+            return {}
+
         if code in self.current_hold_etf_stock_dict.keys():
             current_dict_info = self.current_hold_etf_stock_dict[code]
             purchase_amount = current_dict_info[self.customType.PURCHASE_AMOUNT]
             if (self.max_buy_amount_by_stock * 2) < purchase_amount + current_price:
-                return
-            purchase_price = current_dict_info[self.customType.PURCHASE_PRICE]
+                self.logging.logger.info("max_buy_amount check> [%s] " % code)
+                return {}
 
-        if (purchase_price > current_price) or (purchase_price == 0):
-            return copy.deepcopy(today_tic)
-
-        return {}
+        return copy.deepcopy(today_tic)
 
     def get_default_price_info(self):
         self.read_target_etf_file()
@@ -701,7 +706,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         first_tic = analysis_rows[0]
         second_tic = analysis_rows[1]
-        ma_field_list = ["ma20", "ma5", "ma7"]
+        ma_field_list = ["ma20", "ma5"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
         if len(empty_gap_list) > 0:
@@ -844,8 +849,7 @@ class DayTradingKiwoom(ParentKiwoom):
             e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             e = abs(int(e.strip()))
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, self.customType.DATE: c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '',
-                   "ma7": {}}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, self.customType.DATE: c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": ''}
             new_rows.append(row)
 
         self.current_hold_etf_stock_dict[stock_code].update({"row": new_rows})
@@ -948,7 +952,7 @@ class DayTradingKiwoom(ParentKiwoom):
             e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             e = abs(int(e.strip()))
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '', "ma7": {}}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": ''}
             new_rows.append(row)
 
         self.analysis_goal_etf_stock_dict[stock_code].update({"row": new_rows})
@@ -975,7 +979,7 @@ class DayTradingKiwoom(ParentKiwoom):
             e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             e = abs(int(e.strip()))
 
-            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '', "ma7": {}}
+            row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c, self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, "ma20": '', "ma5": '', "ma3": {}}
             new_rows.append(row)
 
         self.target_etf_stock_dict[stock_code].update({"row": new_rows})
