@@ -88,7 +88,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.loop_analysis_buy_etf()
         self.loop_system_off()
         self.loop_sell_hold_etf_stock()
-        #self.loop_cancle_buy_etf()
+        # self.loop_cancle_buy_etf()
         self.loop_goni_hold_etf_stock()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
@@ -651,7 +651,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("ma3_list_trend check> [%s] " % code)
             return {}
         today_ma3 = today_tic["ma3"]
-        if today_ma3 > current_price:
+        if today_ma3 > today_tic[self.customType.START_PRICE]:
             self.logging.logger.info("ma3_position check> [%s] " % code)
             return {}
 
