@@ -273,7 +273,7 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
-        stop_rate_list = [11, 8, 6, 3, 1.5]
+        stop_rate_list = [11, 8, 6]
         for stop_rate in stop_rate_list:
             stop_loss_sell_point = self.get_stop_loss_sell_point(code, self.current_hold_etf_stock_dict, stop_rate)
             if bool(stop_loss_sell_point):
@@ -344,7 +344,11 @@ class DayTradingKiwoom(ParentKiwoom):
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
         if buy_price < current_price:
-            if profit_rate >= 5.0:
+            if profit_rate > 15.0:
+                self.logging.logger.info("inverse_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+                return copy.deepcopy(today_tic)
+
+            if 5.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 5.0 < profit_rate <= 5.1:
                 self.logging.logger.info("inverse_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
@@ -1184,7 +1188,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if meme_gubun == self.customType.SELL:
                 pass
             else:
-                if sCode not in self.today_buy_etf_stock_dict.keys():
+                if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
                     self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                   self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                   self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
