@@ -643,7 +643,8 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         analysis_rows = rows[:6]
-        today_tic = rows[0]
+        today_tic = analysis_rows[0]
+        last_day_dict = analysis_rows[1]
         current_price = today_tic[self.customType.CURRENT_PRICE]
         compare_rows = analysis_rows[:3]
         ma3_list = [item["ma3"] for item in compare_rows]
@@ -651,7 +652,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("ma3_list_trend check> [%s] " % code)
             return {}
         today_ma3 = today_tic["ma3"]
-        if today_ma3 > today_tic[self.customType.START_PRICE]:
+        last_day_ma3 = last_day_dict["ma3"]
+        if today_ma3 > today_tic[self.customType.START_PRICE] and last_day_ma3 > last_day_dict[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("ma3_position check> [%s] " % code)
             return {}
 
