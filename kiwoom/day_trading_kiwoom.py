@@ -236,15 +236,15 @@ class DayTradingKiwoom(ParentKiwoom):
                 del self.current_hold_etf_stock_dict[code]
                 return
 
-            maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
-            if bool(maintain_under_ma5_line):
-                self.hold_stock_check_timer.stop()
-                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                quantity = int(quantity / 2)
-                if quantity > 1:
-                    self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
-                    self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                return
+            # maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
+            # if bool(maintain_under_ma5_line):
+            #     self.hold_stock_check_timer.stop()
+            #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            #     quantity = int(quantity / 2)
+            #     if quantity > 1:
+            #         self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
+            #         self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            #     return
 
             # under_ma20_line = self.get_under_ma20_line(code, self.current_hold_etf_stock_dict)
             # if bool(under_ma20_line):
@@ -255,14 +255,14 @@ class DayTradingKiwoom(ParentKiwoom):
             #     del self.current_hold_etf_stock_dict[code]
             #     return
 
-            maintain_under_one_percent = self.get_maintain_under_one_percent(code, self.current_hold_etf_stock_dict)
-            if bool(maintain_under_one_percent):
-                self.hold_stock_check_timer.stop()
-                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                self.logging.logger.info("maintain_under_one_percent_sell_point break >> %s" % code)
-                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                del self.current_hold_etf_stock_dict[code]
-                return
+            # maintain_under_one_percent = self.get_maintain_under_one_percent(code, self.current_hold_etf_stock_dict)
+            # if bool(maintain_under_one_percent):
+            #     self.hold_stock_check_timer.stop()
+            #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            #     self.logging.logger.info("maintain_under_one_percent_sell_point break >> %s" % code)
+            #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            #     del self.current_hold_etf_stock_dict[code]
+            #     return
 
         max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_profit_sell_point):
@@ -505,7 +505,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if current_price < buy_price:
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-            if profit_rate <= -7:
+            if profit_rate <= -8:
                 self.logging.logger.info("max_loss check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, profit_rate))
                 return copy.deepcopy(first_tic)
         return {}
