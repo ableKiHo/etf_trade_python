@@ -351,7 +351,7 @@ class DayTradingKiwoom(ParentKiwoom):
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
         if buy_price < current_price and ma5_type:
-            if profit_rate > 15.0 :
+            if profit_rate > 15.0:
                 self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
@@ -779,26 +779,29 @@ class DayTradingKiwoom(ParentKiwoom):
         second_tic = analysis_rows[1]
         ma_field_list = ["ma20"]
 
-        empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
-        if len(empty_gap_list) > 0:
-            return {}
+        purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+        if purchase_price > first_tic[self.customType.CURRENT_PRICE]:
 
-        self.logging.logger.info("conform_hold_stock_add_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
-
-        for field in ma_field_list:
-            if first_tic[field] >= first_tic[self.customType.START_PRICE]:
-                self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
+            empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
+            if len(empty_gap_list) > 0:
                 return {}
 
-        if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
-            return {}
+            self.logging.logger.info("conform_hold_stock_add_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
-        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
-            self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
-            return {}
+            for field in ma_field_list:
+                if first_tic[field] >= first_tic[self.customType.START_PRICE]:
+                    self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
+                    return {}
 
-        return copy.deepcopy(first_tic)
+            if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+                return {}
+
+            if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
+                self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
+                return {}
+
+            return copy.deepcopy(first_tic)
 
     def get_all_etf_info(self):
         self.logging.logger.info('get_all_etf_info_opt10001')
