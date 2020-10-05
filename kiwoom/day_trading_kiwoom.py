@@ -162,8 +162,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        stock_type = 'default'
 
-        realtime_stop_loss_sell_point = self.get_realtime_stop_loss_sell_point(code, self.current_hold_etf_stock_dict)
+        if code in self.inverse_stock_list:
+            stock_type = 'inverse'
+        realtime_stop_loss_sell_point = self.get_realtime_stop_loss_sell_point(code, self.current_hold_etf_stock_dict, stock_type)
         if bool(realtime_stop_loss_sell_point):
             self.analysis_goni_timer2.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -325,7 +328,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         return {}
 
-    def get_realtime_stop_loss_sell_point(self, code, target_dict):
+    def get_realtime_stop_loss_sell_point(self, code, target_dict, stock_type):
         rows = target_dict[code]["row"]
         if len(rows) < 2:
             return {}
@@ -339,29 +342,33 @@ class DayTradingKiwoom(ParentKiwoom):
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
         profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
 
+        ma5_type = True
+        if stock_type != 'inverse' and current_price > today_tic["ma5"]:
+            ma5_type = False
+
         highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
         max_highest_price = max(highest_list)
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
-        if buy_price < current_price:
-            if profit_rate > 15.0:
-                self.logging.logger.info("inverse_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+        if buy_price < current_price and ma5_type:
+            if profit_rate > 15.0 :
+                self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
             if 5.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 5.0 < profit_rate <= 5.1:
-                self.logging.logger.info("inverse_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+                self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
             if 3.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.0 < profit_rate <= 3.1:
-                self.logging.logger.info("inverse_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+                self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
             if 2.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.0 < profit_rate <= 2.1:
-                self.logging.logger.info("inverse_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+                self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
             if 1.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.5 < profit_rate <= 1.6:
-                self.logging.logger.info("inverse_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+                self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
         return {}
 
