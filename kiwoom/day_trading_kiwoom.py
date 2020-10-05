@@ -762,6 +762,11 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
+        ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
+        if ma5_percent > 1.0:
+            self.logging.logger.info("ma5_percent check> [%s]" % code)
+            return {}
+
         return copy.deepcopy(first_tic)
 
     def get_conform_hold_stock_add_buy_case(self, code, rows):
