@@ -628,6 +628,17 @@ class DayTradingKiwoom(ParentKiwoom):
                 if (self.today + '120000') <= currentDate <= (self.today + '120500'):
                     self.line.notification('OPEN API SUGGEST STOCK [%s]' % code)
 
+        if code in self.current_hold_etf_stock_dict.keys():
+
+            add_buy_point = self.get_conform_hold_stock_add_buy_case(code, rows)
+
+            if bool(add_buy_point):
+                limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+                if quantity >= 1:
+                    self.logging.logger.info("conform_hold_stock_add_buy_case break >> %s" % code)
+                    self.send_order_limit_stock_price(code, quantity, limit_price)
+
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
             self.analysis_search_timer2.stop()
@@ -730,13 +741,44 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(empty_gap_list) > 0:
             return {}
 
-        self.logging.logger.info("hammer_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        self.logging.logger.info("conform_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         if first_tic["ma5"] >= first_tic["ma20"]:
             pass
         else:
             self.logging.logger.info("is regular arrangement check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
+
+        for field in ma_field_list:
+            if first_tic[field] >= first_tic[self.customType.START_PRICE]:
+                self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
+                return {}
+
+        if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
+            return {}
+
+        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
+            return {}
+
+        return copy.deepcopy(first_tic)
+
+    def get_conform_hold_stock_add_buy_case(self, code, rows):
+        if len(rows) < 3:
+            return {}
+
+        analysis_rows = rows[:3]
+
+        first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
+        ma_field_list = ["ma20"]
+
+        empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("conform_hold_stock_add_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         for field in ma_field_list:
             if first_tic[field] >= first_tic[self.customType.START_PRICE]:
