@@ -579,6 +579,8 @@ class DayTradingKiwoom(ParentKiwoom):
             pass
         elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
             pass
+        elif (self.today + '123000') <= currentDate <= (self.today + '123500'):
+            pass
         else:
             return
         self.logging.logger.info("analysis target etf")
@@ -587,8 +589,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_goal_etf_stock_list = []
         self.search_stock_code = []
         for key in self.target_etf_stock_dict.keys():
-            if key not in self.current_hold_etf_stock_dict.keys():
-                self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
+            self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
         self.analysis_search_timer2 = default_q_timer_setting(5)
         self.analysis_search_timer2.timeout.connect(self.other_target_candle_analysis_check)
 
