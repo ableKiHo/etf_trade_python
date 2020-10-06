@@ -579,6 +579,8 @@ class DayTradingKiwoom(ParentKiwoom):
             pass
         elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
             pass
+        elif (self.today + '124000') <= currentDate <= (self.today + '124500'):
+            pass
         else:
             return
         self.logging.logger.info("analysis target etf")
@@ -634,7 +636,7 @@ class DayTradingKiwoom(ParentKiwoom):
             add_buy_point = self.get_conform_hold_stock_add_buy_case(code, rows)
 
             if bool(add_buy_point):
-                limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
                 quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
                 if quantity >= 1:
                     self.logging.logger.info("conform_hold_stock_add_buy_case break >> %s" % code)
