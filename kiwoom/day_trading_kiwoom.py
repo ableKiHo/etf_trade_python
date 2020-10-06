@@ -579,6 +579,8 @@ class DayTradingKiwoom(ParentKiwoom):
             pass
         elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
             pass
+        elif (self.today + '123500') <= currentDate <= (self.today + '124000'):
+            pass
         else:
             return
         self.logging.logger.info("analysis target etf")
@@ -803,6 +805,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 return {}
 
             return copy.deepcopy(first_tic)
+        return {}
 
     def get_all_etf_info(self):
         self.logging.logger.info('get_all_etf_info_opt10001')
