@@ -601,6 +601,8 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("other_target_candle_analysis nothing")
             self.analysis_search_timer2.stop()
+            self.analysis_search_timer1.start(1000 * 300)
+            self.inverse_stock_candle_analysis_check()
             return
 
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
@@ -1034,6 +1036,9 @@ class DayTradingKiwoom(ParentKiwoom):
 
         new_rows = []
         cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+
+        if stock_code not in self.target_etf_stock_dict:
+            self.target_etf_stock_dict.update({stock_code:{}})
 
         for i in range(cnt):
             a = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
