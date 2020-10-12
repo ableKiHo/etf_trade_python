@@ -606,6 +606,10 @@ class DayTradingKiwoom(ParentKiwoom):
     def other_target_candle_analysis_check(self):
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max buy stock")
+            self.analysis_search_timer2.stop()
+            self.analysis_search_timer1.start(1000 * 300)
+            self.inverse_stock_candle_analysis_check()
+            return
 
         self.logging.logger.info("self.analysis_goal_etf_stock_list>> %s" % self.analysis_goal_etf_stock_list)
         if len(self.analysis_goal_etf_stock_list) == 0:
