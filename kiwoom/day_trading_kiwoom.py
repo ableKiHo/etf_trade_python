@@ -139,7 +139,7 @@ class DayTradingKiwoom(ParentKiwoom):
             return
 
         self.analysis_goni_timer1.stop()
-        self.logging.logger.info('loop_sell_hold_etf_stock')
+        self.logging.logger.info('loop_goni_hold_etf_stock')
         self.sell_search_stock_code_list = []
         self.sell_search_stock_code = ''
         self.analysis_sell_etf_stock_list = []
