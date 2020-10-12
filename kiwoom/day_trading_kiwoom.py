@@ -133,8 +133,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 return
             elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
                 return
-            elif (self.today + '141100') <= currentDate <= (self.today + '141500'):
-                return
             else:
                 pass
         else:
@@ -582,8 +580,6 @@ class DayTradingKiwoom(ParentKiwoom):
         elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
             pass
         elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
-            pass
-        elif (self.today + '141100') <= currentDate <= (self.today + '141500'):
             pass
         else:
             return
