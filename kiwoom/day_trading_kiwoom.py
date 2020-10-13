@@ -1308,20 +1308,22 @@ class DayTradingKiwoom(ParentKiwoom):
     def create_current_hold_etf_stock_info(self):
         self.logging.logger.info("create_current_hold_etf_stock_info")
 
-        purchase_date = self.today
         for code in self.current_hold_etf_stock_dict.keys():
             value = self.current_hold_etf_stock_dict[code]
             if self.customType.DATE in value.keys():
                 purchase_date = value[self.customType.DATE]
+            else:
+                purchase_date = self.today
 
             f = open(self.hold_etf_file_path, "a", encoding="utf8")
             f.write("%s\t%s\n" %
                     (code, purchase_date))
             f.close()
+
         for code in self.today_buy_etf_stock_dict.keys():
             f = open(self.hold_etf_file_path, "a", encoding="utf8")
             f.write("%s\t%s\n" %
-                    (code, purchase_date))
+                    (code, self.today))
             f.close()
 
     def get_next_search_etf_stock_code(self, max_index=4):
