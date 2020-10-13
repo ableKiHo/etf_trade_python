@@ -1247,37 +1247,40 @@ class DayTradingKiwoom(ParentKiwoom):
 
         elif int(sGubun) == 1:  # 잔고
 
-            sCode = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_CODE])[1:]
-            stock_name = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_NAME])
-            meme_gubun = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.SELL_BUY_CLASSIFICATOIN])
-            meme_gubun = self.realType.REALTYPE[self.customType.SELLING_CATEGORY][meme_gubun]
-            holding_quantity = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.HOLDING_QUANTITY])
-            holding_quantity = int(holding_quantity)
+            account_number = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.ACCOUNT_NUMBER])
+            if account_number == self.account_num:
 
-            available_quantity = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.AVAILABLE_QUANTITY])
-            available_quantity = int(available_quantity)
-            buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PURCHASE_UNIT_PRICE])
-            buy_price = abs(int(buy_price))
-            total_buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.TOTAL_PURCHASE_PRICE])
-            total_buy_price = int(total_buy_price)
-            income_rate = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PROFIT_AND_LOSS])
+                sCode = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_CODE])[1:]
+                stock_name = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.ORDER_EXECUTION][self.customType.STOCK_NAME])
+                meme_gubun = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.SELL_BUY_CLASSIFICATOIN])
+                meme_gubun = self.realType.REALTYPE[self.customType.SELLING_CATEGORY][meme_gubun]
+                holding_quantity = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.HOLDING_QUANTITY])
+                holding_quantity = int(holding_quantity)
 
-            self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
-            self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
+                available_quantity = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.AVAILABLE_QUANTITY])
+                available_quantity = int(available_quantity)
+                buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PURCHASE_UNIT_PRICE])
+                buy_price = abs(int(buy_price))
+                total_buy_price = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.TOTAL_PURCHASE_PRICE])
+                total_buy_price = int(total_buy_price)
+                income_rate = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PROFIT_AND_LOSS])
 
-            if meme_gubun == self.customType.SELL:
-                pass
-            else:
-                if sCode not in self.inverse_stock_list:
+                self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
+                self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
-                    if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys() and sCode not in self.inverse_stock_list:
-                        self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
-                                                                      self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
-                                                                      self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
-                    if sCode in self.current_hold_etf_stock_dict.keys():
-                        self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
-                                                                        self.customType.HOLDING_QUANTITY: holding_quantity,
-                                                                        self.customType.PURCHASE_AMOUNT: total_buy_price})
+                if meme_gubun == self.customType.SELL:
+                    pass
+                else:
+                    if sCode not in self.inverse_stock_list:
+
+                        if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys() and sCode not in self.inverse_stock_list:
+                            self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
+                                                                          self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
+                                                                          self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
+                        if sCode in self.current_hold_etf_stock_dict.keys():
+                            self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
+                                                                            self.customType.HOLDING_QUANTITY: holding_quantity,
+                                                                            self.customType.PURCHASE_AMOUNT: total_buy_price})
 
     def call_exit(self):
         sys.exit()
