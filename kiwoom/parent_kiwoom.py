@@ -42,6 +42,7 @@ class ParentKiwoom(QAxWidget):
         self.target_etf_file_path = self.property.targetEtfFilePath
         self.sallAnalysisEtfFilePath = self.property.sellAnalysisEtfFIlePath
         self.hold_etf_file_path = self.property.holdEtfFilePath
+        self.target_etf_file_history_path = self.property.targetEtfFileHistoryPath
         self.account_num = self.property.account  # 계좌번호
         self.account_pw = self.property.accountPw
 

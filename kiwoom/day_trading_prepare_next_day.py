@@ -1,4 +1,5 @@
 import sys
+import shutil
 
 from PyQt5.QtCore import QEventLoop
 from PyQt5.QtTest import QTest
@@ -13,6 +14,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("ETF DayTradingPrepareNextDay() class start.")
         self.line.notification("ETF DayTradingPrepareNextDay() class start.")
+
+        self.today = get_today_by_format('%Y%m%d')
 
         self.all_etc_info_event_loop = QEventLoop()
         self.etf_info_event_loop = QEventLoop()
@@ -41,6 +44,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def prepare_next_day(self):
         self.logging.logger.info("prepare_next_day")
+        self.file_rename_copy()
         self.file_delete()
         self.get_all_etf_stock()
         self.get_etf_stock_info()
@@ -52,6 +56,13 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.line.notification("시스템 종료")
         QTest.qWait(5000)
         sys.exit()
+
+    def file_rename_copy(self):
+        self.logging.logger.info("file_rename_copy")
+        # self.target_etf_file_history_path
+        if os.path.isfile(self.target_etf_file_path):
+            shutil.copy(self.target_etf_file_path, self.target_etf_file_history_path + self.today + ".txt")
+            self.logging.logger.info("move %s" % self.target_etf_file_history_path + self.today + ".txt")
 
     def file_delete(self):
         self.logging.logger.info("file_delete")
