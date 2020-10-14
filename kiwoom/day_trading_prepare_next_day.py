@@ -252,7 +252,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         compare_rows = analysis_rows[:3]
         ma20_list = [item["ma20"] for item in compare_rows]
-        if not is_increase_trend(ma20_list):
+        ma20_inverselist = ma20_list[::-1]
+        if not is_increase_trend(ma20_inverselist):
             self.logging.logger.info("is_increase_ma20 check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
@@ -341,7 +342,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         compare_rows = analysis_rows[:3]
         ma5_list = [item["ma5"] for item in compare_rows]
-        if not is_increase_trend(ma5_list):
+        ma5_inverselist = ma5_list[::-1]
+        if not is_increase_trend(ma5_inverselist):
             self.logging.logger.info("ma5_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
@@ -413,15 +415,18 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         compare_rows = analysis_rows[:3]
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
-        if not is_increase_trend(last_price_list):
+        last_price_inverselist = last_price_list[::-1]
+        if not is_increase_trend(last_price_inverselist):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
         ma5_list = [item["ma5"] for item in compare_rows]
-        if not is_increase_trend(ma5_list):
+        ma5_inverselist = ma5_list[::-1]
+        if not is_increase_trend(ma5_inverselist):
             self.logging.logger.info("ma5_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
         ma10_list = [item["ma10"] for item in compare_rows]
-        if not is_increase_trend(ma10_list):
+        ma10_inverselist = ma10_list[::-1]
+        if not is_increase_trend(ma10_inverselist):
             self.logging.logger.info("ma10_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
