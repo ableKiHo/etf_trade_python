@@ -41,6 +41,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = 50000
         self.max_invest_amount = 300000
         self.total_invest_amount = 0
+        self.total_inverse_amount = 0
 
         self.analysis_search_timer1 = QTimer()
         self.analysis_search_timer2 = QTimer()
@@ -227,6 +228,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code_list.append(code)
 
         self.get_sell_opt10081_info(code)
+        create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
@@ -268,6 +270,15 @@ class DayTradingKiwoom(ParentKiwoom):
             #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
             #     del self.current_hold_etf_stock_dict[code]
             #     return
+        else:
+            inverse_under_ma3_line = self.get_inverse_under_ma3_line(code, self.current_hold_etf_stock_dict)
+            if bool(inverse_under_ma3_line):
+                self.hold_stock_check_timer.stop()
+                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+                self.logging.logger.info("inverse_under_ma3_line_sell_point break >> %s" % code)
+                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+                del self.current_hold_etf_stock_dict[code]
+                return
 
         max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
         if bool(max_profit_sell_point):
@@ -345,7 +356,7 @@ class DayTradingKiwoom(ParentKiwoom):
         profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
 
         ma5_type = True
-        if stock_type != 'inverse' and current_price > today_tic["ma5"]:
+        if stock_type != 'inverse':
             ma5_type = False
 
         highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
@@ -537,6 +548,22 @@ class DayTradingKiwoom(ParentKiwoom):
             return copy.deepcopy(today_tic)
         return {}
 
+    def get_inverse_under_ma3_line(self, code, target_dict):
+        rows = target_dict[code]["row"]
+        if len(rows) < 3:
+            return {}
+        analysis_rows = rows[:3]
+        today_tic = analysis_rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
+
+        if buy_price < current_price:
+            if today_tic[self.customType.CURRENT_PRICE] < today_tic["ma3"]:
+                self.logging.logger.info("maintain_under_ma5_line check > [%s] >> %s / %s " % (code, current_price, buy_price))
+                return copy.deepcopy(today_tic)
+
+        return {}
+
     def get_maintain_under_ma5_line(self, code, target_dict):
         rows = target_dict[code]["row"]
         if len(rows) < 3:
@@ -663,11 +690,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def inverse_stock_candle_analysis_check(self):
 
-        currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100100') <= currentDate <= (self.today + '100500'):
-            pass
-        else:
-            return
         code = self.inverse_stock_list[0]
         self.get_opt10081_info_all(code)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
@@ -678,31 +700,24 @@ class DayTradingKiwoom(ParentKiwoom):
         if bool(buy_point):
             self.logging.logger.info("inverse_stock_candle_analysis buy_point break >> %s" % code)
             limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+            self.total_inverse_amount = self.total_inverse_amount + limit_price
             self.send_order_limit_stock_price(code, 1, limit_price)
 
     def get_conform_inverse_buy_case(self, code, rows):
-        if len(rows) < 6:
+        if len(rows) < 3:
             return {}
 
-        analysis_rows = rows[:6]
+        analysis_rows = rows[:3]
         today_tic = analysis_rows[0]
-        last_day_dict = analysis_rows[1]
         current_price = today_tic[self.customType.CURRENT_PRICE]
-        compare_rows = analysis_rows[:3]
-        ma3_list = [item["ma3"] for item in compare_rows]
-        if not is_increase_trend(ma3_list):
-            self.logging.logger.info("ma3_list_trend check> [%s] " % code)
-            return {}
+
         today_ma3 = today_tic["ma3"]
-        last_day_ma3 = last_day_dict["ma3"]
-        if today_ma3 > today_tic[self.customType.START_PRICE] and last_day_ma3 > last_day_dict[self.customType.CURRENT_PRICE]:
+        if today_ma3 > current_price:
             self.logging.logger.info("ma3_position check> [%s] " % code)
             return {}
 
         if code in self.current_hold_etf_stock_dict.keys():
-            current_dict_info = self.current_hold_etf_stock_dict[code]
-            purchase_amount = current_dict_info[self.customType.PURCHASE_AMOUNT]
-            if (self.max_buy_amount_by_stock * 2) < purchase_amount + current_price:
+            if (self.max_buy_amount_by_stock * 2) < self.total_inverse_amount + current_price:
                 self.logging.logger.info("max_buy_amount check> [%s] " % code)
                 return {}
 
@@ -986,7 +1001,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
 
-            self.total_invest_amount = self.total_invest_amount + total_chegual_price
+                if code not in self.inverse_stock_list:
+                    self.total_invest_amount = self.total_invest_amount + total_chegual_price
+                else:
+                    self.total_inverse_amount = self.total_inverse_amount + total_chegual_price
 
         if sPrevNext == "2":
             self.detail_account_mystock(sPrevNext="2")
