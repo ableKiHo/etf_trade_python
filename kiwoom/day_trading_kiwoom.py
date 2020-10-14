@@ -174,16 +174,14 @@ class DayTradingKiwoom(ParentKiwoom):
             del self.current_hold_etf_stock_dict[code]
             return
 
-        if code not in self.inverse_stock_list:
-
-            goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
-            if bool(goni_sell_point):
-                self.analysis_goni_timer2.stop()
-                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                self.logging.logger.info("stop_goni_sell_point break >> %s" % code)
-                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                del self.current_hold_etf_stock_dict[code]
-                return
+        goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
+        if bool(goni_sell_point):
+            self.analysis_goni_timer2.stop()
+            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            self.logging.logger.info("stop_goni_sell_point break >> %s" % code)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            del self.current_hold_etf_stock_dict[code]
+            return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_goni_point_check end")
@@ -550,10 +548,9 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = today_tic[self.customType.CURRENT_PRICE]
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
 
-        if buy_price < current_price:
-            if today_tic[self.customType.CURRENT_PRICE] < today_tic["ma3"]:
-                self.logging.logger.info("maintain_under_ma5_line check > [%s] >> %s / %s " % (code, current_price, buy_price))
-                return copy.deepcopy(today_tic)
+        if buy_price < current_price < today_tic["ma3"]:
+            self.logging.logger.info("maintain_under_ma5_line check > [%s] >> %s / %s " % (code, current_price, buy_price))
+            return copy.deepcopy(today_tic)
 
         return {}
 
