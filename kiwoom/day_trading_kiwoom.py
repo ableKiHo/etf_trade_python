@@ -164,11 +164,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-        stock_type = 'default'
 
-        if code in self.inverse_stock_list:
-            stock_type = 'inverse'
-        realtime_stop_loss_sell_point = self.get_realtime_stop_loss_sell_point(code, self.current_hold_etf_stock_dict, stock_type)
+        realtime_stop_loss_sell_point = self.get_realtime_stop_loss_sell_point(code, self.current_hold_etf_stock_dict)
         if bool(realtime_stop_loss_sell_point):
             self.analysis_goni_timer2.stop()
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -341,7 +338,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         return {}
 
-    def get_realtime_stop_loss_sell_point(self, code, target_dict, stock_type):
+    def get_realtime_stop_loss_sell_point(self, code, target_dict):
         rows = target_dict[code]["row"]
         if len(rows) < 2:
             return {}
@@ -355,15 +352,11 @@ class DayTradingKiwoom(ParentKiwoom):
         buy_price = target_dict[code][self.customType.PURCHASE_PRICE]
         profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
 
-        ma5_type = True
-        if stock_type != 'inverse':
-            ma5_type = False
-
         highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
         max_highest_price = max(highest_list)
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
-        if buy_price < current_price and ma5_type:
+        if buy_price < current_price:
             if profit_rate > 15.0:
                 self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
@@ -1300,10 +1293,10 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                           self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                           self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
-                        if sCode in self.current_hold_etf_stock_dict.keys():
-                            self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
-                                                                            self.customType.HOLDING_QUANTITY: holding_quantity,
-                                                                            self.customType.PURCHASE_AMOUNT: total_buy_price})
+                    if sCode in self.current_hold_etf_stock_dict.keys():
+                        self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
+                                                                        self.customType.HOLDING_QUANTITY: holding_quantity,
+                                                                        self.customType.PURCHASE_AMOUNT: total_buy_price})
 
     def call_exit(self):
         sys.exit()
