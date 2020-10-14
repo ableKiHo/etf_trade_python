@@ -241,24 +241,24 @@ class DayTradingKiwoom(ParentKiwoom):
                 del self.current_hold_etf_stock_dict[code]
                 return
 
-            under_ma20_line = self.get_under_ma20_line(code, self.current_hold_etf_stock_dict)
-            if bool(under_ma20_line):
-                self.hold_stock_check_timer.stop()
-                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                self.logging.logger.info("under_ma20_line_sell_point break >> %s" % code)
-                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                del self.current_hold_etf_stock_dict[code]
-                return
-
-            maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
-            if bool(maintain_under_ma5_line):
-                self.hold_stock_check_timer.stop()
-                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                quantity = int(quantity / 2)
-                if quantity > 1:
-                    self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
-                    self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                return
+            # under_ma20_line = self.get_under_ma20_line(code, self.current_hold_etf_stock_dict)
+            # if bool(under_ma20_line):
+            #     self.hold_stock_check_timer.stop()
+            #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            #     self.logging.logger.info("under_ma20_line_sell_point break >> %s" % code)
+            #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            #     del self.current_hold_etf_stock_dict[code]
+            #     return
+            #
+            # maintain_under_ma5_line = self.get_maintain_under_ma5_line(code, self.current_hold_etf_stock_dict)
+            # if bool(maintain_under_ma5_line):
+            #     self.hold_stock_check_timer.stop()
+            #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            #     quantity = int(quantity / 2)
+            #     if quantity > 1:
+            #         self.logging.logger.info("maintain_under_ma5_line_sell_point break >> %s" % code)
+            #         self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            #     return
 
             # maintain_under_one_percent = self.get_maintain_under_one_percent(code, self.current_hold_etf_stock_dict)
             # if bool(maintain_under_one_percent):
@@ -441,7 +441,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if highest_profit_rate < 2.0:
             return {}
 
-        if buy_price < current_price < today_tic["ma5"]:
+        if buy_price < current_price:
             if 1 < profit_rate and half_plus_price > current_price:
                 self.logging.logger.info("stop_half_plus_price check > [%s] >> %s / %s / %s" % (code, current_price, buy_price, half_plus_price))
                 return copy.deepcopy(today_tic)
@@ -778,8 +778,13 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
-        if ma5_percent > 1.0:
+        if ma5_percent > 0.7:
             self.logging.logger.info("ma5_percent check> [%s]" % code)
+            return {}
+
+        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        if ma20_percent > 1.5:
+            self.logging.logger.info("ma20_percent check> [%s]" % code)
             return {}
 
         return copy.deepcopy(first_tic)
