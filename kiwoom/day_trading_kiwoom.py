@@ -62,6 +62,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_goal_etf_stock_list = []
         self.goal_buy_search_stock_code = ''
         self.search_stock_code = []
+        self.sell_receive_stock_code = []
 
         self.analysis_sell_etf_stock_list = []
         self.sell_search_stock_code = ''
@@ -145,7 +146,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code = ''
         self.analysis_sell_etf_stock_list = []
         for key in self.current_hold_etf_stock_dict.keys():
-            self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
+            if key not in self.sell_receive_stock_code:
+                self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
 
         self.analysis_goni_timer2 = default_q_timer_setting(4)
         self.analysis_goni_timer2.timeout.connect(self.daily_candle_goni_point_check)
@@ -171,7 +173,7 @@ class DayTradingKiwoom(ParentKiwoom):
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
+            self.sell_receive_stock_code.append(code)
             return
 
         goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
@@ -180,7 +182,7 @@ class DayTradingKiwoom(ParentKiwoom):
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("stop_goni_sell_point break >> %s" % code)
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
+            self.sell_receive_stock_code.append(code)
             return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
@@ -235,7 +237,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
                 self.logging.logger.info("max_loss_sell_point break >> %s" % code)
                 self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                del self.current_hold_etf_stock_dict[code]
                 return
 
             # under_ma20_line = self.get_under_ma20_line(code, self.current_hold_etf_stock_dict)
@@ -272,7 +273,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
                 self.logging.logger.info("inverse_under_ma3_line_sell_point break >> %s" % code)
                 self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                del self.current_hold_etf_stock_dict[code]
                 return
 
         max_profit_sell_point = self.get_max_profit_sell_case(code, self.current_hold_etf_stock_dict)
@@ -281,7 +281,6 @@ class DayTradingKiwoom(ParentKiwoom):
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("max_profit_sell_point break >> %s" % code)
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
             return
 
         stop_rate_list = [11, 8, 6]
@@ -292,7 +291,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
                 self.logging.logger.info("stop_loss_sell_point break >> %s" % code)
                 self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                del self.current_hold_etf_stock_dict[code]
                 return
 
         big_loss_sell_point = self.get_stop_big_loss_sell_point(code, self.current_hold_etf_stock_dict)
@@ -301,7 +299,6 @@ class DayTradingKiwoom(ParentKiwoom):
             quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
             self.logging.logger.info("stop_big_loss_sell_point break >> %s" % code)
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            del self.current_hold_etf_stock_dict[code]
             return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
@@ -1282,7 +1279,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
                 if meme_gubun == self.customType.SELL:
-                    pass
+                    del self.current_hold_etf_stock_dict[sCode]
                 else:
                     if sCode not in self.inverse_stock_list:
 
