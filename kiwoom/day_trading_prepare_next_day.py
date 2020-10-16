@@ -207,18 +207,25 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def is_ma_line_analysis(self, code):
         buy_point = self.get_conform_ma_line_case(code)
+        self.logging.logger.info("pass ma_line_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line2_case(code)
+            self.logging.logger.info("pass ma_line2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line3_case(code)
+            self.logging.logger.info("pass _ma_line3_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie_case(code)
+            self.logging.logger.info("pass cable_tie_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie2_case(code)
+            self.logging.logger.info("pass cable_tie2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle_case(code)
+            self.logging.logger.info("pass cross_candle_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle2_case(code)
+            self.logging.logger.info("pass cross_candle2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         return bool(buy_point)
 
     def get_conform_cross_candle2_case(self, code):
