@@ -693,7 +693,7 @@ class DayTradingKiwoom(ParentKiwoom):
             create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
 
             rows = self.target_etf_stock_dict[code]["row"]
-            buy_point = self.get_conform_inverse_buy_case(code, rows)
+            buy_point = self.get_conform_default_stock_buy_case(code, rows)
 
             if bool(buy_point):
                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
@@ -702,7 +702,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.send_order_limit_stock_price(code, 1, limit_price)
             reset()
 
-    def get_conform_inverse_buy_case(self, code, rows):
+    def get_conform_default_stock_buy_case(self, code, rows):
         if len(rows) < 3:
             return {}
 
