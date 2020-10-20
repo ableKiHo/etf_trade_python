@@ -194,7 +194,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                     elif value[self.customType.STOCK_NAME].find(keyword) >= 0 and not bool(self.represent_keyword_dict[keyword]):
                         self.represent_keyword_dict[keyword] = copy.deepcopy(value)
 
-                if create_flag is True and sCode not in self.inverse_stock_list:
+                if create_flag is True and sCode not in self.default_stock_list:
                     f = open(self.target_etf_file_path, "a", encoding="utf8")
                     f.write("%s\t%s\t%s\t%s\t%s\n" %
                             (sCode, value[self.customType.STOCK_NAME], value[self.customType.LAST_DAY_HIGHEST_PRICE],

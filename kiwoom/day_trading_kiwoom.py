@@ -13,6 +13,12 @@ def default_q_timer_setting(second=3.8):
     return timer2
 
 
+def reset(second=3.5):
+    loop = QEventLoop()
+    QTimer.singleShot(1000 * second, loop.quit)  # msec
+    loop.exec_()
+
+
 class DayTradingKiwoom(ParentKiwoom):
     def __init__(self):
         super().__init__()
@@ -229,7 +235,7 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
-        if code not in self.inverse_stock_list:
+        if code not in self.default_stock_list:
 
             max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
             if bool(max_loss_sell_point):
@@ -623,7 +629,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("max buy stock")
             self.analysis_search_timer2.stop()
             self.analysis_search_timer1.start(1000 * 300)
-            self.inverse_stock_candle_analysis_check()
+            self.default_stock_candle_analysis_check()
             return
 
         self.logging.logger.info("self.analysis_goal_etf_stock_list>> %s" % self.analysis_goal_etf_stock_list)
@@ -631,7 +637,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("other_target_candle_analysis nothing")
             self.analysis_search_timer2.stop()
             self.analysis_search_timer1.start(1000 * 300)
-            self.inverse_stock_candle_analysis_check()
+            self.default_stock_candle_analysis_check()
             return
 
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
@@ -677,23 +683,24 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("other_target_candle_analysis_check end")
             self.analysis_search_timer2.stop()
             self.analysis_search_timer1.start(1000 * 300)
-            self.inverse_stock_candle_analysis_check()
+            self.default_stock_candle_analysis_check()
             return
 
-    def inverse_stock_candle_analysis_check(self):
+    def default_stock_candle_analysis_check(self):
 
-        code = self.inverse_stock_list[0]
-        self.get_opt10081_info_all(code)
-        create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
+        for code in self.default_stock_list:
+            self.get_opt10081_info_all(code)
+            create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
 
-        rows = self.target_etf_stock_dict[code]["row"]
-        buy_point = self.get_conform_inverse_buy_case(code, rows)
+            rows = self.target_etf_stock_dict[code]["row"]
+            buy_point = self.get_conform_inverse_buy_case(code, rows)
 
-        if bool(buy_point):
-            self.logging.logger.info("inverse_stock_candle_analysis buy_point break >> %s" % code)
-            limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-            self.total_inverse_amount = self.total_inverse_amount + limit_price
-            self.send_order_limit_stock_price(code, 1, limit_price)
+            if bool(buy_point):
+                self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
+                limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                self.total_inverse_amount = self.total_inverse_amount + limit_price
+                self.send_order_limit_stock_price(code, 1, limit_price)
+            reset()
 
     def get_conform_inverse_buy_case(self, code, rows):
         if len(rows) < 3:
@@ -998,7 +1005,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
 
-                if code not in self.inverse_stock_list:
+                if code not in self.default_stock_list:
                     self.total_invest_amount = self.total_invest_amount + total_chegual_price
                 else:
                     self.total_inverse_amount = self.total_inverse_amount + total_chegual_price
@@ -1291,9 +1298,9 @@ class DayTradingKiwoom(ParentKiwoom):
                 if meme_gubun == self.customType.SELL:
                     del self.current_hold_etf_stock_dict[sCode]
                 else:
-                    if sCode not in self.inverse_stock_list:
+                    if sCode not in self.default_stock_list:
 
-                        if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys() and sCode not in self.inverse_stock_list:
+                        if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys() and sCode not in self.default_stock_list:
                             self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                           self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                           self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
