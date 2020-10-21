@@ -104,6 +104,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def init_stock_values(self):
         self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
+        if self.current_hold_stock_count == 6:
+            self.max_hold_stock_count = self.current_hold_stock_count
+            return
+
         able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / self.max_buy_amount_by_stock)
         if able_addbuy_stock_count > 0:
             self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
@@ -245,6 +249,13 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
                 self.sell_receive_stock_code.append(code)
                 return
+
+            add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
+            if bool(add_buy_point):
+                self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
+                limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
+                self.total_invest_amount = self.total_invest_amount + limit_price
+                self.send_order_limit_stock_price(code, 1, limit_price)
 
             # under_ma20_line = self.get_under_ma20_line(code, self.current_hold_etf_stock_dict)
             # if bool(under_ma20_line):
@@ -513,6 +524,17 @@ class DayTradingKiwoom(ParentKiwoom):
                 return copy.deepcopy(today_tic)
         return {}
 
+    def get_add_buy_case(self, code):
+
+        rows = self.current_hold_etf_stock_dict[code]["row"]
+        buy_point = self.get_conform_default_stock_buy_case(code, rows)
+
+        if bool(buy_point):
+            self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
+            limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+            self.total_inverse_amount = self.total_inverse_amount + limit_price
+            self.send_order_limit_stock_price(code, 1, limit_price)
+
     def get_max_loss_sell_case(self, code, target_dict):
         rows = target_dict[code]["row"]
         if len(rows) < 2:
@@ -651,33 +673,18 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         rows = self.target_etf_stock_dict[code]["row"]
 
-        if code in self.current_hold_etf_stock_dict.keys():
+        if code not in self.current_hold_etf_stock_dict.keys():
 
-            add_buy_point = self.get_conform_hold_stock_add_buy_case(code, rows)
-
-            if bool(add_buy_point):
-                if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
-                    limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
-                    quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
-                    if quantity >= 1:
-                        self.logging.logger.info("conform_hold_stock_add_buy_case break >> %s" % code)
-                        self.current_hold_stock_count = self.current_hold_stock_count + 1
-                        self.send_order_limit_stock_price(code, quantity, limit_price)
-        else:
             buy_point = self.get_conform_buy_case(code, rows)
 
             if bool(buy_point):
                 if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
                     limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                    quantity = math.trunc(self.max_buy_amount_by_stock / limit_price)
+                    quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 2)
                     if quantity >= 1:
                         self.logging.logger.info("conform_buy_case buy_point break >> %s" % code)
                         self.current_hold_stock_count = self.current_hold_stock_count + 1
                         self.send_order_limit_stock_price(code, quantity, limit_price)
-                else:
-                    currentDate = get_today_by_format('%Y%m%d%H%M%S')
-                    if (self.today + '120000') <= currentDate <= (self.today + '120500'):
-                        self.line.notification('OPEN API SUGGEST STOCK [%s]' % code)
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
@@ -701,6 +708,33 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.total_inverse_amount = self.total_inverse_amount + limit_price
                 self.send_order_limit_stock_price(code, 1, limit_price)
             reset()
+
+    def get_conform_add_stock_buy_case(self, code, target_dict):
+        rows = target_dict[code]["row"]
+
+        if len(rows) < 3:
+            return {}
+
+        analysis_rows = rows[:3]
+        today_tic = analysis_rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+
+        if purchase_price < current_price:
+            self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s]" % (code, purchase_price, current_price))
+            return {}
+
+        today_ma3 = today_tic["ma3"]
+        if today_ma3 > current_price:
+            self.logging.logger.info("ma3_position check> [%s] today_ma3:[%s] current_price:[%s]" % (code, today_ma3, current_price))
+            return {}
+
+        if code in self.current_hold_etf_stock_dict.keys():
+            if self.max_invest_amount < self.total_invest_amount + current_price:
+                self.logging.logger.info("max_buy_amount check> [%s] total_chegual_price:[%s] current_price:[%s]" % (code, self.total_invest_amount, current_price))
+                return {}
+
+        return copy.deepcopy(today_tic)
 
     def get_conform_default_stock_buy_case(self, code, rows):
         if len(rows) < 3:
