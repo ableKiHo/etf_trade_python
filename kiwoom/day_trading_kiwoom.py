@@ -711,7 +711,7 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = today_tic[self.customType.CURRENT_PRICE]
         purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
-        if purchase_price > current_price:
+        if purchase_price < current_price:
             self.logging.logger.info("purchase_price check> [%s] " % code)
             return {}
 
