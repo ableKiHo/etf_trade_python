@@ -207,25 +207,18 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def is_ma_line_analysis(self, code):
         buy_point = self.get_conform_ma_line_case(code)
-        self.logging.logger.info("pass ma_line_case %s" % code)
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line2_case(code)
-            self.logging.logger.info("pass ma_line2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line3_case(code)
-            self.logging.logger.info("pass _ma_line3_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie_case(code)
-            self.logging.logger.info("pass cable_tie_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie2_case(code)
-            self.logging.logger.info("pass cable_tie2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle_case(code)
-            self.logging.logger.info("pass cross_candle_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle2_case(code)
-            self.logging.logger.info("pass cross_candle2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
         return bool(buy_point)
 
     def get_conform_cross_candle2_case(self, code):
@@ -273,6 +266,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                 highest_gap = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
                 lowest_gap = first_tic[self.customType.START_PRICE] - first_tic[self.customType.LOWEST_PRICE]
                 if lowest_gap >= highest_gap:
+                    self.logging.logger.info("pass cross_candle2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
                     return copy.deepcopy(first_tic)
 
         self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
@@ -320,6 +314,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                 highest_gap = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
                 lowest_gap = first_tic[self.customType.START_PRICE] - first_tic[self.customType.LOWEST_PRICE]
                 if lowest_gap >= highest_gap:
+                    self.logging.logger.info("pass cross_candle_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
                     return copy.deepcopy(first_tic)
 
         self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
@@ -367,6 +362,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("ma5_percent check> [%s]" % code)
             return {}
 
+        self.logging.logger.info("pass cable_tie2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
         return copy.deepcopy(first_tic)
 
     def get_conform_cable_tie_case(self, code):
@@ -441,6 +437,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("first_tic short line position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
+        self.logging.logger.info("pass cable_tie_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
         return copy.deepcopy(first_tic)
 
     def get_conform_ma_line3_case(self, code):
@@ -495,6 +492,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("ma20_percent check> [%s]" % code)
             return {}
 
+        self.logging.logger.info("pass ma_line3_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
         return copy.deepcopy(first_tic)
 
     def get_conform_ma_line2_case(self, code):
@@ -554,10 +552,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("second_tic or third_tic position check > [%s] " % code)
             return {}
 
-        self.logging.logger.info("hammer_case_candle check> [%s] >> %s" % (code, first_tic))
+        self.logging.logger.info("pass ma_line2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
         return copy.deepcopy(first_tic)
 
     def get_conform_ma_line_case(self, code):
+
         rows = self.analysis_etf_target_dict[code]["row"]
 
         if len(rows) < 5:
@@ -607,6 +606,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("is_increase_trend current check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
+        self.logging.logger.info("pass ma_line_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
         return copy.deepcopy(first_tic)
 
     def get_etf_stock_info(self):
