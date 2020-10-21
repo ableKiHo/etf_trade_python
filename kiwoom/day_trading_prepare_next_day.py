@@ -207,7 +207,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
     def is_ma_line_analysis(self, code):
         buy_point = self.get_conform_ma_line_case(code)
-        self.logging.logger.info("pass ma_line_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
+        self.logging.logger.info("pass ma_line_case %s" % code)
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line2_case(code)
             self.logging.logger.info("pass ma_line2_case %s [%s]" % (code, buy_point[self.customType.CURRENT_PRICE]))
