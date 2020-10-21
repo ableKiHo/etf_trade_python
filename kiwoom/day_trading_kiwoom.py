@@ -721,7 +721,7 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         if code in self.current_hold_etf_stock_dict.keys():
-            if (self.max_buy_amount_by_stock * 2) < self.total_inverse_amount + current_price:
+            if (self.max_buy_amount_by_stock * 3) < self.total_inverse_amount + current_price:
                 self.logging.logger.info("max_buy_amount check> [%s] " % code)
                 return {}
 
