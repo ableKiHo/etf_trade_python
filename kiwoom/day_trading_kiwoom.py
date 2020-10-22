@@ -1330,7 +1330,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
                 self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
-                if meme_gubun == self.customType.SELL:
+                if meme_gubun == self.customType.SELL and sCode in self.current_hold_etf_stock_dict.keys():
                     del self.current_hold_etf_stock_dict[sCode]
                 else:
                     if sCode not in self.default_stock_list:
