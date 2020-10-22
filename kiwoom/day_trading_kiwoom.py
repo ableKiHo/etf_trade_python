@@ -394,6 +394,10 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
+            if 2.0 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 1.55:
+                self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
+                return copy.deepcopy(today_tic)
+
             if 1.5 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 1.05:
                 self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
