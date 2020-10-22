@@ -186,14 +186,14 @@ class DayTradingKiwoom(ParentKiwoom):
             self.sell_receive_stock_code.append(code)
             return
 
-        goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
-        if bool(goni_sell_point):
-            self.analysis_goni_timer2.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("stop_goni_sell_point break >> %s" % code)
-            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            self.sell_receive_stock_code.append(code)
-            return
+        # goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
+        # if bool(goni_sell_point):
+        #     self.analysis_goni_timer2.stop()
+        #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+        #     self.logging.logger.info("stop_goni_sell_point break >> %s" % code)
+        #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+        #     self.sell_receive_stock_code.append(code)
+        #     return
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_goni_point_check end")
@@ -378,19 +378,19 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
-            if 5.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 5.0 < profit_rate <= 5.1:
+            if 7.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 7.0 < profit_rate <= 7.1:
                 self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
-            if 3.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.0 < profit_rate <= 3.1:
+            if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 5.0 < profit_rate <= 5.1:
                 self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
-            if 2.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.0 < profit_rate <= 2.1:
+            if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.0 < profit_rate <= 2.1:
                 self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
 
-            if 1.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.5 < profit_rate <= 1.6:
+            if 1.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.0 < profit_rate <= 1.1:
                 self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (code, current_price, profit_rate, highest_profit_rate))
                 return copy.deepcopy(today_tic)
         return {}
