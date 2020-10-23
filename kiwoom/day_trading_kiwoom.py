@@ -659,7 +659,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.default_stock_candle_analysis_check()
             return
 
-        self.logging.logger.info("self.analysis_goal_etf_stock_list>> %s" % self.analysis_goal_etf_stock_list)
+        #self.logging.logger.info("self.analysis_goal_etf_stock_list>> %s" % self.analysis_goal_etf_stock_list)
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("other_target_candle_analysis nothing")
             self.analysis_search_timer2.stop()
@@ -670,7 +670,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
         code = self.goal_buy_search_stock_code
-        self.logging.logger.info("other_target_candle_analysis_check loop > %s " % code)
+        self.logging.logger.info("other_target_candle_analysis_check loop [%s]> %s " % (code, self.target_etf_stock_dict[code]))
         self.search_stock_code.append(code)
 
         self.get_opt10081_info_all(code)
