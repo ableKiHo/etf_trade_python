@@ -241,14 +241,14 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if code not in self.default_stock_list:
 
-            max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
-            if bool(max_loss_sell_point):
-                self.hold_stock_check_timer.stop()
-                quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                self.logging.logger.info("max_loss_sell_point break >> %s" % code)
-                self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-                self.sell_receive_stock_code.append(code)
-                return
+            # max_loss_sell_point = self.get_max_loss_sell_case(code, self.current_hold_etf_stock_dict)
+            # if bool(max_loss_sell_point):
+            #     self.hold_stock_check_timer.stop()
+            #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+            #     self.logging.logger.info("max_loss_sell_point break >> %s" % code)
+            #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            #     self.sell_receive_stock_code.append(code)
+            #     return
 
             add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
             if bool(add_buy_point):
@@ -285,11 +285,11 @@ class DayTradingKiwoom(ParentKiwoom):
             #     del self.current_hold_etf_stock_dict[code]
             #     return
         else:
-            inverse_under_ma3_line = self.get_inverse_under_ma3_line(code, self.current_hold_etf_stock_dict)
-            if bool(inverse_under_ma3_line):
+            default_stock_under_ma3_line = self.get_default_stock_under_ma3_line(code, self.current_hold_etf_stock_dict)
+            if bool(default_stock_under_ma3_line):
                 self.hold_stock_check_timer.stop()
                 quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-                self.logging.logger.info("inverse_under_ma3_line_sell_point break >> %s" % code)
+                self.logging.logger.info("default_stock_under_ma3_line_sell_point break >> %s" % code)
                 self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
                 self.sell_receive_stock_code.append(code)
                 return
@@ -577,7 +577,7 @@ class DayTradingKiwoom(ParentKiwoom):
             return copy.deepcopy(today_tic)
         return {}
 
-    def get_inverse_under_ma3_line(self, code, target_dict):
+    def get_default_stock_under_ma3_line(self, code, target_dict):
         rows = target_dict[code]["row"]
         if len(rows) < 3:
             return {}
@@ -643,12 +643,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.goal_buy_search_stock_code = ''
         self.analysis_goal_etf_stock_list = []
         self.search_stock_code = []
-        for key in self.target_etf_stock_dict.keys():
-            if key in self.current_hold_etf_stock_dict.keys():
-                self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
 
         for key in self.target_etf_stock_dict.keys():
-            if key not in self.current_hold_etf_stock_dict.keys():
+            if key not in self.default_stock_list:
                 self.analysis_goal_etf_stock_list.append(copy.deepcopy(self.target_etf_stock_dict[key]))
 
         self.analysis_search_timer2 = default_q_timer_setting(5)
