@@ -146,12 +146,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_goni_timer1.timeout.connect(self.analysis_goni_hold_etf_stock)
 
     def analysis_goni_hold_etf_stock(self):
-        currentDate = get_today_by_format('%Y%m%d%H%M%S')
-
-        if (self.today + '090100') <= currentDate <= (self.today + '090500'):
-            pass
-        else:
-            return
 
         self.analysis_goni_timer1.stop()
         self.logging.logger.info('loop_goni_hold_etf_stock')
