@@ -763,24 +763,31 @@ class DayTradingKiwoom(ParentKiwoom):
         analysis_rows = rows[:3]
         today_tic = analysis_rows[0]
         current_price = today_tic[self.customType.CURRENT_PRICE]
-        purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
-        total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
-
-        if purchase_price < current_price:
-            self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s]" % (code, purchase_price, current_price))
-            return {}
-
         today_ma3 = today_tic["ma3"]
         if today_ma3 > current_price:
             self.logging.logger.info("ma3_position check> [%s] today_ma3:[%s] current_price:[%s]" % (code, today_ma3, current_price))
             return {}
 
-        if code in self.current_hold_etf_stock_dict.keys():
+        if code not in self.current_hold_etf_stock_dict.keys():
+            return copy.deepcopy(today_tic)
+        else:
+            purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+            total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+
+            if purchase_price < current_price:
+                self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s]" % (code, purchase_price, current_price))
+                return {}
+
+            today_ma3 = today_tic["ma3"]
+            if today_ma3 > current_price:
+                self.logging.logger.info("ma3_position check> [%s] today_ma3:[%s] current_price:[%s]" % (code, today_ma3, current_price))
+                return {}
+
             if (self.max_buy_amount_by_stock * 2) < total_chegual_price + current_price:
                 self.logging.logger.info("max_buy_amount check> [%s] total_chegual_price:[%s] current_price:[%s]" % (code, total_chegual_price, current_price))
                 return {}
 
-        return copy.deepcopy(today_tic)
+            return copy.deepcopy(today_tic)
 
     def get_default_price_info(self):
         self.read_target_etf_file()
