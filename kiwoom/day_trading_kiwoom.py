@@ -830,7 +830,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.line.notification(self.logType.MARKET_END_LOG)
                 self.analysis_search_timer1.stop()
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            if sCode in self.total_cal_target_etf_stock_dict.keys() and sCode in self.current_hold_etf_stock_dict.keys():
+            if sCode in self.current_hold_etf_stock_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
 
                 realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
