@@ -102,7 +102,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
-        self.current_hold_stock_real_reg()
 
     def current_hold_stock_real_reg(self):
         for code in self.current_hold_etf_stock_dict.keys():
@@ -203,6 +202,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("daily_candle_goni_point_check end")
             self.analysis_goni_timer2.stop()
             #self.analysis_goni_timer1.start()
+            self.current_hold_stock_real_reg()
 
 
     def loop_sell_hold_etf_stock(self):
@@ -817,7 +817,7 @@ class DayTradingKiwoom(ParentKiwoom):
         current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
         if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict:
             if current_stock_price > self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
-                self.logging.logger.info("changed sell std highest price >> %s" % current_stock_price)
+                self.logging.logger.info("changed sell std highest price >> [%s] %s" % (sCode, current_stock_price))
                 self.total_cal_target_etf_stock_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
         else:
             self.total_cal_target_etf_stock_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
