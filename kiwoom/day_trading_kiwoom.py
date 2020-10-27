@@ -837,13 +837,16 @@ class DayTradingKiwoom(ParentKiwoom):
         elif sRealType == self.customType.STOCK_CONCLUSION:
             if sCode in self.total_cal_target_etf_stock_dict.keys() and sCode in self.current_hold_etf_stock_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
+
                 realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
                 realdata_std_higest_price = self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]
                 current_price = realdata_stock[self.customType.CURRENT_PRICE]
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
                 buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
+                profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+                self.logging.logger.info("REALTIME STOCK_CONCLUSION >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
                 if current_price > buy_price:
-                    profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+
                     self.logging.logger.info("realtime_stop_loss_sell check >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
                     rows = current_hold_stock["row"]
                     buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
