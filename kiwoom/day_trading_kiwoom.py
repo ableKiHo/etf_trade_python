@@ -840,7 +840,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
                 buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
                 profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                self.logging.logger.info("REALTIME STOCK_CONCLUSION >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
+                # self.logging.logger.info("REALTIME STOCK_CONCLUSION >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
                 if current_price > buy_price:
 
                     self.logging.logger.info("realtime_stop_loss_sell check >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
