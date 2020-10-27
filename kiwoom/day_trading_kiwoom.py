@@ -107,7 +107,7 @@ class DayTradingKiwoom(ParentKiwoom):
         for code in self.current_hold_etf_stock_dict.keys():
             screen_num = self.current_hold_etf_stock_dict[code][self.customType.SCREEN_NUMBER]
             fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
-            self.logging.logger.info("current_hold_stock_real_reg >> %s" % code)
+            self.logging.logger.info("current_hold_stock_real_reg >> %s %s" % (code, screen_num))
             self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def init_stock_values(self):
