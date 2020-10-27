@@ -62,6 +62,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.current_hold_etf_stock_dict = {}
 
+        self.total_cal_target_etf_stock_dict = {}
         self.today_buy_etf_stock_dict = {}
         self.target_etf_stock_dict = {}
         self.analysis_goal_etf_stock_dict = {}
@@ -101,6 +102,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
+        self.current_hold_stock_real_reg()
+
+    def current_hold_stock_real_reg(self):
+        for code in self.current_hold_etf_stock_dict.keys():
+            screen_num = self.current_hold_etf_stock_dict[code][self.customType.SCREEN_NUMBER]
+            fids = self.realType.REALTYPE[self.customType.STOCK_CONCLUSION][self.customType.TIGHTENING_TIME]
+            self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def init_stock_values(self):
         self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
@@ -113,6 +121,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
         else:
             self.max_hold_stock_count = self.current_hold_stock_count
+
+        self.screen_number_setting(self.current_hold_etf_stock_dict)
 
     def loop_cancle_buy_etf(self):
         self.cancle_check_timer = default_q_timer_setting(120)
@@ -132,21 +142,14 @@ class DayTradingKiwoom(ParentKiwoom):
         self.not_concluded_account()
 
     def loop_goni_hold_etf_stock(self):
-        self.analysis_goni_timer1 = default_q_timer_setting(120)
+        self.analysis_goni_timer1 = default_q_timer_setting(60)
         self.analysis_goni_timer1.timeout.connect(self.analysis_goni_hold_etf_stock)
 
     def analysis_goni_hold_etf_stock(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
 
-        if (self.today + '150000') > currentDate:
-            if (self.today + '100100') <= currentDate <= (self.today + '100500'):
-                return
-            elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
-                return
-            elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
-                return
-            else:
-                pass
+        if (self.today + '090100') <= currentDate <= (self.today + '090500'):
+            pass
         else:
             return
 
@@ -161,6 +164,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.analysis_goni_timer2 = default_q_timer_setting(4)
         self.analysis_goni_timer2.timeout.connect(self.daily_candle_goni_point_check)
+
+    def realtime_stop_loss_sell(self, code):
+        quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+        self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
+        self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+        self.sell_receive_stock_code.append(code)
 
     def daily_candle_goni_point_check(self):
         if len(self.analysis_sell_etf_stock_list) == 0:
@@ -177,14 +186,14 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_sell_opt10081_info(code)
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
 
-        realtime_stop_loss_sell_point = self.get_realtime_stop_loss_sell_point(code, self.current_hold_etf_stock_dict)
-        if bool(realtime_stop_loss_sell_point):
-            self.analysis_goni_timer2.stop()
-            quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-            self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
-            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
-            self.sell_receive_stock_code.append(code)
-            return
+        # realtime_stop_loss_sell_point = self.get_realtime_stop_loss_sell_point(code, self.current_hold_etf_stock_dict)
+        # if bool(realtime_stop_loss_sell_point):
+        #     self.analysis_goni_timer2.stop()
+        #     quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+        #     self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
+        #     self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+        #     self.sell_receive_stock_code.append(code)
+        #     return
 
         # goni_sell_point = self.get_stop_goni_sell_point(code, self.current_hold_etf_stock_dict)
         # if bool(goni_sell_point):
@@ -198,7 +207,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_goni_point_check end")
             self.analysis_goni_timer2.stop()
-            self.analysis_goni_timer1.start()
+            #self.analysis_goni_timer1.start()
             return
 
     def loop_sell_hold_etf_stock(self):
@@ -659,7 +668,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.default_stock_candle_analysis_check()
             return
 
-        #self.logging.logger.info("self.analysis_goal_etf_stock_list>> %s" % self.analysis_goal_etf_stock_list)
+        # self.logging.logger.info("self.analysis_goal_etf_stock_list>> %s" % self.analysis_goal_etf_stock_list)
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("other_target_candle_analysis nothing")
             self.analysis_search_timer2.stop()
@@ -738,7 +747,8 @@ class DayTradingKiwoom(ParentKiwoom):
         if code in self.current_hold_etf_stock_dict.keys():
 
             if self.max_invest_amount < self.total_invest_amount + current_price and (self.max_buy_amount_by_stock * 2) < total_chegual_price + current_price:
-                self.logging.logger.info("max_buy_amount check> [%s] total_chegual_price:[%s] current_price:[%s] total_chegual_price:[%s]" % (code, self.total_invest_amount, current_price, total_chegual_price))
+                self.logging.logger.info(
+                    "max_buy_amount check> [%s] total_chegual_price:[%s] current_price:[%s] total_chegual_price:[%s]" % (code, self.total_invest_amount, current_price, total_chegual_price))
                 return {}
 
         return copy.deepcopy(today_tic)
@@ -781,6 +791,41 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_default_price_info()
         self.screen_number_setting(self.target_etf_stock_dict)
 
+    def comm_real_data(self, sCode, sRealType, sRealData):
+        b = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.CURRENT_PRICE])
+        b = abs(int(b.strip()))
+        a = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.TIGHTENING_TIME])  # 151524
+
+        g = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.VOLUME])
+        g = abs(int(g.strip()))
+
+        i = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.HIGHEST_PRICE])
+        i = abs(int(i.strip()))
+
+        j = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.START_PRICE])
+        j = abs(int(j.strip()))
+
+        k = self.dynamicCall("GetCommRealData(QString, int)", sCode, self.realType.REALTYPE[sRealType][self.customType.LOWEST_PRICE])
+        k = abs(int(k.strip()))
+
+        if sCode not in self.total_cal_target_etf_stock_dict.keys():
+            self.total_cal_target_etf_stock_dict.update({sCode: {}})
+
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.TIGHTENING_TIME: a})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.CURRENT_PRICE: b})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.VOLUME: g})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.HIGHEST_PRICE: i})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.START_PRICE: j})
+        self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
+
+        current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
+        if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict:
+            if current_stock_price > self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
+                self.logging.logger.info("changed sell std highest price >> %s" % current_stock_price)
+                self.total_cal_target_etf_stock_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+        else:
+            self.total_cal_target_etf_stock_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
             fid = self.realType.REALTYPE[sRealType][self.customType.MARKET_OPERATION]
@@ -789,6 +834,56 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info(self.logType.MARKET_END_LOG)
                 self.line.notification(self.logType.MARKET_END_LOG)
                 self.analysis_search_timer1.stop()
+        elif sRealType == self.customType.STOCK_CONCLUSION:
+            if sCode in self.total_cal_target_etf_stock_dict.keys() and sCode in self.current_hold_etf_stock_dict.keys():
+                self.comm_real_data(sCode, sRealType, sRealData)
+                realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
+                realdata_std_higest_price = self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]
+                current_price = realdata_stock[self.customType.CURRENT_PRICE]
+                current_hold_stock = self.current_hold_etf_stock_dict[sCode]
+                buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
+                if current_price > buy_price:
+                    profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+                    self.logging.logger.info("realtime_stop_loss_sell check >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
+                    rows = current_hold_stock["row"]
+                    buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
+                    if len(buy_after_rows) > 0:
+                        highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
+                        max_highest_price = max(highest_list)
+                        if max_highest_price > realdata_std_higest_price:
+                            highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
+                        else:
+                            highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+                    else:
+                        highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+
+                    if profit_rate > 15.0:
+                        self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
+
+                    if 7.5 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 5.55:
+                        self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
+
+                    if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 3.55:
+                        self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
+
+                    if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 2.55:
+                        self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
+
+                    if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 2.05:
+                        self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
+
+                    if 2.0 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 1.55:
+                        self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
+
+                    if 1.5 <= highest_profit_rate and highest_profit_rate > profit_rate and profit_rate <= 1.05:
+                        self.logging.logger.info("goni_stop_loss_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
