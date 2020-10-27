@@ -647,6 +647,8 @@ class DayTradingKiwoom(ParentKiwoom):
             pass
         elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
             pass
+        elif (self.today + '121000') <= currentDate <= (self.today + '121500'):
+            pass
         else:
             return
         self.logging.logger.info("analysis target etf")
@@ -854,7 +856,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
                 buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
                 profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                # self.logging.logger.info("REALTIME STOCK_CONCLUSION >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate)
+                self.logging.logger.info("REALTIME STOCK_CONCLUSION >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
             elif sCode in self.today_buy_etf_stock_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
 
