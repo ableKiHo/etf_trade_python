@@ -102,6 +102,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
+        self.current_hold_stock_real_reg()
 
     def current_hold_stock_real_reg(self):
         for code in self.current_hold_etf_stock_dict.keys():
@@ -202,7 +203,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("daily_candle_goni_point_check end")
             self.analysis_goni_timer2.stop()
             #self.analysis_goni_timer1.start()
-            self.current_hold_stock_real_reg()
+
 
     def loop_sell_hold_etf_stock(self):
         self.hold_stock_check_timer = default_q_timer_setting(120)
@@ -329,7 +330,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_sell_point_check end")
             self.hold_stock_check_timer.stop()
-            self.current_hold_stock_real_reg()
+
 
     def loop_analysis_buy_etf(self):
         self.analysis_search_timer1 = default_q_timer_setting(60)
@@ -716,7 +717,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.total_inverse_amount = self.total_inverse_amount + limit_price
                 self.send_order_limit_stock_price(code, 1, limit_price)
             reset()
-        self.current_hold_stock_real_reg()
+
 
     def get_conform_add_stock_buy_case(self, code, target_dict):
         rows = target_dict[code]["row"]
