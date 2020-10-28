@@ -118,7 +118,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def init_stock_values(self):
         self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
-        if self.current_hold_stock_count == 6:
+        if self.current_hold_stock_count == 5:
             self.max_hold_stock_count = self.current_hold_stock_count
             return
 
