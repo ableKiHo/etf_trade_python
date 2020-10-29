@@ -1468,7 +1468,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 else:
                     if sCode not in self.default_stock_list:
 
-                        if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys() and sCode not in self.default_stock_list:
+                        if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
                             self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                           self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                           self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
