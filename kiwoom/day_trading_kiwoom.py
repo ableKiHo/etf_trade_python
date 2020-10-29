@@ -79,6 +79,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.goni_search_stock_code = ''
         self.goni_search_stock_code_list = []
 
+
         self.event_slots()
         self.real_event_slot()
 
@@ -851,7 +852,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.line.notification(self.logType.MARKET_END_LOG)
                 self.analysis_search_timer1.stop()
         elif sRealType == self.customType.STOCK_CONCLUSION:
-            if sCode in self.current_hold_etf_stock_dict.keys():
+            if sCode in self.current_hold_etf_stock_dict.keys() and sCode not in self.sell_receive_stock_code:
                 self.comm_real_data(sCode, sRealType, sRealData)
 
                 realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
