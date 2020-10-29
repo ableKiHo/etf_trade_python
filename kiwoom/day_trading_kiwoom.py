@@ -835,12 +835,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.total_cal_target_etf_stock_dict[sCode].update({self.customType.LOWEST_PRICE: k})
 
         current_stock_price = self.total_cal_target_etf_stock_dict[sCode][self.customType.CURRENT_PRICE]
-        if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict:
-            if current_stock_price > self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]:
+        if self.customType.SELL_STD_HIGHEST_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
+            if current_stock_price > self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_HIGHEST_PRICE]:
                 self.logging.logger.info("changed sell std highest price >> [%s] %s" % (sCode, current_stock_price))
-                self.total_cal_target_etf_stock_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
         else:
-            self.total_cal_target_etf_stock_dict.update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
+            self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
 
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
@@ -855,7 +855,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.comm_real_data(sCode, sRealType, sRealData)
 
                 realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
-                realdata_std_higest_price = self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]
+                realdata_std_higest_price = realdata_stock[self.customType.SELL_STD_HIGHEST_PRICE]
                 current_price = realdata_stock[self.customType.CURRENT_PRICE]
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
                 buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
@@ -865,7 +865,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.comm_real_data(sCode, sRealType, sRealData)
 
                 realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
-                realdata_std_higest_price = self.total_cal_target_etf_stock_dict[self.customType.SELL_STD_HIGHEST_PRICE]
+                realdata_std_higest_price = realdata_stock[self.customType.SELL_STD_HIGHEST_PRICE]
                 current_price = realdata_stock[self.customType.CURRENT_PRICE]
                 current_hold_stock = self.today_buy_etf_stock_dict[sCode]
                 buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
