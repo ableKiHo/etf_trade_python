@@ -876,11 +876,15 @@ class DayTradingKiwoom(ParentKiwoom):
             if current_price > buy_price:
 
                 self.logging.logger.info("realtime_stop_loss_sell check >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
+                self.logging.logger.info("realdata_std_higest_price > [%s] >> %s " % (sCode, realdata_std_higest_price))
                 rows = current_hold_stock["row"]
                 buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
+                self.logging.logger.info("buy_after_rows > [%s] >> %s " % (sCode, buy_after_rows))
+
                 if len(buy_after_rows) > 0:
                     highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
                     max_highest_price = max(highest_list)
+                    self.logging.logger.info("max price > [%s] >> %s / %s" % (sCode, max_highest_price, realdata_std_higest_price))
                     if max_highest_price > realdata_std_higest_price:
                         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
                     else:
