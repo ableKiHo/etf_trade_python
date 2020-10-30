@@ -322,7 +322,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.sell_receive_stock_code.append(code)
                 return
 
-            stop_rate_list = [11, 8, 6]
+            stop_rate_list = [11, 8, 6, 4]
             for stop_rate in stop_rate_list:
                 stop_loss_sell_point = self.get_stop_loss_sell_point(code, self.current_hold_etf_stock_dict, stop_rate)
                 if bool(stop_loss_sell_point):
@@ -545,7 +545,7 @@ class DayTradingKiwoom(ParentKiwoom):
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
         if current_price > buy_price:
-            if highest_profit_rate >= stop_rate and highest_profit_rate > profit_rate and profit_rate <= stop_rate + 0.1 and today_tic["ma5"] > current_price:
+            if highest_profit_rate >= (stop_rate - 0.5) and highest_profit_rate > profit_rate and (stop_rate + 0.05) < profit_rate <= (stop_rate + 0.55):
                 self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s / %s " % (code, current_price, buy_price, today_tic["ma5"], highest_profit_rate, profit_rate))
                 return copy.deepcopy(today_tic)
         return {}
@@ -880,20 +880,22 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 self.logging.logger.info("realtime_stop_loss_sell check >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
                 self.logging.logger.info("realdata_std_higest_price > [%s] >> %s " % (sCode, realdata_std_higest_price))
-                rows = current_hold_stock["row"]
-                buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
-                self.logging.logger.info("buy_after_rows > [%s] >> %s " % (sCode, buy_after_rows))
+                # rows = current_hold_stock["row"]
+                # buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
+                # self.logging.logger.info("buy_after_rows > [%s] >> %s " % (sCode, buy_after_rows))
+                #
+                # if len(buy_after_rows) > 0:
+                #     highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
+                #     max_highest_price = max(highest_list)
+                #     self.logging.logger.info("max price > [%s] >> %s / %s" % (sCode, max_highest_price, realdata_std_higest_price))
+                #     if max_highest_price > realdata_std_higest_price:
+                #         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
+                #     else:
+                #         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+                # else:
+                #     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                if len(buy_after_rows) > 0:
-                    highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
-                    max_highest_price = max(highest_list)
-                    self.logging.logger.info("max price > [%s] >> %s / %s" % (sCode, max_highest_price, realdata_std_higest_price))
-                    if max_highest_price > realdata_std_higest_price:
-                        highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
-                    else:
-                        highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
-                else:
-                    highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+                highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                 if profit_rate > 15.0:
                     self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
