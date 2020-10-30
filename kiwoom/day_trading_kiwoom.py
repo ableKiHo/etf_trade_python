@@ -79,7 +79,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.goni_search_stock_code = ''
         self.goni_search_stock_code_list = []
 
-
         self.event_slots()
         self.real_event_slot()
 
@@ -855,7 +854,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if sCode in self.sell_receive_stock_code:
                 return
 
-            if sCode in self.current_hold_etf_stock_dict.keys() :
+            if sCode in self.current_hold_etf_stock_dict.keys():
                 self.comm_real_data(sCode, sRealType, sRealData)
 
                 realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
@@ -1474,13 +1473,12 @@ class DayTradingKiwoom(ParentKiwoom):
                 if meme_gubun == self.customType.SELL and sCode in self.current_hold_etf_stock_dict.keys():
                     del self.current_hold_etf_stock_dict[sCode]
                 else:
-                    if sCode not in self.default_stock_list:
+                    if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
+                        self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
+                                                                      self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
+                                                                      self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
+                        self.today_buy_stock_real_reg(sCode)
 
-                        if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
-                            self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
-                                                                          self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
-                                                                          self.customType.TOTAL_PURCHASE_PRICE: total_buy_price}})
-                            self.today_buy_stock_real_reg(sCode)
                     if sCode in self.current_hold_etf_stock_dict.keys():
                         self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
                                                                         self.customType.HOLDING_QUANTITY: holding_quantity,
