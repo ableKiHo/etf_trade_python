@@ -545,7 +545,7 @@ class DayTradingKiwoom(ParentKiwoom):
         highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
 
         if current_price > buy_price:
-            if highest_profit_rate >= (stop_rate - 0.5) and highest_profit_rate > profit_rate and (stop_rate + 0.05) < profit_rate <= (stop_rate + 0.55):
+            if highest_profit_rate >= (stop_rate + 0.5) and highest_profit_rate > profit_rate and (stop_rate - 1.0) < profit_rate <= (stop_rate - 0.45):
                 self.logging.logger.info("stop_loss_profit check > [%s] >> %s / %s / %s / %s " % (code, current_price, buy_price, highest_profit_rate, profit_rate))
                 return copy.deepcopy(today_tic)
         return {}
