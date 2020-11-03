@@ -755,7 +755,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if code in self.current_hold_etf_stock_dict.keys():
 
-            if self.max_invest_amount < self.total_invest_amount + current_price and (self.max_buy_amount_by_stock * 2) < total_chegual_price + current_price:
+            if self.max_invest_amount < self.total_invest_amount + current_price or (self.max_buy_amount_by_stock * 2) < total_chegual_price + current_price:
                 self.logging.logger.info(
                     "max_buy_amount check> [%s] total_chegual_price:[%s] current_price:[%s] total_chegual_price:[%s]" % (code, self.total_invest_amount, current_price, total_chegual_price))
                 return {}
