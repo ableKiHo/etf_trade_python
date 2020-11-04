@@ -775,7 +775,8 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         if code not in self.current_hold_etf_stock_dict.keys():
-            return copy.deepcopy(today_tic)
+            if today_tic[self.customType.CURRENT_PRICE] > today_tic[self.customType.START_PRICE]:
+                return copy.deepcopy(today_tic)
         else:
             purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
             total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
