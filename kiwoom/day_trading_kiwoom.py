@@ -855,32 +855,28 @@ class DayTradingKiwoom(ParentKiwoom):
             if sCode in self.sell_receive_stock_code:
                 return
 
+            self.comm_real_data(sCode, sRealType, sRealData)
+
+            realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
+            realdata_std_higest_price = realdata_stock[self.customType.SELL_STD_HIGHEST_PRICE]
+            current_price = realdata_stock[self.customType.CURRENT_PRICE]
+
             if sCode in self.current_hold_etf_stock_dict.keys():
-                self.comm_real_data(sCode, sRealType, sRealData)
-
-                realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
-                realdata_std_higest_price = realdata_stock[self.customType.SELL_STD_HIGHEST_PRICE]
-                current_price = realdata_stock[self.customType.CURRENT_PRICE]
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
-                buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
-                profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-                # self.logging.logger.info("REALTIME STOCK_CONCLUSION >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
-            elif sCode in self.today_buy_etf_stock_dict.keys():
-                self.comm_real_data(sCode, sRealType, sRealData)
 
-                realdata_stock = self.total_cal_target_etf_stock_dict[sCode]
-                realdata_std_higest_price = realdata_stock[self.customType.SELL_STD_HIGHEST_PRICE]
-                current_price = realdata_stock[self.customType.CURRENT_PRICE]
+            elif sCode in self.today_buy_etf_stock_dict.keys():
                 current_hold_stock = self.today_buy_etf_stock_dict[sCode]
-                buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
-                profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+
             else:
                 return
 
+            buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
+            profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
+            highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
             if current_price > buy_price:
 
                 self.logging.logger.info("realtime_stop_loss_sell check >>> [%s] current_price:[%s] buy_price:[%s] profit_rate:[%s]" % (sCode, current_price, buy_price, profit_rate))
-                self.logging.logger.info("realdata_std_higest_price > [%s] >> %s " % (sCode, realdata_std_higest_price))
+                self.logging.logger.info("realdata_std_higest_info > [%s] >> price:%s / rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
                 # rows = current_hold_stock["row"]
                 # buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
                 # self.logging.logger.info("buy_after_rows > [%s] >> %s " % (sCode, buy_after_rows))
@@ -895,8 +891,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 #         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
                 # else:
                 #     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
-
-                highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                 if profit_rate > 15.0:
                     self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
