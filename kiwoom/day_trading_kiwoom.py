@@ -908,11 +908,11 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.logging.logger.info("goni_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                     self.realtime_stop_loss_sell(sCode)
 
-                if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.05 < profit_rate <= 2.55:
+                if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.55 < profit_rate <= 2.55:
                     self.logging.logger.info("goni_3.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                     self.realtime_stop_loss_sell(sCode)
 
-                if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.05 < profit_rate <= 1.55:
+                if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 0.55 < profit_rate <= 1.55:
                     self.logging.logger.info("goni_2.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                     self.realtime_stop_loss_sell(sCode)
 
