@@ -872,11 +872,17 @@ class DayTradingKiwoom(ParentKiwoom):
 
             buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
-            highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+
             if current_price > buy_price and profit_rate >= 1.0:
+                highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                 rows = current_hold_stock["row"]
                 analysis_rows = rows[:2]
+
+                today_tic = analysis_rows[0]
+                if today_tic[self.customType.HIGHEST_PRICE] > realdata_std_higest_price:
+                    realdata_std_higest_price = today_tic[self.customType.HIGHEST_PRICE]
+                    highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                 yesterday_tic = analysis_rows[1]
 
