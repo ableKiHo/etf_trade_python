@@ -906,10 +906,12 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                     self.realtime_stop_loss_sell(sCode)
 
-                if highest_profit_rate >= 3.1:
-                    if (profit_rate - 0.3) < (highest_profit_rate / 2) <= profit_rate:
-                        self.logging.logger.info("goni_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
+                if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
+                    if (highest_profit_rate / 2) > profit_rate:
+
+                        if ((highest_profit_rate / 2) - 0.25) < profit_rate:
+                            self.logging.logger.info("goni_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
