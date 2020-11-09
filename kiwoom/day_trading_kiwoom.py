@@ -119,6 +119,11 @@ class DayTradingKiwoom(ParentKiwoom):
     def init_stock_values(self):
         # self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
         # self.current_hold_etf_stock_dict[code].update({self.customType.STOCK_CODE: code})
+        if (self.max_invest_amount - self.max_buy_amount_by_stock) <= self.total_invest_amount:
+            self.max_hold_stock_count = self.current_hold_stock_count
+            self.screen_number_setting(self.current_hold_etf_stock_dict)
+            return
+
         filtered_current_hold_etf_stock = [x for x in self.current_hold_etf_stock_dict.keys() if x not in self.default_stock_list]
         self.current_hold_stock_count = len(filtered_current_hold_etf_stock)
         if self.current_hold_stock_count >= 4:
