@@ -906,29 +906,10 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                     self.realtime_stop_loss_sell(sCode)
 
-                if 10.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 9.95 < profit_rate <= 10.05:
-                    self.logging.logger.info("goni_10.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                    self.realtime_stop_loss_sell(sCode)
-
-                if 7.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.55 < profit_rate <= 5.55:
-                    self.logging.logger.info("goni_7.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                    self.realtime_stop_loss_sell(sCode)
-
-                if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.05 < profit_rate <= 3.55:
-                    self.logging.logger.info("goni_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                    self.realtime_stop_loss_sell(sCode)
-
-                if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.95 < profit_rate <= 3.05:
-                    self.logging.logger.info("goni_3.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                    self.realtime_stop_loss_sell(sCode)
-
-                if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.4 < profit_rate <= 1.55:
-                    self.logging.logger.info("goni_2.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                    self.realtime_stop_loss_sell(sCode)
-
-                # if 1.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 0.45 < profit_rate <= 0.55:
-                #     self.logging.logger.info("goni_1.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                #     self.realtime_stop_loss_sell(sCode)
+                if highest_profit_rate >= 3.1:
+                    if (profit_rate - 0.3) < (highest_profit_rate / 2) <= profit_rate:
+                        self.logging.logger.info("goni_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
