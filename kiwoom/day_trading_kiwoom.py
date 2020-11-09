@@ -117,8 +117,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def init_stock_values(self):
-        self.current_hold_stock_count = len(self.current_hold_etf_stock_dict.keys())
-        if self.current_hold_stock_count == 5:
+        filtered_current_hold_etf_stock = [x for x in self.current_hold_etf_stock_dict.keys() if x not in self.default_stock_list]
+        self.current_hold_stock_count = len(filtered_current_hold_etf_stock)
+        if self.current_hold_stock_count >= 5:
             self.max_hold_stock_count = self.current_hold_stock_count
             self.screen_number_setting(self.current_hold_etf_stock_dict)
             return
