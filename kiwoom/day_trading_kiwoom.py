@@ -964,7 +964,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.logging.logger.info("realdata_std_higest_info > [%s] >> price:%s / rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
 
                     if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
-                        if ((highest_profit_rate / 2) - 0.25) <= profit_rate < (highest_profit_rate / 2):
+                        if ((highest_profit_rate / 2) - 0.3) <= profit_rate < (highest_profit_rate / 2):
                             self.logging.logger.info("goni_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
 
