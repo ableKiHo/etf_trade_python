@@ -64,6 +64,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.total_cal_target_etf_stock_dict = {}
         self.today_buy_etf_stock_dict = {}
+        self.today_order_etf_stock_list = []
         self.target_etf_stock_dict = {}
         self.analysis_goal_etf_stock_dict = {}
         self.analysis_goal_etf_stock_list = []
@@ -704,7 +705,7 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         rows = self.target_etf_stock_dict[code]["row"]
 
-        if code not in self.current_hold_etf_stock_dict.keys():
+        if code not in self.current_hold_etf_stock_dict.keys() and code not in self.today_order_etf_stock_list:
 
             buy_point = self.get_conform_buy_case(code, rows)
 
@@ -714,6 +715,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 2)
                     if quantity >= 1:
                         self.logging.logger.info("conform_buy_case buy_point break >> %s" % code)
+                        self.today_order_etf_stock_list.append(code)
                         self.current_hold_stock_count = self.current_hold_stock_count + 1
                         self.send_order_limit_stock_price(code, quantity, limit_price)
 
@@ -776,6 +778,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         analysis_rows = rows[:3]
         today_tic = analysis_rows[0]
+        yesterday_tic = analysis_rows[1]
         current_price = today_tic[self.customType.CURRENT_PRICE]
         today_ma3 = today_tic["ma3"]
         if today_ma3 > current_price:
@@ -784,7 +787,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if code not in self.current_hold_etf_stock_dict.keys():
             if today_tic[self.customType.CURRENT_PRICE] > today_tic[self.customType.START_PRICE]:
-                return copy.deepcopy(today_tic)
+                if yesterday_tic["ma3"] > yesterday_tic[self.customType.CURRENT_PRICE]:
+                    return copy.deepcopy(today_tic)
         else:
             purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
             total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
@@ -1582,7 +1586,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("get_next_search_etf_stock_code index >> %s" % index)
             item = self.analysis_goal_etf_stock_list[index + 1]
 
-        self.logging.logger.info("get_next_search_etf_stock_code item >> %s" % item)
+        self.logging.logger.info("get_next_search_etf_stock_code item >> %s" % item[self.customType.STOCK_CODE])
         self.goal_buy_search_stock_code = item[self.customType.STOCK_CODE]
 
     def get_sell_next_search_etf_stock_code(self, max_index=4):
