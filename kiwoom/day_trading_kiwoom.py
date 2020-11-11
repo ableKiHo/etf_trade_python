@@ -712,7 +712,8 @@ class DayTradingKiwoom(ParentKiwoom):
             if bool(buy_point):
                 if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
                     limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                    quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 2)
+                    # quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 2)
+                    quantity = math.trunc((self.max_buy_amount_by_stock / limit_price))
                     if quantity >= 1:
                         self.logging.logger.info("conform_buy_case buy_point break >> %s" % code)
                         self.today_order_etf_stock_list.append(code)
