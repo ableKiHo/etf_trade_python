@@ -342,12 +342,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("cable_tie_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
-        compare_rows = analysis_rows[:3]
-        ma5_list = [item["ma5"] for item in compare_rows]
-        ma5_inverselist = ma5_list[::-1]
-        if not is_increase_trend(ma5_inverselist):
-            self.logging.logger.info("ma5_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
-            return {}
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
@@ -357,8 +351,15 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
         ma60_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma60"]) / first_tic["ma60"] * 100
         ma120_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma120"]) / first_tic["ma120"] * 100
-        percent_list = [ma5_percent, ma10_percent, ma20_percent, ma60_percent, ma120_percent]
-        if max(percent_list) > 0.99:
+        if ma120_percent >= ma5_percent:
+            self.logging.logger.info("ma120_percent check > [%s]" % code)
+            return {}
+
+        percent_list = [abs(ma5_percent), abs(ma10_percent), abs(ma20_percent), abs(ma60_percent)]
+        min_percent = min(percent_list)
+        max_percent = max(percent_list)
+
+        if (max_percent - min_percent) <= 0.5:
             self.logging.logger.info("ma5_percent check> [%s]" % code)
             return {}
 
@@ -401,7 +402,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         min_list = [min_ma5, min_ma10, min_ma20, min_ma60]
         max_value = max(max_list)
         min_value = min(min_list)
-        gap = 20
+        gap = 25
         if max_value - min_value > gap:
             self.logging.logger.info("cable_tie range check > [%s] >> %s / %s / %s" % (code, first_tic["일자"], max_value, min_value))
             return {}
@@ -422,15 +423,10 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         if not is_increase_trend(last_price_inverselist):
             self.logging.logger.info("is_increase_trend check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
-        ma5_list = [item["ma5"] for item in compare_rows]
-        ma5_inverselist = ma5_list[::-1]
-        if not is_increase_trend(ma5_inverselist):
-            self.logging.logger.info("ma5_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
-            return {}
-        ma10_list = [item["ma10"] for item in compare_rows]
-        ma10_inverselist = ma10_list[::-1]
-        if not is_increase_trend(ma10_inverselist):
-            self.logging.logger.info("ma10_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
+        ma20_list = [item["ma20"] for item in compare_rows]
+        ma20_inverselist = ma20_list[::-1]
+        if not is_increase_trend(ma20_inverselist):
+            self.logging.logger.info("ma20_list_trend check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         if first_tic["ma5"] <= first_tic["ma20"] or first_tic["ma10"] <= first_tic["ma60"]:
