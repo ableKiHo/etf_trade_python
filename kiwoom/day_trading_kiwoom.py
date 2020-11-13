@@ -246,7 +246,7 @@ class DayTradingKiwoom(ParentKiwoom):
             add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
             if bool(add_buy_point):
                 self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
-                limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
+                limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
                 self.total_invest_amount = self.total_invest_amount + limit_price
                 self.send_order_limit_stock_price(code, 1, limit_price)
 
