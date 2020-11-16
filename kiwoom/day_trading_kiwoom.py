@@ -648,13 +648,11 @@ class DayTradingKiwoom(ParentKiwoom):
                     if stock_info[self.customType.PURCHASE_AMOUNT] < self.max_buy_amount_by_stock:
                         limit_purchase_amount = self.max_buy_amount_by_stock - stock_info[self.customType.PURCHASE_AMOUNT]
                         limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                        quantity = math.trunc((limit_purchase_amount / limit_price))
+                        quantity = math.trunc((limit_purchase_amount / limit_price) / 2)
                         if quantity >= 1:
                             self.logging.logger.info("current_hold_etf_stock_dict conform_buy_case buy_point(- 10) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
                             self.send_order_limit_stock_price(code, quantity, limit_price)
-
-
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
