@@ -949,15 +949,15 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
-        if ma5_percent > 1.5:
-            self.logging.logger.info("ma5_percent check> [%s][%s]" % (code, ma5_percent))
-            return {}
-
-        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 3.0:
-            self.logging.logger.info("ma20_percent check> [%s][%s]" % (code, ma20_percent))
-            return {}
+        # ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
+        # if ma5_percent > 1.5:
+        #     self.logging.logger.info("ma5_percent check> [%s][%s]" % (code, ma5_percent))
+        #     return {}
+        #
+        # ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
+        # if ma20_percent > 3.0:
+        #     self.logging.logger.info("ma20_percent check> [%s][%s]" % (code, ma20_percent))
+        #     return {}
 
         return copy.deepcopy(first_tic)
 
