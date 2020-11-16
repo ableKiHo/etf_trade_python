@@ -246,9 +246,13 @@ class DayTradingKiwoom(ParentKiwoom):
             add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
             if bool(add_buy_point):
                 self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
-                limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
-                self.total_invest_amount = self.total_invest_amount + limit_price
-                self.send_order_limit_stock_price(code, 1, limit_price)
+                first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
+                self.total_invest_amount = self.total_invest_amount + first_limit_price
+                self.send_order_limit_stock_price(code, 1, first_limit_price)
+
+                second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
+                self.total_invest_amount = self.total_invest_amount + second_limit_price
+                self.send_order_limit_stock_price(code, 1, second_limit_price)
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_add_buy_point_check end")
@@ -658,9 +662,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
             if bool(buy_point):
                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-                limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                self.total_inverse_amount = self.total_inverse_amount + limit_price
-                self.send_order_limit_stock_price(code, 1, limit_price)
+                first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                self.total_inverse_amount = self.total_inverse_amount + first_limit_price
+                self.send_order_limit_stock_price(code, 1, first_limit_price)
+
+                second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
+                self.total_inverse_amount = self.total_inverse_amount + second_limit_price
+                self.send_order_limit_stock_price(code, 1, second_limit_price)
             reset()
 
     def get_conform_add_stock_buy_case(self, code, target_dict):
@@ -825,7 +833,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                     if profit_rate > 15.0:
-                        self.logging.logger.info("goni_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.logging.logger.info("goni_yesterday_max_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
                     buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
@@ -840,7 +848,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     else:
                         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                    self.logging.logger.info("realdata_std_higest_info > [%s] >> price:%s / rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
+                    self.logging.logger.info("yesterday_realdata_std_higest_info > [%s] >> price:%s / rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
 
                     if 10.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 9.95 < profit_rate <= 10.05:
                         self.logging.logger.info("goni_10.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
@@ -947,7 +955,7 @@ class DayTradingKiwoom(ParentKiwoom):
             return {}
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 2.5:
+        if ma20_percent > 3.0:
             self.logging.logger.info("ma20_percent check> [%s][%s]" % (code, ma20_percent))
             return {}
 
