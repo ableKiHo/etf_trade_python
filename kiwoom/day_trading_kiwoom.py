@@ -608,41 +608,53 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
         rows = self.target_etf_stock_dict[code]["row"]
 
-        if code not in self.current_hold_etf_stock_dict.keys() and code not in self.today_order_etf_stock_list:
-
+        if code not in self.today_order_etf_stock_list:
             buy_point = self.get_conform_buy_case(code, rows)
-
-            if bool(buy_point):
-                if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
-                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                    min_quantity = math.trunc((self.max_buy_amount_by_stock / limit_price))
-                    if 0 < min_quantity < 3:
-                        self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
-                        self.today_order_etf_stock_list.append(code)
-                        self.current_hold_stock_count = self.current_hold_stock_count + 1
-                        self.send_order_limit_stock_price(code, min_quantity, limit_price)
-                    elif min_quantity >= 3:
-                        limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
-                        quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 3)
-                        if quantity >= 1:
-                            self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
-                            self.today_order_etf_stock_list.append(code)
-                            self.current_hold_stock_count = self.current_hold_stock_count + 1
-                            self.send_order_limit_stock_price(code, quantity, limit_price)
+            if code not in self.current_hold_etf_stock_dict.keys():
+                if bool(buy_point):
+                    if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
                         limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                        quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 3)
-                        if quantity >= 1:
+                        min_quantity = math.trunc((self.max_buy_amount_by_stock / limit_price))
+                        if 0 < min_quantity < 3:
                             self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
                             self.current_hold_stock_count = self.current_hold_stock_count + 1
-                            self.send_order_limit_stock_price(code, quantity, limit_price)
-                        limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
-                        quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 3)
+                            self.send_order_limit_stock_price(code, min_quantity, limit_price)
+                        elif min_quantity >= 3:
+                            limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
+                            quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 3)
+                            if quantity >= 1:
+                                self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
+                                self.today_order_etf_stock_list.append(code)
+                                self.current_hold_stock_count = self.current_hold_stock_count + 1
+                                self.send_order_limit_stock_price(code, quantity, limit_price)
+                            limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                            quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 3)
+                            if quantity >= 1:
+                                self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
+                                self.today_order_etf_stock_list.append(code)
+                                self.current_hold_stock_count = self.current_hold_stock_count + 1
+                                self.send_order_limit_stock_price(code, quantity, limit_price)
+                            limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
+                            quantity = math.trunc((self.max_buy_amount_by_stock / limit_price) / 3)
+                            if quantity >= 1:
+                                self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
+                                self.today_order_etf_stock_list.append(code)
+                                self.current_hold_stock_count = self.current_hold_stock_count + 1
+                                self.send_order_limit_stock_price(code, quantity, limit_price)
+            else:
+                if bool(buy_point):
+                    stock_info = self.current_hold_etf_stock_dict[code]
+                    if stock_info[self.customType.PURCHASE_AMOUNT] < self.max_buy_amount_by_stock:
+                        limit_purchase_amount = self.max_buy_amount_by_stock - stock_info[self.customType.PURCHASE_AMOUNT]
+                        limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                        quantity = math.trunc((limit_purchase_amount / limit_price))
                         if quantity >= 1:
-                            self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
+                            self.logging.logger.info("current_hold_etf_stock_dict conform_buy_case buy_point(- 10) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
-                            self.current_hold_stock_count = self.current_hold_stock_count + 1
                             self.send_order_limit_stock_price(code, quantity, limit_price)
+
+
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
