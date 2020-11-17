@@ -238,7 +238,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         first_tic = analysis_rows[0]
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 1.99:
+        if ma20_percent > 3.0:
             self.logging.logger.info("ma20_percent check> [%s]  " % code)
             return {}
 
@@ -289,7 +289,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         first_tic = analysis_rows[0]
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 1.99:
+        if ma20_percent > 3.0:
             self.logging.logger.info("ma20_percent check> [%s]  " % code)
             return {}
 
@@ -510,7 +510,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("ma_line2_case analysis_rows > [%s] >> %s " % (code, compare_rows))
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 1.99:
+        if ma20_percent > 3.0:
             self.logging.logger.info("ma20_percent check> [%s]  " % code)
             return {}
 
@@ -572,7 +572,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 1.99:
+        if ma20_percent > 3.0:
             self.logging.logger.info("ma20_percent check> [%s]  " % code)
             return {}
 
