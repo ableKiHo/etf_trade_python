@@ -125,12 +125,12 @@ class DayTradingKiwoom(ParentKiwoom):
             self.screen_number_setting(self.current_hold_etf_stock_dict)
             return
 
-        filtered_current_hold_etf_stock = [x for x in self.current_hold_etf_stock_dict.keys() if x not in self.default_stock_list]
-        self.current_hold_stock_count = len(filtered_current_hold_etf_stock)
-        if self.current_hold_stock_count >= 4:
-            self.max_hold_stock_count = self.current_hold_stock_count
-            self.screen_number_setting(self.current_hold_etf_stock_dict)
-            return
+        # filtered_current_hold_etf_stock = [x for x in self.current_hold_etf_stock_dict.keys() if x not in self.default_stock_list]
+        # self.current_hold_stock_count = len(filtered_current_hold_etf_stock)
+        # if self.current_hold_stock_count >= 4:
+        #     self.max_hold_stock_count = self.current_hold_stock_count
+        #     self.screen_number_setting(self.current_hold_etf_stock_dict)
+        #     return
 
         able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / self.max_buy_amount_by_stock)
         if able_addbuy_stock_count > 0:
