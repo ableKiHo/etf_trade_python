@@ -398,7 +398,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
 
-        if profit_rate > 0.5:
+        if profit_rate > 1.5:
             self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s] profit_rate:[%s]" % (code, purchase_price, current_price, profit_rate))
             return {}
 
@@ -589,10 +589,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.95 < profit_rate <= 2.15:
                             self.logging.logger.info("goni_2.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            self.realtime_stop_loss_sell(sCode)
-
-                        if 2.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.45 < profit_rate <= 1.65:
-                            self.logging.logger.info("goni_2.0_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
 
                 else:
