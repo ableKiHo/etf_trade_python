@@ -98,4 +98,4 @@ class CustomType():
         self.KOSPI = '코스피'
         self.MODIFIED_SHARE_PRICE = '수정주가구분'
         self.TIC_RANGE = '틱범위'
-        self.FAVORABLE_LIMIT_PRICE = '최우선지정가'
+        self.FAVORABLE_LIMIT_PRICE = '최유리지정가'
