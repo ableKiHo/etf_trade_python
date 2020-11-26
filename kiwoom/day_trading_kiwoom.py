@@ -371,7 +371,10 @@ class DayTradingKiwoom(ParentKiwoom):
             buy_point = self.get_conform_default_stock_buy_case(code, rows)
 
             if bool(buy_point):
-                total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+                if code not in self.current_hold_etf_stock_dict.keys():
+                    total_chegual_price = 0
+                else:
+                    total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
                 first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
