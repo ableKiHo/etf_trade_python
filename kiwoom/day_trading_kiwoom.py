@@ -132,7 +132,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.screen_number_setting(self.current_hold_etf_stock_dict)
             return
 
-        able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / self.max_buy_amount_by_stock)
+        able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / (self.max_buy_amount_by_stock * 2))
         if able_addbuy_stock_count > 0:
             self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
         else:
