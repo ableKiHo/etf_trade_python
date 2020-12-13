@@ -43,10 +43,13 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_opt10080_info = "4030"
         self.screen_sell_opt10081_info = "4040"
 
+        # 1차(2020-06~2020-12) : 300000 + 150000 = 450000
+        # 2차(2021-01~       ) : 540000 + 180000 = 720000
         self.max_hold_stock_count = 0
-        self.max_buy_amount_by_stock = 50000  # 80000
+        self.max_buy_amount_by_stock = 50000  # 90000
         self.max_buy_amount_by_index = 50000  # 60000
-        self.max_invest_amount = 300000  # 480000
+        self.max_invest_amount = 300000  # 540000
+        self.max_buy_stock_count = 3
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
 
@@ -127,7 +130,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         filtered_current_hold_etf_stock = [x for x in self.current_hold_etf_stock_dict.keys() if x not in self.default_stock_list]
         self.current_hold_stock_count = len(filtered_current_hold_etf_stock)
-        if self.current_hold_stock_count >= 3:
+        if self.current_hold_stock_count >= self.max_buy_stock_count:
             self.max_hold_stock_count = self.current_hold_stock_count
             self.screen_number_setting(self.current_hold_etf_stock_dict)
             return
