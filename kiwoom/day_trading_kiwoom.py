@@ -49,8 +49,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = 90000  # 50000 -> 90000
         self.max_buy_total_amount = self.max_buy_amount_by_stock * 2
         self.max_buy_total_amount_by_index = 200000  # 150000 -> 200000
-        self.max_invest_amount = 720000  # 300000 -> 720000
+
         self.max_buy_stock_count = 4  # 3 -> 4
+        self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count  # 300000 -> 720000
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
 
