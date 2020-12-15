@@ -49,7 +49,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = 90000  # 50000 -> 90000
         self.max_buy_total_amount = self.max_buy_amount_by_stock * 2
         self.max_buy_total_amount_by_index = 200000  # 150000 -> 200000
-
+        self.add_buy_count = 2  # 1 -> 2
         self.max_buy_stock_count = 4  # 3 -> 4
         self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count  # 300000 -> 720000
         self.total_invest_amount = 0
@@ -238,22 +238,22 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
                 first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
                 second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
-                sum_limit_pricd = first_limit_price + second_limit_price
+                sum_limit_pricd = (first_limit_price + second_limit_price) * self.add_buy_count
                 if self.max_invest_amount >= self.total_invest_amount + sum_limit_pricd:
                     if self.max_buy_total_amount >= total_chegual_price + sum_limit_pricd:
-                        self.total_invest_amount = self.total_invest_amount + first_limit_price
-                        self.send_order_limit_stock_price(code, 1, first_limit_price)
+                        self.total_invest_amount = self.total_invest_amount + (first_limit_price * self.add_buy_count)
+                        self.send_order_limit_stock_price(code, self.add_buy_count, first_limit_price)
 
-                        self.total_invest_amount = self.total_invest_amount + second_limit_price
-                        self.send_order_limit_stock_price(code, 1, second_limit_price)
+                        self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
+                        self.send_order_limit_stock_price(code, self.add_buy_count, second_limit_price)
                     else:
-                        self.total_invest_amount = self.total_invest_amount + second_limit_price
-                        self.send_order_limit_stock_price(code, 1, second_limit_price)
+                        self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
+                        self.send_order_limit_stock_price(code, self.add_buy_count, second_limit_price)
 
                 else:
-                    if self.max_buy_total_amount >= total_chegual_price + second_limit_price:
-                        self.total_invest_amount = self.total_invest_amount + second_limit_price
-                        self.send_order_limit_stock_price(code, 1, second_limit_price)
+                    if self.max_buy_total_amount >= total_chegual_price + (second_limit_price * self.add_buy_count):
+                        self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
+                        self.send_order_limit_stock_price(code, self.add_buy_count, second_limit_price)
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_add_buy_point_check end")
             self.hold_stock_check_timer.stop()
