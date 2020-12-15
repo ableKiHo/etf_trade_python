@@ -408,7 +408,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
 
-        if profit_rate > 1.5:
+        if profit_rate > 2.9:
             self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s] profit_rate:[%s]" % (code, purchase_price, current_price, profit_rate))
             return {}
 
@@ -529,7 +529,7 @@ class DayTradingKiwoom(ParentKiwoom):
             total_chegual_price = current_hold_stock[self.customType.PURCHASE_AMOUNT]
             is_add_buy_posible = True if (total_chegual_price + current_price) < self.max_buy_total_amount else False
 
-            if current_price > buy_price and profit_rate >= 3.0:
+            if current_price > buy_price and profit_rate >= 1.0:
                 highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                 rows = current_hold_stock["row"]
