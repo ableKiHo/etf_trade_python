@@ -139,7 +139,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
         able_addbuy_stock_count = int((self.max_invest_amount - self.total_invest_amount) / self.max_buy_total_amount)
         if able_addbuy_stock_count > 0:
-            self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
+            if self.max_buy_stock_count >= self.current_hold_stock_count + able_addbuy_stock_count:
+                self.max_hold_stock_count = self.current_hold_stock_count + able_addbuy_stock_count
+            else:
+                self.max_hold_stock_count = self.max_buy_stock_count
         else:
             self.max_hold_stock_count = self.current_hold_stock_count
 
