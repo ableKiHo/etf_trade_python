@@ -387,13 +387,13 @@ class DayTradingKiwoom(ParentKiwoom):
                     total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-                first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
                 if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price:
                     self.total_inverse_amount = self.total_inverse_amount + first_limit_price
                     self.send_order_limit_stock_price(code, 1, first_limit_price)
 
-                second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
-                if self.max_buy_total_amount_by_index >= total_chegual_price + second_limit_price:
+                second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + second_limit_price:
                     self.total_inverse_amount = self.total_inverse_amount + second_limit_price
                     self.send_order_limit_stock_price(code, 1, second_limit_price)
             reset()
