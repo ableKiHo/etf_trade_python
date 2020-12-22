@@ -247,8 +247,12 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
                         self.send_order_limit_stock_price(code, self.add_buy_count, second_limit_price)
                     else:
-                        self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
-                        self.send_order_limit_stock_price(code, self.add_buy_count, second_limit_price)
+                        if self.max_buy_total_amount >= total_chegual_price + (second_limit_price * self.add_buy_count):
+                            self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
+                            self.send_order_limit_stock_price(code, self.add_buy_count, second_limit_price)
+                        elif self.max_buy_total_amount >= total_chegual_price + second_limit_price:
+                            self.total_invest_amount = self.total_invest_amount + second_limit_price
+                            self.send_order_limit_stock_price(code, 1, second_limit_price)
 
                 else:
                     if self.max_buy_total_amount >= total_chegual_price + (second_limit_price * self.add_buy_count):
