@@ -12,13 +12,6 @@ def default_q_timer_setting(second=3.8):
     timer2.start(1000 * second)
     return timer2
 
-
-def reset(second=3.5):
-    loop = QEventLoop()
-    QTimer.singleShot(1000 * second, loop.quit)  # msec
-    loop.exec_()
-
-
 class DayTradingKiwoom(ParentKiwoom):
     def __init__(self):
         super().__init__()
@@ -64,6 +57,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_goni_timer1 = QTimer()
         self.analysis_goni_timer2 = QTimer()
 
+        self.default_analysis_search_timer1 = QTimer()
+        self.default_analysis_search_timer2 = QTimer()
+
         self.current_hold_stock_count = 0
 
         self.current_hold_etf_stock_dict = {}
@@ -102,6 +98,7 @@ class DayTradingKiwoom(ParentKiwoom):
         QTest.qWait(5000)
 
         self.loop_analysis_buy_etf()
+        self.loop_default_analysis_buy_etf()
         self.loop_system_off()
         self.loop_add_buy_hold_etf_stock()
         self.loop_goni_hold_etf_stock()
@@ -261,6 +258,27 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("daily_candle_add_buy_point_check end")
             self.hold_stock_check_timer.stop()
 
+    def loop_default_analysis_buy_etf(self):
+        self.default_analysis_search_timer1 = default_q_timer_setting(60)
+        self.default_analysis_search_timer1.timeout.connect(self.loop_default_target_buy_etf_stock)
+
+    def loop_default_target_buy_etf_stock(self):
+        self.default_analysis_search_timer1.start(1000 * 60)
+        currentDate = get_today_by_format('%Y%m%d%H%M%S')
+        if (self.today + '100500') <= currentDate <= (self.today + '100900'):
+            pass
+        elif (self.today + '110500') <= currentDate <= (self.today + '110900'):
+            pass
+        elif (self.today + '120500') <= currentDate <= (self.today + '120900'):
+            pass
+        else:
+            return
+        self.logging.logger.info("default analysis target etf")
+        self.default_analysis_search_timer1.stop()
+
+        self.default_analysis_search_timer2 = default_q_timer_setting(5)
+        self.default_analysis_search_timer2.timeout.connect(self.default_stock_candle_analysis_check)
+
     def loop_analysis_buy_etf(self):
         self.analysis_search_timer1 = default_q_timer_setting(60)
         self.analysis_search_timer1.timeout.connect(self.loop_other_target_buy_etf_stock)
@@ -290,23 +308,15 @@ class DayTradingKiwoom(ParentKiwoom):
         self.analysis_search_timer2.timeout.connect(self.other_target_candle_analysis_check)
 
     def other_target_candle_analysis_check(self):
-        if len(self.analysis_goal_etf_stock_list) == 0:
-            self.logging.logger.info("other_target_candle_analysis nothing")
-            self.analysis_search_timer2.stop()
-            self.analysis_search_timer1.start(1000 * 300)
-            self.default_stock_candle_analysis_check()
-            return
 
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
         code = self.goal_buy_search_stock_code
         self.logging.logger.info("other_target_candle_analysis_check loop [%s]> %s " % (code, self.target_etf_stock_dict[code]))
 
-        if self.current_hold_stock_count == self.max_hold_stock_count and code not in self.current_hold_etf_stock_dict.keys() and code not in self.today_order_etf_stock_list:
+        if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max buy stock")
             self.analysis_search_timer2.stop()
-            self.analysis_search_timer1.start(1000 * 300)
-            self.default_stock_candle_analysis_check()
             return
 
         self.search_stock_code.append(code)
@@ -368,7 +378,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("other_target_candle_analysis_check end")
             self.analysis_search_timer2.stop()
             self.analysis_search_timer1.start(1000 * 300)
-            self.default_stock_candle_analysis_check()
             return
 
     def default_stock_candle_analysis_check(self):
@@ -396,7 +405,10 @@ class DayTradingKiwoom(ParentKiwoom):
                 if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + second_limit_price:
                     self.total_inverse_amount = self.total_inverse_amount + second_limit_price
                     self.send_order_limit_stock_price(code, 1, second_limit_price)
-            reset()
+            # reset()
+
+        self.default_analysis_search_timer2.stop()
+        self.default_analysis_search_timer1.start(1000 * 300)
 
     def get_conform_add_stock_buy_case(self, code, target_dict):
         rows = target_dict[code]["row"]
