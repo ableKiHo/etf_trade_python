@@ -48,6 +48,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
 
+        self.buy_inverse_flag = False
+
         self.analysis_search_timer1 = QTimer()
         self.analysis_search_timer2 = QTimer()
         self.system_off_check_timer = QTimer()
@@ -268,6 +270,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def loop_default_target_buy_etf_stock(self):
         self.default_analysis_search_timer1.start(1000 * 60)
+        if self.buy_inverse_flag is True:
+            return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '100500') <= currentDate <= (self.today + '100900'):
             pass
@@ -404,6 +408,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price:
                     self.total_inverse_amount = self.total_inverse_amount + first_limit_price
                     self.send_order_limit_stock_price(code, 1, first_limit_price)
+                    self.buy_inverse_flag = True
 
                 second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
                 if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + second_limit_price:
