@@ -321,6 +321,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def other_target_candle_analysis_check(self):
 
+        if len(self.analysis_goal_etf_stock_list) == 0:
+            self.logging.logger.info("no analysis_goal_etf_stock_list")
+            return
+
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
         code = self.goal_buy_search_stock_code
