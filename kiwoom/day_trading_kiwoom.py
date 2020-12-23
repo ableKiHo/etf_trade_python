@@ -277,11 +277,7 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.buy_inverse_flag is True:
             return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100500') <= currentDate <= (self.today + '100900'):
-            pass
-        elif (self.today + '110500') <= currentDate <= (self.today + '110900'):
-            pass
-        elif (self.today + '120500') <= currentDate <= (self.today + '120900'):
+        if (self.today + '110500') <= currentDate <= (self.today + '110900'):
             pass
         else:
             return
