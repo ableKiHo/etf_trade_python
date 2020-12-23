@@ -42,6 +42,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = 100000  # 50000 -> 100000
         self.max_buy_total_amount = self.max_buy_amount_by_stock * 2
         self.max_buy_total_amount_by_index = 300000  # 150000 -> 300000
+        self.max_buy_day_amount_by_index = 20000
         self.add_buy_count = 2  # 1 -> 2
         self.max_buy_stock_count = 4  # 3 -> 4
         self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count  # 300000 -> 800000
@@ -240,21 +241,23 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
                 first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
                 second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
-                sum_limit_pricd = (first_limit_price + second_limit_price) * self.add_buy_count
-                if self.max_invest_amount >= self.total_invest_amount + sum_limit_pricd:
-                    if self.max_buy_total_amount >= total_chegual_price + sum_limit_pricd:
+                sum_limit_price = (first_limit_price + second_limit_price) * self.add_buy_count
+                buy_count = math.ceil(self.add_buy_count / 2)
+                if self.max_invest_amount >= self.total_invest_amount + sum_limit_price:
+                    if self.max_buy_total_amount >= total_chegual_price + sum_limit_price:
                         self.total_invest_amount = self.total_invest_amount + (first_limit_price * self.add_buy_count)
-                        self.send_order_limit_stock_price(code, 1, first_limit_price)
-                        self.send_order_limit_stock_price(code, 1, (first_limit_price - 5))
+
+                        self.send_order_limit_stock_price(code, (self.add_buy_count - buy_count), first_limit_price)
+                        self.send_order_limit_stock_price(code, buy_count, (first_limit_price - 5))
 
                         self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
-                        self.send_order_limit_stock_price(code, 1, second_limit_price)
-                        self.send_order_limit_stock_price(code, 1, (second_limit_price - 5))
+                        self.send_order_limit_stock_price(code, (self.add_buy_count - buy_count), second_limit_price)
+                        self.send_order_limit_stock_price(code, buy_count, (second_limit_price - 5))
                     else:
                         if self.max_buy_total_amount >= total_chegual_price + (second_limit_price * self.add_buy_count):
                             self.total_invest_amount = self.total_invest_amount + (second_limit_price * self.add_buy_count)
-                            self.send_order_limit_stock_price(code, 1, second_limit_price)
-                            self.send_order_limit_stock_price(code, 1, (second_limit_price - 5))
+                            self.send_order_limit_stock_price(code, (self.add_buy_count - buy_count), second_limit_price)
+                            self.send_order_limit_stock_price(code, buy_count, (second_limit_price - 5))
                         elif self.max_buy_total_amount >= total_chegual_price + second_limit_price:
                             self.total_invest_amount = self.total_invest_amount + second_limit_price
                             self.send_order_limit_stock_price(code, 1, second_limit_price)
@@ -409,22 +412,27 @@ class DayTradingKiwoom(ParentKiwoom):
                     total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
+                max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
+                buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
                 min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 20
-                if self.max_buy_total_amount_by_index >= total_chegual_price + min_limit_price:
+                if self.max_buy_total_amount_by_index >= total_chegual_price + min_limit_price and buy_count >= 1:
                     self.total_inverse_amount = self.total_inverse_amount + min_limit_price
-                    self.send_order_limit_stock_price(code, 2, min_limit_price)
+                    self.send_order_limit_stock_price(code, buy_count, min_limit_price)
                     self.buy_inverse_flag = True
 
+                max_buy_count = max_buy_count - buy_count
+                buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
                 first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
-                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + min_limit_price:
+                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + min_limit_price and buy_count >= 1:
                     self.total_inverse_amount = self.total_inverse_amount + first_limit_price
-                    self.send_order_limit_stock_price(code, 1, first_limit_price)
+                    self.send_order_limit_stock_price(code, buy_count, first_limit_price)
                     self.buy_inverse_flag = True
 
+                max_buy_count = max_buy_count - buy_count
                 second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + second_limit_price:
+                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + second_limit_price and max_buy_count >= 1:
                     self.total_inverse_amount = self.total_inverse_amount + second_limit_price
-                    self.send_order_limit_stock_price(code, 1, second_limit_price)
+                    self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
             # reset()
 
         self.default_analysis_search_timer2.stop()
