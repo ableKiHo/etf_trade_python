@@ -37,14 +37,14 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_sell_opt10081_info = "4040"
 
         # 1차(2020-06~2020-12) : 300000 + 150000 = 450000
-        # 2차(2021-01~       ) : 720000 + 200000 = 920000
+        # 2차(2021-01~       ) : 800000 + 300000 = 1100000
         self.max_hold_stock_count = 0
-        self.max_buy_amount_by_stock = 90000  # 50000 -> 90000
+        self.max_buy_amount_by_stock = 100000  # 50000 -> 100000
         self.max_buy_total_amount = self.max_buy_amount_by_stock * 2
-        self.max_buy_total_amount_by_index = 200000  # 150000 -> 200000
+        self.max_buy_total_amount_by_index = 300000  # 150000 -> 300000
         self.add_buy_count = 2  # 1 -> 2
         self.max_buy_stock_count = 4  # 3 -> 4
-        self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count  # 300000 -> 720000
+        self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count  # 300000 -> 800000
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
 
@@ -323,6 +323,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if len(self.analysis_goal_etf_stock_list) == 0:
             self.logging.logger.info("no analysis_goal_etf_stock_list")
+            self.analysis_search_timer2.stop()
             return
 
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
@@ -412,8 +413,14 @@ class DayTradingKiwoom(ParentKiwoom):
                     total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
+                min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 20
+                if self.max_buy_total_amount_by_index >= total_chegual_price + min_limit_price:
+                    self.total_inverse_amount = self.total_inverse_amount + min_limit_price
+                    self.send_order_limit_stock_price(code, 2, min_limit_price)
+                    self.buy_inverse_flag = True
+
                 first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
-                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price:
+                if self.max_buy_total_amount_by_index >= total_chegual_price + first_limit_price + min_limit_price:
                     self.total_inverse_amount = self.total_inverse_amount + first_limit_price
                     self.send_order_limit_stock_price(code, 1, first_limit_price)
                     self.buy_inverse_flag = True
