@@ -446,13 +446,19 @@ class DayTradingKiwoom(ParentKiwoom):
 
         analysis_rows = rows[:3]
         today_tic = analysis_rows[0]
+        yesterday_tic = analysis_rows[1]
         current_price = today_tic[self.customType.CURRENT_PRICE]
+        start_price = today_tic[self.customType.START_PRICE]
         purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
         profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
 
         if profit_rate > 2.9:
             self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s] profit_rate:[%s]" % (code, purchase_price, current_price, profit_rate))
+            return {}
+
+        if start_price > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
+            self.logging.logger.info("start price check> [%s] purchase_price:[%s] current_price:[%s] profit_rate:[%s]" % (code, purchase_price, current_price, profit_rate))
             return {}
 
         today_ma3 = today_tic["ma3"]
