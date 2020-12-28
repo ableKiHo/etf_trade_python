@@ -199,9 +199,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def analysis_hold_etf_stock(self):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '150000') <= currentDate <= (self.today + '150500'):
-            pass
-        elif (self.today + '143000') <= currentDate <= (self.today + '143500'):
+        if (self.today + '143000') <= currentDate <= (self.today + '143500'):
             pass
         else:
             return
