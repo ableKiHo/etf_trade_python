@@ -578,7 +578,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                     if profit_rate > 15.0:
                         self.logging.logger.info("highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
+                        current_hold_stock["half_sell"] = True
+                        self.realtime_stop_loss_half_sell(sCode)
 
                     buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
                     if len(buy_after_rows) > 0:
@@ -647,6 +648,12 @@ class DayTradingKiwoom(ParentKiwoom):
                         if ((highest_profit_rate / 2) - 0.3) <= profit_rate < (highest_profit_rate / 2):
                             self.logging.logger.info("goni_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
+
+                    if is_add_buy_posible is False and start_price > current_price:
+                        if 2.0 <= profit_rate <= 2.9 and current_hold_stock["half_sell"] is False:
+                            self.logging.logger.info("not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            current_hold_stock["half_sell"] = True
+                            self.realtime_stop_loss_half_sell(sCode)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
