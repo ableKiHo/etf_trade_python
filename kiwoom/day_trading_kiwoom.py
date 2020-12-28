@@ -241,23 +241,31 @@ class DayTradingKiwoom(ParentKiwoom):
         create_moving_average_gap_line(code, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
         if code not in self.default_stock_list:
-            add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
+            add_buy_point = self.get_conform_add_default_amount_buy_case(code, self.current_hold_etf_stock_dict)
             if bool(add_buy_point):
-                total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
-                self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
-                if self.max_buy_total_amount >= total_chegual_price + self.add_buy_max_amount_by_day:
-                    max_buy_count = math.trunc(self.add_buy_max_amount_by_day / add_buy_point[self.customType.CURRENT_PRICE])
-                else:
-                    available_amount = self.max_buy_total_amount - total_chegual_price
-                    max_buy_count = math.trunc(available_amount / add_buy_point[self.customType.CURRENT_PRICE]) if available_amount >= add_buy_point[self.customType.CURRENT_PRICE] else 0
-
+                max_buy_count = math.trunc(self.max_buy_amount_by_one_point / add_buy_point[self.customType.CURRENT_PRICE])
                 first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
-                second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
 
                 if max_buy_count >= 2:
-                    buy_count = math.ceil(max_buy_count / 2)
-                    self.send_order_limit_stock_price(code, (max_buy_count - buy_count), second_limit_price)
-                    self.send_order_limit_stock_price(code, buy_count, first_limit_price)
+                    self.send_order_limit_stock_price(code, max_buy_count, first_limit_price)
+            else:
+                add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
+                if bool(add_buy_point):
+                    total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+                    self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
+                    if self.max_buy_total_amount >= total_chegual_price + self.add_buy_max_amount_by_day:
+                        max_buy_count = math.trunc(self.add_buy_max_amount_by_day / add_buy_point[self.customType.CURRENT_PRICE])
+                    else:
+                        available_amount = self.max_buy_total_amount - total_chegual_price
+                        max_buy_count = math.trunc(available_amount / add_buy_point[self.customType.CURRENT_PRICE]) if available_amount >= add_buy_point[self.customType.CURRENT_PRICE] else 0
+
+                    first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
+                    second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
+
+                    if max_buy_count >= 2:
+                        buy_count = math.ceil(max_buy_count / 2)
+                        self.send_order_limit_stock_price(code, (max_buy_count - buy_count), second_limit_price)
+                        self.send_order_limit_stock_price(code, buy_count, first_limit_price)
 
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_add_buy_point_check end")
@@ -343,7 +351,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if min_one_quantity >= 1:
                             self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
-                            limit_price = std_limit_price - 5
+                            limit_price = std_limit_price - 25
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
                             max_quantity = max_quantity - min_one_quantity
 
@@ -423,6 +431,34 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.default_analysis_search_timer2.stop()
         self.default_analysis_search_timer1.start(1000 * 300)
+
+    def get_conform_add_default_amount_buy_case(self, code, target_dict):
+        rows = target_dict[code]["row"]
+
+        if len(rows) < 3:
+            return {}
+
+        analysis_rows = rows[:3]
+        today_tic = analysis_rows[0]
+        yesterday_tic = analysis_rows[1]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+
+        if purchase_price < current_price:
+            self.logging.logger.info("purchase_price check> [%s] purchase_price:[%s] current_price:[%s]" % (code, purchase_price, current_price))
+            return {}
+
+        if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
+            self.logging.logger.info("yesterday_tic price check> [%s] yesterday_price:[%s] current_price:[%s]" % (code, yesterday_tic[self.customType.CURRENT_PRICE], current_price))
+            return {}
+
+        total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+        available_add_amount = self.max_buy_amount_by_stock - total_chegual_price
+        if available_add_amount < self.max_buy_amount_by_one_point:
+            self.logging.logger.info("available_add_amount check> [%s] total_chegual_price:[%s] available_add_amount:[%s]" % (code, total_chegual_price, available_add_amount))
+            return {}
+
+        return copy.deepcopy(today_tic)
 
     def get_conform_add_stock_buy_case(self, code, target_dict):
         rows = target_dict[code]["row"]
