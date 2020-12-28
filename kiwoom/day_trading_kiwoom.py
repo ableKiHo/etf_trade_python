@@ -612,10 +612,10 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.logging.logger.info("realtime_info [%s] yesterday:[%s] current:[%s] profit_rate:[%s]" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price, profit_rate))
 
                 if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
+
                     if profit_rate > 15.0:
                         self.logging.logger.info("highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        current_hold_stock["half_sell"] = True
-                        self.realtime_stop_loss_half_sell(sCode)
+                        self.realtime_stop_loss_sell(sCode)
 
                     buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
                     if len(buy_after_rows) > 0:
@@ -674,6 +674,10 @@ class DayTradingKiwoom(ParentKiwoom):
                 else:
 
                     self.logging.logger.info("realdata_std_higest_info > [%s] >> realdata_std_higest_price:%s / highest_profit_rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
+
+                    if profit_rate > 10.0:
+                        self.logging.logger.info("highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        self.realtime_stop_loss_sell(sCode)
 
                     if highest_profit_rate >= 6.1 and highest_profit_rate > profit_rate:
                         if (highest_profit_rate - 2.3) <= profit_rate < (highest_profit_rate - 2):
