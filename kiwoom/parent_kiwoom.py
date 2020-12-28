@@ -33,7 +33,7 @@ class ParentKiwoom(QAxWidget):
             sys.exit()
 
         # self.exclude_keywords = ['(H)', '일본', 'S&P', '미국', '중국', '(합성', '인도', '차이나', '인버스', 'TRF', '라틴', '싱가포르', '채권']
-        self.exclude_keywords = ['레버리지', '2X', '채권', '(H)', '일본', 'S&P', '미국', '중국', '(합성', '인도', '차이나', '인버스', 'TRF', '라틴', '싱가포르']
+        self.exclude_keywords = ['레버리지', '2X', '채권', '(H)', '일본', 'S&P', '미국', '중국', '(합성', '인도', '차이나', '인버스', 'TRF', '라틴', '싱가포르', '배당']
         # self.default_stock_list = ['114800', '226490']
         self.default_stock_list = ['114800']
         self.screen_my_info = "2000"  # 계좌 관련한 스크린 번호
