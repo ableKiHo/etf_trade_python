@@ -176,9 +176,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def realtime_stop_loss_half_sell(self, code):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
-        self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
-        self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, math.trunc(quantity / 2))
-        self.sell_receive_stock_code.append(code)
+        sell_quantity = math.trunc(quantity / 2) if quantity >= 2 else 0
+        if sell_quantity > 0:
+            self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, sell_quantity)
+            self.sell_receive_stock_code.append(code)
 
     def daily_candle_goni_point_check(self):
         if len(self.analysis_sell_etf_stock_list) == 0:
@@ -623,11 +625,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     if is_add_buy_posible is False and start_price > current_price:
 
-                        if 2.5 < profit_rate <= 2.95:
+                        if 3.0 < profit_rate <= 3.3:
                             self.logging.logger.info("not is_add_buy_posible flase point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
 
-                        if 1.5 < profit_rate <= 2.5 and current_hold_stock["half_sell"] is False:
+                        if 2.0 <= profit_rate <= 2.9 and current_hold_stock["half_sell"] is False:
                             self.logging.logger.info("not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["half_sell"] = True
                             self.realtime_stop_loss_half_sell(sCode)
