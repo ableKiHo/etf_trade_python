@@ -1166,6 +1166,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.today_buy_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
                                                                      self.customType.HOLDING_QUANTITY: holding_quantity,
                                                                      self.customType.PURCHASE_AMOUNT: total_buy_price})
+                        self.today_buy_etf_stock_dict[sCode].update({"half_sell": False})
 
                     if sCode in self.current_hold_etf_stock_dict.keys():
                         self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
