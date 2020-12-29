@@ -679,12 +679,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
 
-                    if profit_rate > 15.0:
+                    if profit_rate > 20.0:
                         self.logging.logger.info("highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         half_sell_limit_price = current_price - 20
                         self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
-                    if profit_rate > 10.0 and current_hold_stock["half_sell"] is False:
+                    if 20.0 >= profit_rate > 11.0 and current_hold_stock["half_sell"] is False:
                         self.logging.logger.info("profit_10_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         half_sell_limit_price = current_price - 20
                         self.realtime_stop_loss_half_sell(sCode, half_sell_limit_price)
