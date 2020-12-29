@@ -631,8 +631,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     else:
                         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                    self.logging.logger.info(
-                        "yesterday_realdata_std_higest_info > [%s] >> realdata_std_higest_price:%s / highest_profit_rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
+                    self.logging.logger.info("yesterday_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
 
                     if 10.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 9.95 < profit_rate <= 10.05:
                         self.logging.logger.info("highest_10.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
@@ -675,7 +674,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 else:
 
-                    self.logging.logger.info("realdata_std_higest_info > [%s] >> realdata_std_higest_price:%s / highest_profit_rate:%s" % (sCode, realdata_std_higest_price, highest_profit_rate))
+                    self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
 
                     if profit_rate > 10.0:
                         self.logging.logger.info("highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
