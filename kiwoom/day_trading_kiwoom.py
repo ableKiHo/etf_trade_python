@@ -690,10 +690,15 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.logging.logger.info("highest_profit_sell_point(5.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
 
-                    if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
+                    if highest_profit_rate >= 4.6 and highest_profit_rate > profit_rate:
                         if ((highest_profit_rate / 2) - 0.3) <= profit_rate < (highest_profit_rate / 2):
-                            self.logging.logger.info("goni_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.logging.logger.info("goni_profit_sell_point(4.6) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
+
+                    if 3.1 <= profit_rate and current_hold_stock["half_sell"] is False:
+                        self.logging.logger.info("realization of profit half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        current_hold_stock["half_sell"] = True
+                        self.realtime_stop_loss_half_sell(sCode)
 
                     if is_add_buy_posible is False and start_price > current_price:
                         if 2.0 <= profit_rate <= 2.9 and current_hold_stock["half_sell"] is False:
@@ -1166,6 +1171,11 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
                                                                         self.customType.HOLDING_QUANTITY: holding_quantity,
                                                                         self.customType.PURCHASE_AMOUNT: total_buy_price})
+
+                        if self.current_hold_etf_stock_dict[sCode]["half_sell"] is True:
+                            is_add_buy_posible = True if (total_buy_price + self.add_buy_max_amount_by_day) < self.max_buy_amount_by_stock else False
+                            if is_add_buy_posible:
+                                self.current_hold_etf_stock_dict[sCode].update({"half_sell": False})
 
                     if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
                         self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
