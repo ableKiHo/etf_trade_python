@@ -600,6 +600,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                 rows = current_hold_stock["row"]
+                if len(rows) == 0:
+                    return
                 analysis_rows = rows[:2]
 
                 today_tic = analysis_rows[0]
