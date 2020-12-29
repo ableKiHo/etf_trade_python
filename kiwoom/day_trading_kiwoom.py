@@ -1044,10 +1044,14 @@ class DayTradingKiwoom(ParentKiwoom):
             for line in lines:
                 if line != "":
                     ls = line.split("\t")
-
-                    stock_code = ls[0]
-                    purchase_date = ls[1]
-                    half_sell = ls[2].rstrip('\n')
+                    if len(ls) == 2:
+                        stock_code = ls[0]
+                        purchase_date = ls[1].rstrip('\n')
+                        half_sell = False
+                    else:
+                        stock_code = ls[0]
+                        purchase_date = ls[1]
+                        half_sell = ls[2].rstrip('\n')
                     if stock_code in self.current_hold_etf_stock_dict.keys():
                         self.current_hold_etf_stock_dict[stock_code].update({self.customType.DATE: purchase_date.strip()})
                         self.current_hold_etf_stock_dict[stock_code].update({"half_sell": half_sell})
