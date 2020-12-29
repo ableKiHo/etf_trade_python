@@ -1217,7 +1217,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 purchase_date = value[self.customType.DATE]
             else:
                 purchase_date = self.today
-            if "half_sell" in value.keys:
+            if "half_sell" in value.keys():
                 half_sell = value["half_sell"]
             else:
                 half_sell = False
