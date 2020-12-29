@@ -1228,9 +1228,15 @@ class DayTradingKiwoom(ParentKiwoom):
             f.close()
 
         for code in self.today_buy_etf_stock_dict.keys():
+            value = self.today_buy_etf_stock_dict[code]
+            if "half_sell" in value.keys():
+                half_sell = value["half_sell"]
+            else:
+                half_sell = False
+
             f = open(self.hold_etf_file_path, "a", encoding="utf8")
-            f.write("%s\t%s\n" %
-                    (code, self.today))
+            f.write("%s\t%s\t%s\n" %
+                    (code, self.today, half_sell))
             f.close()
 
     def get_next_search_etf_stock_code(self, max_index=4):
