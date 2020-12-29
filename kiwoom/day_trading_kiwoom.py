@@ -106,7 +106,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.loop_default_analysis_buy_etf()
         self.loop_system_off()
         self.loop_add_buy_hold_etf_stock()
-        # self.loop_goni_hold_etf_stock()
+        self.loop_goni_hold_etf_stock()
 
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", self.screen_start_stop_real, '',
                          self.realType.REALTYPE[self.customType.MARKET_START_TIME][self.customType.MARKET_OPERATION], "0")
