@@ -605,7 +605,10 @@ class DayTradingKiwoom(ParentKiwoom):
             if current_price > buy_price and profit_rate >= 1.0:
                 highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
+                if "row" not in current_hold_stock:
+                    return
                 rows = current_hold_stock["row"]
+
                 if len(rows) == 0:
                     return
                 analysis_rows = rows[:2]
