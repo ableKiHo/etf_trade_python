@@ -38,16 +38,16 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_sell_opt10081_info = "4040"
 
         # 1차(2020-06~2020-12) : 300,000 + 150,000 = 450,000
-        # 2차(2021-01~       ) : 3,500,000 + 600,000 = 4,100,000
+        # 2차(2021-01~       ) : 8,000,000 + 1,000,000 = 9,000,000
         self.max_hold_stock_count = 0
-        self.max_buy_amount_by_stock = 300000  # 50,000 -> 300,000
+        self.max_buy_amount_by_stock = 600000  # 50,000 -> 600,000
         self.max_buy_amount_by_one_point = 100000
-        self.max_buy_total_amount = 500000
-        self.max_buy_total_amount_by_index = 600000  # 150,000 -> 600,000
-        self.max_buy_day_amount_by_index = 25000
+        self.max_buy_total_amount = 1000000  # 한 종목당 최대 1,000,000원
+        self.max_buy_total_amount_by_index = 1000000  # 150,000 -> 1,000,000
+        self.max_buy_day_amount_by_index = 50000
         self.add_buy_max_amount_by_day = 50000
-        self.max_buy_stock_count = 7  # 3 -> 7
-        self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count  # 300,000 -> 3,500,000
+        self.max_buy_stock_count = 8  # 3 -> 8
+        self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
 
@@ -303,9 +303,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def loop_other_target_buy_etf_stock(self):
         self.analysis_search_timer1.start(1000 * 60)
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100100') <= currentDate <= (self.today + '100500'):
-            pass
-        elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
+        if (self.today + '110100') <= currentDate <= (self.today + '110500'):
             pass
         else:
             return
@@ -356,8 +354,13 @@ class DayTradingKiwoom(ParentKiwoom):
                         min_one_quantity = math.trunc((self.max_buy_amount_by_one_point / std_limit_price))
 
                         if min_one_quantity >= 1:
-                            self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
+                            self.logging.logger.info("conform_buy_case buy_point(- 25) break >> %s" % code)
                             limit_price = std_limit_price - 25
+                            self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                            max_quantity = max_quantity - min_one_quantity
+
+                            self.logging.logger.info("conform_buy_case buy_point(- 20) break >> %s" % code)
+                            limit_price = std_limit_price - 20
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
                             max_quantity = max_quantity - min_one_quantity
 
@@ -371,6 +374,10 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.current_hold_stock_count = self.current_hold_stock_count + 1
                             limit_price = std_limit_price - 15
                             self.send_order_limit_stock_price(code, max_quantity, limit_price)
+
+                            self.logging.logger.info("conform_buy_case buy_point(- 45) break >> %s" % code)
+                            limit_price = std_limit_price - 45
+                            self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
             else:
                 if bool(buy_point):
@@ -405,11 +412,12 @@ class DayTradingKiwoom(ParentKiwoom):
             rows = self.target_etf_stock_dict[code]["row"]
             buy_point = self.get_conform_default_stock_buy_case(code, rows)
 
+            if code not in self.current_hold_etf_stock_dict.keys():
+                total_chegual_price = 0
+            else:
+                total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+
             if bool(buy_point):
-                if code not in self.current_hold_etf_stock_dict.keys():
-                    total_chegual_price = 0
-                else:
-                    total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
                 if self.max_buy_total_amount_by_index >= total_chegual_price + self.max_buy_day_amount_by_index:
                     self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
@@ -434,6 +442,33 @@ class DayTradingKiwoom(ParentKiwoom):
                     if max_buy_count >= 1:
                         self.total_inverse_amount = self.total_inverse_amount + second_limit_price
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
+            else:
+                if self.weekend.isMonday:
+                    buy_point = self.get_conform_default_stock_buy_min_case(code, rows)
+                    if bool(buy_point):
+                        if self.max_buy_total_amount_by_index >= total_chegual_price + math.trunc(self.max_buy_day_amount_by_index/2):
+                            self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
+                            max_buy_count = math.trunc(math.trunc(self.max_buy_day_amount_by_index/2) / buy_point[self.customType.CURRENT_PRICE])
+                            buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
+                            min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 20
+                            if buy_count >= 1:
+                                self.total_inverse_amount = self.total_inverse_amount + min_limit_price
+                                self.send_order_limit_stock_price(code, buy_count, min_limit_price)
+                                self.buy_inverse_flag = True
+
+                            max_buy_count = max_buy_count - buy_count
+                            buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
+                            first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
+                            if buy_count >= 1:
+                                self.total_inverse_amount = self.total_inverse_amount + first_limit_price
+                                self.send_order_limit_stock_price(code, buy_count, first_limit_price)
+                                self.buy_inverse_flag = True
+
+                            max_buy_count = max_buy_count - buy_count
+                            second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
+                            if max_buy_count >= 1:
+                                self.total_inverse_amount = self.total_inverse_amount + second_limit_price
+                                self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
 
         self.default_analysis_search_timer2.stop()
         self.default_analysis_search_timer1.start(1000 * 300)
@@ -492,6 +527,27 @@ class DayTradingKiwoom(ParentKiwoom):
         today_ma3 = today_tic["ma3"]
         if today_ma3 > current_price:
             self.logging.logger.info("ma3_position check> [%s] today_ma3:[%s] current_price:[%s]" % (code, today_ma3, current_price))
+            return {}
+
+        return copy.deepcopy(today_tic)
+
+    def get_conform_default_stock_buy_min_case(self, code, rows):
+        if len(rows) < 3:
+            return {}
+
+        analysis_rows = rows[:3]
+        today_tic = analysis_rows[0]
+        current_price = today_tic[self.customType.CURRENT_PRICE]
+        purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+
+        profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
+
+        if profit_rate > -10.0:
+            self.logging.logger.info("min profit_rate [%s] profit_rate[%s]" % (code, profit_rate))
+            return {}
+
+        if code not in self.current_hold_etf_stock_dict.keys():
+            self.logging.logger.info("not incurrent_hold_etf_stock_dict ")
             return {}
 
         return copy.deepcopy(today_tic)
