@@ -364,19 +364,19 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
                             max_quantity = max_quantity - min_one_quantity
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
-                            limit_price = std_limit_price - 10
+                            self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
+                            limit_price = std_limit_price - 15
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
                             max_quantity = max_quantity - min_one_quantity
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
+                            self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
                             self.current_hold_stock_count = self.current_hold_stock_count + 1
-                            limit_price = std_limit_price - 15
+                            limit_price = std_limit_price - 10
                             self.send_order_limit_stock_price(code, max_quantity, limit_price)
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 45) break >> %s" % code)
-                            limit_price = std_limit_price - 45
+                            self.logging.logger.info("conform_buy_case buy_point(- 40) break >> %s" % code)
+                            limit_price = std_limit_price - 40
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
             else:
