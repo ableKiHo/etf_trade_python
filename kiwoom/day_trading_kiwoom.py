@@ -303,7 +303,7 @@ class DayTradingKiwoom(ParentKiwoom):
     def loop_other_target_buy_etf_stock(self):
         self.analysis_search_timer1.start(1000 * 60)
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '110100') <= currentDate <= (self.today + '110500'):
+        if (self.today + '100100') <= currentDate <= (self.today + '100500'):
             pass
         else:
             return
@@ -631,6 +631,13 @@ class DayTradingKiwoom(ParentKiwoom):
         else:
             self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_HIGHEST_PRICE: current_stock_price})
 
+        if self.customType.SELL_STD_LOWEST_PRICE in self.total_cal_target_etf_stock_dict[sCode]:
+            if current_stock_price < self.total_cal_target_etf_stock_dict[sCode][self.customType.SELL_STD_LOWEST_PRICE]:
+                self.logging.logger.info("changed sell std lowest price >> [%s] %s" % (sCode, current_stock_price))
+                self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_LOWEST_PRICE: current_stock_price})
+        else:
+            self.total_cal_target_etf_stock_dict[sCode].update({self.customType.SELL_STD_LOWEST_PRICE: current_stock_price})
+
     def realdata_slot(self, sCode, sRealType, sRealData):
         if sRealType == self.customType.MARKET_START_TIME:
             fid = self.realType.REALTYPE[sRealType][self.customType.MARKET_OPERATION]
@@ -649,6 +656,7 @@ class DayTradingKiwoom(ParentKiwoom):
             realdata_std_higest_price = realdata_stock[self.customType.SELL_STD_HIGHEST_PRICE]
             current_price = realdata_stock[self.customType.CURRENT_PRICE]
             start_price = realdata_stock[self.customType.START_PRICE]
+            realdata_std_lowest_price = realdata_stock[self.customType.SELL_STD_LOWEST_PRICE]
 
             if sCode in self.current_hold_etf_stock_dict.keys():
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
@@ -743,6 +751,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 else:
 
                     self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
+                    if realdata_std_lowest_price == current_price:
+                        return
 
                     if profit_rate > 20.0:
                         self.logging.logger.info("highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
@@ -754,18 +764,18 @@ class DayTradingKiwoom(ParentKiwoom):
                         half_sell_limit_price = current_price - 20
                         self.realtime_stop_loss_half_sell(sCode, half_sell_limit_price)
 
-                    if highest_profit_rate >= 6.1 and highest_profit_rate > profit_rate:
-                        if (highest_profit_rate - 2.3) <= profit_rate < (highest_profit_rate - 2):
-                            self.logging.logger.info("highest_profit_sell_point(5.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                    if highest_profit_rate >= 7.1 and highest_profit_rate > profit_rate:
+                        if (highest_profit_rate - 3.3) <= profit_rate < (highest_profit_rate - 3.0):
+                            self.logging.logger.info("highest_profit_sell_point(6.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
 
-                    if 6.1 > highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
+                    if 7.1 > highest_profit_rate >= 5.1 and highest_profit_rate > profit_rate:
                         if ((highest_profit_rate / 2) - 0.3) <= profit_rate < (highest_profit_rate / 2):
-                            self.logging.logger.info("goni_profit_sell_point(3.2) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.logging.logger.info("goni_profit_sell_point(5.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_sell(sCode)
 
                     if is_add_buy_posible is False and start_price > current_price:
-                        if 2.0 <= profit_rate <= 2.9 and current_hold_stock["half_sell"] is False:
+                        if 2.0 <= profit_rate <= 3.1 and current_hold_stock["half_sell"] is False:
                             self.logging.logger.info("not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             half_sell_limit_price = current_price - 20
                             self.realtime_stop_loss_half_sell(sCode, half_sell_limit_price)
