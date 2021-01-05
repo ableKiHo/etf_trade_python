@@ -46,8 +46,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_total_amount_by_index = 1000000  # 150,000 -> 1,000,000
         self.max_buy_day_amount_by_index = 50000
         self.add_buy_max_amount_by_day = 50000
-        self.max_buy_stock_count = 8  # 3 -> 8
-        self.max_invest_amount = self.max_buy_total_amount * self.max_buy_stock_count
+        self.default_buy_stock_count = 8
+        self.max_buy_stock_count = 9  # 3 -> 9
+        self.max_invest_amount = self.max_buy_total_amount * self.default_buy_stock_count
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
 
@@ -127,6 +128,11 @@ class DayTradingKiwoom(ParentKiwoom):
     def init_stock_values(self):
         # self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
         # self.current_hold_etf_stock_dict[code].update({self.customType.STOCK_CODE: code})
+        if self.buy_possible_deposit < self.max_buy_total_amount and self.current_hold_stock_count >= self.default_buy_stock_count:
+            self.max_hold_stock_count = self.current_hold_stock_count
+            self.screen_number_setting(self.current_hold_etf_stock_dict)
+            return
+
         if (self.max_invest_amount - self.max_buy_amount_by_stock) <= self.total_invest_amount:
             self.max_hold_stock_count = self.current_hold_stock_count
             self.screen_number_setting(self.current_hold_etf_stock_dict)
@@ -232,6 +238,11 @@ class DayTradingKiwoom(ParentKiwoom):
     def daily_candle_add_buy_point_check(self):
         if len(self.analysis_sell_etf_stock_list) == 0:
             self.logging.logger.info("analysis_add_buy_etf_stock_list nothing")
+            self.hold_stock_check_timer.stop()
+            return
+
+        if self.buy_possible_deposit < self.total_invest_amount + self.max_buy_amount_by_stock:
+            self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
             self.hold_stock_check_timer.stop()
             return
 
@@ -1010,7 +1021,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.deposit = int(deposit)
         buy_possible_deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.AVAILABLE_AMOUNT)
         self.buy_possible_deposit = int(buy_possible_deposit)
-        self.buy_possible_deposit = math.trunc(self.buy_possible_deposit / 2)
+        # self.buy_possible_deposit = math.trunc(self.buy_possible_deposit / 2)
 
         self.logging.logger.info(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
         self.line.notification(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
@@ -1284,6 +1295,8 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                       self.customType.PURCHASE_AMOUNT: total_buy_price,
                                                                       "half_sell": False}})
                         self.today_buy_stock_real_reg(sCode)
+                    if sCode not in self.default_stock_list:
+                        self.total_invest_amount = self.total_invest_amount + total_buy_price
 
     def call_exit(self):
         sys.exit()
