@@ -697,7 +697,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 yesterday_tic = analysis_rows[1]
 
-                self.logging.logger.info("realtime_info [%s] yesterday:[%s] current:[%s] today_tic_ma5:[%s] profit_rate:[%s]" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price, today_tic["ma5"], profit_rate))
+                self.logging.logger.info("realtime_info [%s] yesterday:[%s] current:[%s] profit_rate:[%s]" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price, profit_rate))
 
                 if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
 
