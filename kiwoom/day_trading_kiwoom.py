@@ -731,15 +731,15 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.logging.logger.info("highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
-                    if 5.5 <= highest_profit_rate < 6.5 and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
+                    if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
                         self.logging.logger.info("highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
-                    if 4.5 <= highest_profit_rate < 5.5 and highest_profit_rate > profit_rate and 3.95 < profit_rate <= 4.15:
+                    if 4.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.95 < profit_rate <= 4.15:
                         self.logging.logger.info("highest_4.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
-                    if 3.5 <= highest_profit_rate < 4.5 and highest_profit_rate > profit_rate and 2.95 < profit_rate <= 3.15:
+                    if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.95 < profit_rate <= 3.15:
                         self.logging.logger.info("highest_3.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
