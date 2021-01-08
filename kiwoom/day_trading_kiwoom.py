@@ -316,6 +316,8 @@ class DayTradingKiwoom(ParentKiwoom):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '100100') <= currentDate <= (self.today + '100500'):
             pass
+        elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
+            pass
         else:
             return
         self.logging.logger.info("analysis target etf")
@@ -826,7 +828,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
+        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE] and first_tic["ma5"] > first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
