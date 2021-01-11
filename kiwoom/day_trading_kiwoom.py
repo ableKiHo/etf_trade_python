@@ -699,7 +699,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 if len(rows) == 0:
                     return
-                analysis_rows = rows[:2]
+                analysis_rows = rows[:3]
 
                 today_tic = analysis_rows[0]
                 if today_tic[self.customType.HIGHEST_PRICE] > realdata_std_higest_price:
