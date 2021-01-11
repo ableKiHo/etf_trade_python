@@ -184,7 +184,6 @@ class DayTradingKiwoom(ParentKiwoom):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
         sell_quantity = math.trunc(quantity / 2) if quantity >= 2 else 0
         if sell_quantity > 0:
-
             self.logging.logger.info("realtime_stop_loss_half_sell_point break >> %s" % code)
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
             self.sell_receive_stock_code.append(code)
@@ -415,7 +414,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
                         max_quantity = math.trunc(limit_purchase_amount / limit_price)
                         if max_quantity >= 1:
-                            quantity = math.trunc(max_quantity/2)
+                            quantity = math.trunc(max_quantity / 2)
                             self.logging.logger.info("current_hold_etf_stock_dict conform_buy_case buy_point(- 10) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
                             self.send_order_limit_stock_price(code, quantity, limit_price)
@@ -474,9 +473,9 @@ class DayTradingKiwoom(ParentKiwoom):
                 if self.weekend.isMonday:
                     buy_point = self.get_conform_default_stock_buy_min_case(code, rows)
                     if bool(buy_point):
-                        if self.max_buy_total_amount_by_index >= total_chegual_price + math.trunc(self.max_buy_day_amount_by_index/2):
+                        if self.max_buy_total_amount_by_index >= total_chegual_price + math.trunc(self.max_buy_day_amount_by_index / 2):
                             self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-                            max_buy_count = math.trunc(math.trunc(self.max_buy_day_amount_by_index/2) / buy_point[self.customType.CURRENT_PRICE])
+                            max_buy_count = math.trunc(math.trunc(self.max_buy_day_amount_by_index / 2) / buy_point[self.customType.CURRENT_PRICE])
                             buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
                             min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 20
                             if buy_count >= 1:
@@ -709,7 +708,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 yesterday_tic = analysis_rows[1]
                 thirdday_tic = analysis_rows[2]
 
-                self.logging.logger.info("realtime_info [%s] thirdday:[%s] yesterday:[%s] current:[%s] profit_rate:[%s]" % (sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price, profit_rate))
+                self.logging.logger.info("realtime_info [%s] thirdday:[%s] yesterday:[%s] current:[%s] profit_rate:[%s]" % (
+                sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price, profit_rate))
                 buy_after_rows = [x for x in rows if x[self.customType.DATE] >= current_hold_stock[self.customType.DATE]]
 
                 if len(buy_after_rows) > 2 and thirdday_tic[self.customType.CURRENT_PRICE] > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
@@ -804,6 +804,13 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["half_sell_receipt"] = True
                             self.realtime_stop_loss_half_sell(sCode)
 
+                    if "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and current_hold_stock["half_sell"] is True:
+                        if highest_profit_rate > profit_rate >= 3.0:
+                            if (highest_profit_rate - 5.3) <= profit_rate < (highest_profit_rate - 5.0):
+                                self.logging.logger.info("max down profit_rate(5.0) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                current_hold_stock["half_sell_receipt"] = True
+                                self.realtime_stop_loss_half_sell(sCode)
+
                 elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
                     self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
@@ -816,7 +823,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     if realdata_std_lowest_price == current_price:
                         return
 
-                    if "half_sell_receipt" not in current_hold_stock and 20.0 >= profit_rate > 11.0 and current_hold_stock["half_sell"] is False and (highest_profit_rate-0.5) > profit_rate:
+                    if "half_sell_receipt" not in current_hold_stock and 20.0 >= profit_rate > 11.0 and current_hold_stock["half_sell"] is False and (highest_profit_rate - 0.5) > profit_rate:
                         self.logging.logger.info("profit_10_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         half_sell_limit_price = current_price - 20
                         current_hold_stock["half_sell_receipt"] = True
@@ -1237,7 +1244,8 @@ class DayTradingKiwoom(ParentKiwoom):
     def sell_send_order_limit_price(self, sCode, screen_number, quantity, limit_price):
         order_success = self.dynamicCall(
             "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
-            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, limit_price, self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS],
+            [self.customType.NEW_STOCK_SELL, screen_number, self.account_num, 2, sCode, quantity, limit_price,
+             self.realType.SENDTYPE[self.customType.TRANSACTION_CLASSIFICATION][self.customType.LIMITS],
              ""]
         )
         if order_success == 0:
@@ -1246,7 +1254,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info(self.logType.ORDER_SELL_FAIL_LOG % sCode)
 
         return order_success
-
 
     def new_chejan_slot(self, sGubun, nItemCnt, sFidList):
         if int(sGubun) == 0:
