@@ -716,6 +716,9 @@ class DayTradingKiwoom(ParentKiwoom):
                     if start_price < current_price:
                         return
 
+                    if realdata_std_lowest_price == current_price:
+                        return
+
                     if profit_rate >= 15.0:
                         self.logging.logger.info("third_highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         half_sell_limit_price = current_price - 50
@@ -767,6 +770,9 @@ class DayTradingKiwoom(ParentKiwoom):
                     if start_price < current_price:
                         return
 
+                    if realdata_std_lowest_price == current_price:
+                        return
+
                     if profit_rate >= 15.0:
                         self.logging.logger.info("yesterday_highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         half_sell_limit_price = current_price - 50
@@ -808,12 +814,10 @@ class DayTradingKiwoom(ParentKiwoom):
                         if highest_profit_rate > profit_rate >= 3.0:
                             if profit_rate < (highest_profit_rate - 4.5):
                                 self.logging.logger.info("max down profit_rate(-4.5) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                                half_sell_limit_price = current_price - 50
-                                self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+                                self.realtime_stop_loss_sell(sCode)
 
                     elif today_tic["ma3"] > current_price and profit_rate > 3.0:
-                        half_sell_limit_price = current_price - 50
-                        self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+                        self.realtime_stop_loss_sell(sCode)
 
                 elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
