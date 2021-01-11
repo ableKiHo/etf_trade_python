@@ -683,6 +683,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 current_hold_stock = self.current_hold_etf_stock_dict[sCode]
                 current_hold_stock["row"][0][self.customType.CURRENT_PRICE] = current_price
                 create_moving_average_gap_line(sCode, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
+                create_moving_average_gap_line(sCode, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
             else:
                 return
 
@@ -816,8 +817,8 @@ class DayTradingKiwoom(ParentKiwoom):
                                 self.logging.logger.info("max down profit_rate(-4.5) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 self.realtime_stop_loss_sell(sCode)
 
-                    elif today_tic["ma3"] > current_price and profit_rate > 3.0:
-                        self.logging.logger.info("ma3 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                    elif today_tic["ma5"] > current_price and profit_rate > 3.0:
+                        self.logging.logger.info("ma5 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, today_tic["ma5"], profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
                 elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
