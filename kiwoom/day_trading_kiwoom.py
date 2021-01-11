@@ -817,6 +817,7 @@ class DayTradingKiwoom(ParentKiwoom):
                                 self.realtime_stop_loss_sell(sCode)
 
                     elif today_tic["ma3"] > current_price and profit_rate > 3.0:
+                        self.logging.logger.info("ma3 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                         self.realtime_stop_loss_sell(sCode)
 
                 elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
