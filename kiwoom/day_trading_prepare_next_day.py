@@ -220,7 +220,77 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             buy_point = self.get_conform_cross_candle_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle2_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_pushup_candle_case(code)
         return bool(buy_point)
+
+    def get_pushup_candle_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 4:
+            return {}
+        analysis_rows = rows[:4]
+
+        ma_field_list = ["ma3", "ma5", "ma10"]
+
+        empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("pushup_candle_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        first_tic = analysis_rows[0]
+        last_three_day_rows = analysis_rows[1:]
+
+        ma3_under_list = [x for x in last_three_day_rows if x["ma3"] > x[self.customType.CURRENT_PRICE]]
+        if len(ma3_under_list) > 0:
+            self.logging.logger.info("ma3_under_list check> [%s]" % code)
+            return {}
+
+        tail = first_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.LOWEST_PRICE]
+        candle = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.LOWEST_PRICE]
+
+        if math.trunc((tail/candle) * 100) < 60:
+            self.logging.logger.info("is pushup candle check> [%s]" % code)
+            return {}
+
+        if first_tic["ma3"] >= first_tic["ma5"] >= first_tic["ma10"]:
+            pass
+        else:
+            self.logging.logger.info("is regular arrangement check> [%s]" % code)
+            return {}
+
+        if first_tic["ma10"] > first_tic[self.customType.LOWEST_PRICE]:
+            self.logging.logger.info("lowest_price position check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        if first_tic["ma5"] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("current_price position check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        if first_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.START_PRICE]:
+            self.logging.logger.info("start_price position check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        compare_rows = analysis_rows[:4]
+        ma10_list = [item["ma10"] for item in compare_rows]
+        ma10_inverselist = ma10_list[::-1]
+        if not is_increase_trend(ma10_inverselist):
+            self.logging.logger.info("is_increase_ma10 check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        ma5_list = [item["ma5"] for item in compare_rows]
+        ma5_inverselist = ma5_list[::-1]
+        if not is_increase_trend(ma5_inverselist):
+            self.logging.logger.info("is_increase_ma5 check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        ma3_list = [item["ma5"] for item in compare_rows]
+        ma3_inverselist = ma3_list[::-1]
+        if not is_increase_trend(ma3_inverselist):
+            self.logging.logger.info("is_increase_ma3 check> [%s] >> %s  " % (code, first_tic["일자"]))
+            return {}
+
+        return copy.deepcopy(first_tic)
 
     def get_conform_cross_candle2_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
