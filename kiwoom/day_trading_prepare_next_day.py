@@ -27,7 +27,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_etf_day_stock = "4050"
         self.screen_opt10080_info = "4060"
 
-        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '반도체': {}, 'KRX300': {}, '200TR': {}, '200': {}}
+        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '반도체': {}, 'KRX300': {}, '200TR': {}, '200': {}, 'MSCI': {}}
         # self.recommand_keyword_list = ['TR', '고배당', 'TOP10', '저변동', '성장', '블루칩', '우선주', '배당성장']
         self.recommand_keyword_list = []
 
@@ -693,6 +693,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma10", 10)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma60", 60)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma120", 120)
+            create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
 
     def get_individual_etf_daily_candle_info(self, code):
         QTest.qWait(5000)
