@@ -239,6 +239,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("pushup_candle_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
         last_three_day_rows = analysis_rows[1:]
 
         ma3_under_list = [x for x in last_three_day_rows if x["ma3"] > x[self.customType.CURRENT_PRICE]]
@@ -247,9 +248,14 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         tail = first_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.LOWEST_PRICE]
-        candle = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.LOWEST_PRICE]
+        first_candle = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.LOWEST_PRICE]
+        second_candle = second_tic[self.customType.HIGHEST_PRICE] - second_tic[self.customType.LOWEST_PRICE]
 
-        if math.trunc((tail/candle) * 100) < 60:
+        if second_candle > first_candle:
+            self.logging.logger.info("first_candle range check> [%s]" % code)
+            return {}
+
+        if math.trunc((tail/first_candle) * 100) < 60:
             self.logging.logger.info("is pushup candle check> [%s]" % code)
             return {}
 
