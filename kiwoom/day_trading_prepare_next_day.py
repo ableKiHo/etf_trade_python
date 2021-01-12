@@ -170,7 +170,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         market_cap = market_cap.strip()
 
         self.logging.logger.info(self.logType.OPT10001_STATUS_LOG % (code, highest_stock_price, lowest_stock_price, last_stock_price, change_price, market_cap))
-        if int(market_cap) >= 100:
+        if int(market_cap) >= 120:
             self.target_etf_stock_dict[code].update({self.customType.STOCK_NAME: code_nm.strip()})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_HIGHEST_PRICE: abs(int(highest_stock_price.strip()))})
             self.target_etf_stock_dict[code].update({self.customType.LAST_DAY_LOWEST_PRICE: abs(int(lowest_stock_price.strip()))})
