@@ -45,7 +45,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_total_amount = 1000000  # 한 종목당 최대 1,000,000원
         self.max_buy_total_amount_by_index = 1000000  # 150,000 -> 1,000,000
         self.max_buy_day_amount_by_index = 50000
-        self.add_buy_max_amount_by_day = 50000
+        self.add_buy_max_amount_by_day = 75000
         self.default_buy_stock_count = 8
         self.max_buy_stock_count = 9  # 3 -> 9
         self.max_invest_amount = self.max_buy_total_amount * self.default_buy_stock_count
