@@ -138,7 +138,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             trace_sector_name = trace_sector_name.strip()
 
             self.logging.logger.info(self.logType.OPT40004_STATUS_LOG % (code, code_nm, stock_type, trace_sector_code, trace_sector_name, volume))
-            if abs(int(volume)) >= 10000 and abs(int(last_price)) <= 50000:
+            if abs(int(volume)) >= 10000 and abs(int(last_price)) <= 70000:
                 for exclude in self.exclude_keywords:
                     if str_find(code_nm, exclude):
                         is_match_exclude = True
