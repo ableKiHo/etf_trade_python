@@ -351,7 +351,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_next_search_etf_stock_code(len(self.analysis_goal_etf_stock_list))
 
         code = self.goal_buy_search_stock_code
-        self.logging.logger.info("other_target_candle_analysis_check loop [%s]> %s " % (code, self.target_etf_stock_dict[code]))
+        self.logging.logger.info("other_target_candle_analysis_check loop [%s]" % (code))
 
         if self.current_hold_stock_count == self.max_hold_stock_count:
             self.logging.logger.info("max buy stock")
@@ -387,6 +387,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
                             self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
                             limit_price = std_limit_price - 15
+                            self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                            max_quantity = max_quantity - min_one_quantity
+
+                            self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
+                            limit_price = std_limit_price - 5
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
                             max_quantity = max_quantity - min_one_quantity
 

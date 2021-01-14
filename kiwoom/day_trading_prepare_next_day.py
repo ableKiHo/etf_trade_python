@@ -27,7 +27,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_etf_day_stock = "4050"
         self.screen_opt10080_info = "4060"
 
-        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '반도체': {}, 'KRX300': {}, '200TR': {}, '200': {}, 'MSCI': {}}
+        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '반도체': {}, 'KRX300': {}, '200TR': {}, '200': {}, 'MSCI': {}, '헬스케어': {}, '고배당': {}}
         # self.recommand_keyword_list = ['TR', '고배당', 'TOP10', '저변동', '성장', '블루칩', '우선주', '배당성장']
         self.recommand_keyword_list = []
 
@@ -222,6 +222,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             buy_point = self.get_conform_cross_candle2_case(code)
         if not bool(buy_point):
             buy_point = self.get_pushup_candle_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_cable_tie3_case(code)
         return bool(buy_point)
 
     def get_pushup_candle_case(self, code):
@@ -397,6 +399,57 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
         return {}
 
+    def get_conform_cable_tie3_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 5:
+            return {}
+
+        analysis_rows = rows[:5]
+
+        self.logging.logger.info("cable_tie3_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
+        ma_field_list = ["ma3", "ma5", "ma10", "ma20"]
+
+        empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        if first_tic[self.customType.START_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic white candle check > [%s]" % code)
+            return {}
+
+        if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic current_price check1 > [%s]" % code)
+            return {}
+
+        if first_tic["ma20"] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first_tic current_price check2 > [%s]" % code)
+            return {}
+
+        ma20_list = [item["ma20"] for item in analysis_rows]
+        ma20_inverselist = ma20_list[::-1]
+        ma10_list = [item["ma10"] for item in analysis_rows]
+        ma10_inverselist = ma10_list[::-1]
+        ma5_list = [item["ma5"] for item in analysis_rows]
+        ma5_inverselist = ma5_list[::-1]
+        ma3_list = [item["ma3"] for item in analysis_rows]
+        ma3_inverselist = ma3_list[::-1]
+        if not is_increase_trend(ma20_inverselist) and not is_increase_trend(ma10_inverselist) and not is_increase_trend(ma5_inverselist) and not is_increase_trend(ma3_inverselist):
+            self.logging.logger.info("ma_list_increases trend check> [%s] >> %s " % (code, first_tic["일자"]))
+            return {}
+        ma_list = [first_tic["ma3"], first_tic["ma5"], first_tic["ma10"], first_tic["ma20"]]
+        min_ma = min(ma_list)
+        max_ma = max(ma_list)
+
+        if (max_ma - min_ma) > 10:
+            self.logging.logger.info("cable_tie3 check> [%s]" % code)
+            return {}
+
+        return copy.deepcopy(first_tic)
+
     def get_conform_cable_tie2_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
 
@@ -417,7 +470,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                 self.logging.logger.info("first_tic current_price check > [%s]" % code)
                 return {}
 
-        self.logging.logger.info("cable_tie_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        self.logging.logger.info("cable_tie2_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
