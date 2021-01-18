@@ -308,7 +308,9 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.buy_inverse_flag is True:
             return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '110500') <= currentDate <= (self.today + '110900'):
+        if (self.today + '100500') <= currentDate <= (self.today + '100800'):
+            pass
+        elif (self.today + '110500') <= currentDate <= (self.today + '110800'):
             pass
         else:
             return
@@ -455,20 +457,30 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 if self.max_buy_total_amount_by_index >= total_chegual_price + self.max_buy_day_amount_by_index:
                     self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
+                    current_price = buy_point[self.customType.CURRENT_PRICE]
+                    purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+
+                    profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
+
                     max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
                     buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
                     min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
                     if buy_count >= 1:
-                        self.total_inverse_amount = self.total_inverse_amount + min_limit_price
                         self.send_order_limit_stock_price(code, buy_count, min_limit_price)
-                        self.buy_inverse_flag = True
 
                     max_buy_count = max_buy_count - buy_count
                     second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
                     if max_buy_count >= 1:
-                        self.total_inverse_amount = self.total_inverse_amount + second_limit_price
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+
+                    if profit_rate < -7.0:
+                        self.send_order_limit_stock_price(code, max_buy_count, buy_point[self.customType.CURRENT_PRICE])
+                    else:
+                        self.buy_inverse_flag = True
+
+            else:
+                self.buy_inverse_flag = True
 
             if self.weekend.isMonday:
                 buy_point = self.get_conform_default_stock_buy_min_case(code, rows)
@@ -479,9 +491,9 @@ class DayTradingKiwoom(ParentKiwoom):
                         max_buy_count = math.trunc(monday_limit_amount / buy_point[self.customType.CURRENT_PRICE])
                         second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
                         if max_buy_count >= 1:
-                            self.total_inverse_amount = self.total_inverse_amount + second_limit_price
                             self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                             self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+                            self.buy_inverse_flag = True
 
 
         self.default_analysis_search_timer2.stop()
@@ -681,95 +693,41 @@ class DayTradingKiwoom(ParentKiwoom):
             total_chegual_price = current_hold_stock[self.customType.PURCHASE_AMOUNT]
             is_add_buy_posible = True if (total_chegual_price + self.add_buy_max_amount_by_day) < self.max_buy_total_amount else False
 
-            if current_price > buy_price and profit_rate >= 1.8:
-                highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+            if sCode not in self.default_stock_list:
 
-                rows = current_hold_stock["row"]
-
-                if len(rows) == 0:
-                    return
-                analysis_rows = rows[:3]
-
-                today_tic = analysis_rows[0]
-                if today_tic[self.customType.HIGHEST_PRICE] > realdata_std_higest_price:
-                    realdata_std_higest_price = today_tic[self.customType.HIGHEST_PRICE]
+                if current_price > buy_price and profit_rate >= 1.8:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                yesterday_tic = analysis_rows[1]
-                thirdday_tic = analysis_rows[2]
+                    rows = current_hold_stock["row"]
 
-                self.logging.logger.info("realtime_info [%s] thirdday:[%s] yesterday:[%s] current:[%s]" % (
-                    sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price))
-                buy_after_rows = [x for x in rows if x[self.customType.DATE] >= current_hold_stock[self.customType.DATE]]
-
-                if len(buy_after_rows) > 2 and thirdday_tic[self.customType.CURRENT_PRICE] > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
-                    if start_price < current_price:
+                    if len(rows) == 0:
                         return
+                    analysis_rows = rows[:3]
 
-                    if realdata_std_lowest_price == current_price:
-                        return
-
-                    if profit_rate >= 15.0:
-                        self.logging.logger.info("third_highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        half_sell_limit_price = current_price - 50
-                        self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
-
-                    highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
-                    max_highest_price = max(highest_list)
-                    # self.logging.logger.info("max price > [%s] >> %s / %s" % (sCode, max_highest_price, realdata_std_higest_price))
-                    if max_highest_price > realdata_std_higest_price:
-                        highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
-                    else:
+                    today_tic = analysis_rows[0]
+                    if today_tic[self.customType.HIGHEST_PRICE] > realdata_std_higest_price:
+                        realdata_std_higest_price = today_tic[self.customType.HIGHEST_PRICE]
                         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                    self.logging.logger.info("third_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
+                    yesterday_tic = analysis_rows[1]
+                    thirdday_tic = analysis_rows[2]
 
-                    if highest_profit_rate >= 8.1 and highest_profit_rate > profit_rate:
-                        if 5.95 < profit_rate <= 6.15 or 4.95 < profit_rate <= 5.15 or 3.95 < profit_rate <= 4.15 or 2.95 < profit_rate <= 3.15:
-                            self.logging.logger.info("third_highest_profit_sell_point(8.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            self.realtime_stop_loss_sell(sCode)
+                    self.logging.logger.info("realtime_info [%s] thirdday:[%s] yesterday:[%s] current:[%s]" % (
+                        sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price))
+                    buy_after_rows = [x for x in rows if x[self.customType.DATE] >= current_hold_stock[self.customType.DATE]]
 
-                    if 6.5 <= highest_profit_rate < 8.1 and highest_profit_rate > profit_rate and 5.95 < profit_rate <= 6.15:
-                        self.logging.logger.info("third_highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
+                    if len(buy_after_rows) > 2 and thirdday_tic[self.customType.CURRENT_PRICE] > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
+                        if start_price < current_price:
+                            return
 
-                    if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
-                        self.logging.logger.info("third_highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
+                        if realdata_std_lowest_price == current_price:
+                            return
 
-                    if 4.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.95 < profit_rate <= 4.15:
-                        self.logging.logger.info("highest_4.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
+                        if profit_rate >= 15.0:
+                            self.logging.logger.info("third_highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
-                    if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.95 < profit_rate <= 3.15:
-                        self.logging.logger.info("highest_3.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
-
-                    if 3.1 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.85 < profit_rate <= 3.05:
-                        self.logging.logger.info("highest_3.1_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
-
-                    if is_add_buy_posible is False:
-
-                        if 2.0 <= profit_rate < 3.0 and current_hold_stock["half_sell"] is False:
-                            self.logging.logger.info("third_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            current_hold_stock["half_sell_receipt"] = True
-                            self.realtime_stop_loss_half_sell(sCode)
-
-                elif yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
-                    if start_price < current_price:
-                        return
-
-                    if realdata_std_lowest_price == current_price:
-                        return
-
-                    if profit_rate >= 15.0:
-                        self.logging.logger.info("yesterday_highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        half_sell_limit_price = current_price - 50
-                        self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
-
-                    buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
-                    if len(buy_after_rows) > 0:
                         highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
                         max_highest_price = max(highest_list)
                         # self.logging.logger.info("max price > [%s] >> %s / %s" % (sCode, max_highest_price, realdata_std_higest_price))
@@ -777,61 +735,190 @@ class DayTradingKiwoom(ParentKiwoom):
                             highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
                         else:
                             highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
-                    else:
-                        highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                    self.logging.logger.info("yesterday_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
-
-                    if "half_sell_receipt" not in current_hold_stock and current_hold_stock["half_sell"] is False and today_tic["ma3"] < current_price:
+                        self.logging.logger.info("third_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
 
                         if highest_profit_rate >= 8.1 and highest_profit_rate > profit_rate:
-                            if (highest_profit_rate - 3.3) <= profit_rate < (highest_profit_rate - 3.0):
-                                self.logging.logger.info("highest_profit_sell_point(7.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            if 5.95 < profit_rate <= 6.15 or 4.95 < profit_rate <= 5.15 or 3.95 < profit_rate <= 4.15 or 2.95 < profit_rate <= 3.15:
+                                self.logging.logger.info("third_highest_profit_sell_point(8.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                self.realtime_stop_loss_sell(sCode)
+
+                        if 6.5 <= highest_profit_rate < 8.1 and highest_profit_rate > profit_rate and 5.95 < profit_rate <= 6.15:
+                            self.logging.logger.info("third_highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
+
+                        if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
+                            self.logging.logger.info("third_highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
+
+                        if 4.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.95 < profit_rate <= 4.15:
+                            self.logging.logger.info("highest_4.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
+
+                        if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.95 < profit_rate <= 3.15:
+                            self.logging.logger.info("highest_3.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
+
+                        if 3.1 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.85 < profit_rate <= 3.05:
+                            self.logging.logger.info("highest_3.1_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
+
+                        if is_add_buy_posible is False:
+
+                            if 2.0 <= profit_rate < 3.0 and current_hold_stock["half_sell"] is False:
+                                self.logging.logger.info("third_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 current_hold_stock["half_sell_receipt"] = True
                                 self.realtime_stop_loss_half_sell(sCode)
 
-                        if 6.5 <= highest_profit_rate < 8.1 and highest_profit_rate > profit_rate and 5.95 < profit_rate <= 6.15:
-                            self.logging.logger.info("highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            current_hold_stock["half_sell_receipt"] = True
-                            self.realtime_stop_loss_half_sell(sCode)
+                    elif yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
+                        if start_price < current_price:
+                            return
 
-                        if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
-                            self.logging.logger.info("highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            current_hold_stock["half_sell_receipt"] = True
-                            self.realtime_stop_loss_half_sell(sCode)
+                        if realdata_std_lowest_price == current_price:
+                            return
 
-                    elif "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and current_hold_stock["half_sell"] is True and today_tic["ma3"] > current_price:
-                        if highest_profit_rate > profit_rate >= 3.0:
-                            if profit_rate < (highest_profit_rate - 4.5):
-                                self.logging.logger.info("max down profit_rate(-4.5) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        if profit_rate >= 15.0:
+                            self.logging.logger.info("yesterday_highest_15_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
+                        if len(buy_after_rows) > 0:
+                            highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
+                            max_highest_price = max(highest_list)
+                            # self.logging.logger.info("max price > [%s] >> %s / %s" % (sCode, max_highest_price, realdata_std_higest_price))
+                            if max_highest_price > realdata_std_higest_price:
+                                highest_profit_rate = round((max_highest_price - buy_price) / buy_price * 100, 2)
+                            else:
+                                highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+                        else:
+                            highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+
+                        self.logging.logger.info("yesterday_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
+
+                        if "half_sell_receipt" not in current_hold_stock and current_hold_stock["half_sell"] is False and today_tic["ma3"] < current_price:
+
+                            if highest_profit_rate >= 8.1 and highest_profit_rate > profit_rate:
+                                if (highest_profit_rate - 3.3) <= profit_rate < (highest_profit_rate - 3.0):
+                                    self.logging.logger.info("highest_profit_sell_point(7.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                    current_hold_stock["half_sell_receipt"] = True
+                                    self.realtime_stop_loss_half_sell(sCode)
+
+                            if 6.5 <= highest_profit_rate < 8.1 and highest_profit_rate > profit_rate and 5.95 < profit_rate <= 6.15:
+                                self.logging.logger.info("highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                current_hold_stock["half_sell_receipt"] = True
+                                self.realtime_stop_loss_half_sell(sCode)
+
+                            if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
+                                self.logging.logger.info("highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                current_hold_stock["half_sell_receipt"] = True
+                                self.realtime_stop_loss_half_sell(sCode)
+
+                        elif "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and current_hold_stock["half_sell"] is True and today_tic["ma3"] > current_price:
+                            if highest_profit_rate > profit_rate >= 3.0:
+                                if profit_rate < (highest_profit_rate - 4.5):
+                                    self.logging.logger.info("max down profit_rate(-4.5) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                    self.realtime_stop_loss_sell(sCode)
+
+                        elif today_tic["ma5"] > current_price and profit_rate > 3.0:
+                            self.logging.logger.info("ma5 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, today_tic["ma5"], profit_rate))
+                            self.realtime_stop_loss_sell(sCode)
+
+                    elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
+
+                        self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
+
+                        if profit_rate > 20.0:
+                            self.logging.logger.info("highest_20_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if realdata_std_lowest_price == current_price:
+                            return
+
+                        if "half_sell_receipt" not in current_hold_stock and 20.0 >= profit_rate > 11.0 and current_hold_stock["half_sell"] is False and (highest_profit_rate - 0.5) > profit_rate:
+                            self.logging.logger.info("profit_10_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            current_hold_stock["half_sell_receipt"] = True
+                            self.realtime_stop_loss_limit_half_sell(sCode, half_sell_limit_price)
+
+                        if highest_profit_rate > 11.0 and highest_profit_rate > profit_rate:
+                            if (highest_profit_rate - 5.3) <= profit_rate < (highest_profit_rate - 5.0):
+                                self.logging.logger.info("highest_profit_sell_point(11.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 self.realtime_stop_loss_sell(sCode)
 
-                    elif today_tic["ma5"] > current_price and profit_rate > 3.0:
-                        self.logging.logger.info("ma5 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, today_tic["ma5"], profit_rate))
-                        self.realtime_stop_loss_sell(sCode)
+            else:
+                if current_price > buy_price and profit_rate >= 1.0:
+                    highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
+                    rows = current_hold_stock["row"]
 
-                    self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
-
-                    if profit_rate > 20.0:
-                        self.logging.logger.info("highest_20_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        half_sell_limit_price = current_price - 50
-                        self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
-
-                    if realdata_std_lowest_price == current_price:
+                    if len(rows) == 0:
                         return
+                    analysis_rows = rows[:3]
 
-                    if "half_sell_receipt" not in current_hold_stock and 20.0 >= profit_rate > 11.0 and current_hold_stock["half_sell"] is False and (highest_profit_rate - 0.5) > profit_rate:
-                        self.logging.logger.info("profit_10_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                        half_sell_limit_price = current_price - 50
-                        current_hold_stock["half_sell_receipt"] = True
-                        self.realtime_stop_loss_limit_half_sell(sCode, half_sell_limit_price)
+                    today_tic = analysis_rows[0]
+                    if today_tic[self.customType.HIGHEST_PRICE] > realdata_std_higest_price:
+                        realdata_std_higest_price = today_tic[self.customType.HIGHEST_PRICE]
+                        highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
-                    if highest_profit_rate > 11.0 and highest_profit_rate > profit_rate:
-                        if (highest_profit_rate - 5.3) <= profit_rate < (highest_profit_rate - 5.0):
-                            self.logging.logger.info("highest_profit_sell_point(11.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            self.realtime_stop_loss_sell(sCode)
+                    yesterday_tic = analysis_rows[1]
+
+                    if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
+                        if yesterday_tic[self.customType.HIGHEST_PRICE] > realdata_std_higest_price:
+                            realdata_std_higest_price = yesterday_tic[self.customType.HIGHEST_PRICE]
+                            highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
+
+                        if 10.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 9.95 < profit_rate <= 10.05:
+                            self.logging.logger.info("inverse_highest_10.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 7.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 6.95 < profit_rate <= 7.05:
+                            self.logging.logger.info("inverse_highest_7.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 5.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.95 < profit_rate <= 5.15:
+                            self.logging.logger.info("inverse_highest_5.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 5.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 4.45 < profit_rate <= 4.65:
+                            self.logging.logger.info("inverse_highest_5.0_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 4.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.95 < profit_rate <= 4.15:
+                            self.logging.logger.info("inverse_highest_4.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 4.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 3.45 < profit_rate <= 3.65:
+                            self.logging.logger.info("inverse_highest_4.0_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 3.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.95 < profit_rate <= 3.15:
+                            self.logging.logger.info("inverse_highest_3.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 3.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 2.45 < profit_rate <= 2.65:
+                            self.logging.logger.info("inverse_highest_3.0_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 2.5 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.95 < profit_rate <= 2.15:
+                            self.logging.logger.info("inverse_highest_2.5_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                    elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
+                        if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
+                            if (highest_profit_rate - 1.8) <= profit_rate < (highest_profit_rate - 1.5):
+                                self.logging.logger.info("inverse_minus_two_per_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                self.realtime_stop_loss_sell(sCode)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
