@@ -10,6 +10,7 @@ class LogType():
         self.PASS_CONDITION_GOAL_PRICE_LOG = "%s > 매수조건 통과  목표가 : %s / 현재가 : %s / 수량 : %s"
         self.ORDER_BUY_SUCCESS_LOG = "매수주문 전달 성공"
         self.ORDER_BUY_SUCCESS_STATUS_LOG = "[%s] > 매수주문 전달 성공   [ 수량: %s / 매입단가 %s / 보유잔액: %s ]"
+        self.ORDER_BUY_SUCCESS_SIMPLE_LOG = "[%s] > 매수주문 전달 성공"
         self.ORDER_BUY_FAIL_LOG = "매수주문 전달 실패"
         self.ORDER_BUY_FAIL_STATUS_LOG = "[%s] > 매수주문 불가 [주문가능 수량 부족] [ 보유잔액: %s / 주문수량: %s / 총주문가: %s ]"
         self.ORDER_BUY_FAIL_NOT_POSSIBLE = "매수주문 불가 [주문가능 수량 부족]"
