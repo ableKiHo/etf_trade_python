@@ -463,6 +463,9 @@ class DayTradingKiwoom(ParentKiwoom):
                     profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
 
                     max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
+                    if profit_rate < -7.0:
+                        self.send_order_limit_stock_price(code, max_buy_count, buy_point[self.customType.CURRENT_PRICE])
+
                     buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
                     min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
                     if buy_count >= 1:
@@ -474,9 +477,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
 
-                    if profit_rate < -7.0:
-                        self.send_order_limit_stock_price(code, max_buy_count, buy_point[self.customType.CURRENT_PRICE])
-                    else:
+                    if profit_rate >= -7.0:
                         self.buy_inverse_flag = True
 
             else:
