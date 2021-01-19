@@ -211,6 +211,8 @@ class DayTradingKiwoom(ParentKiwoom):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '143000') <= currentDate <= (self.today + '143500'):
             pass
+        if (self.today + '150000') <= currentDate <= (self.today + '150500'):
+            pass
         else:
             return
         self.hold_stock_check_timer.stop()
@@ -522,7 +524,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
         total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
         available_add_amount = self.max_buy_amount_by_stock - total_chegual_price
-        if available_add_amount < self.max_buy_amount_by_one_point:
+        if available_add_amount < self.add_buy_max_amount_by_day:
             self.logging.logger.info("available_add_amount check> [%s] total_chegual_price:[%s] available_add_amount:[%s]" % (code, total_chegual_price, available_add_amount))
             return {}
 
