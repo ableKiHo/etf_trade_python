@@ -308,9 +308,9 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.buy_inverse_flag is True:
             return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '101000') <= currentDate <= (self.today + '101300'):
+        if (self.today + '102000') <= currentDate <= (self.today + '102300'):
             pass
-        elif (self.today + '111000') <= currentDate <= (self.today + '111300'):
+        elif (self.today + '112000') <= currentDate <= (self.today + '112300'):
             pass
         else:
             return
@@ -589,8 +589,8 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = today_tic[self.customType.CURRENT_PRICE]
         today_ma3 = today_tic["ma3"]
         today_ma5 = today_tic["ma5"]
-        if today_ma3 > current_price or today_ma5 > current_price:
-            self.logging.logger.info("ma_position check> [%s] today_ma3:[%s] current_price:[%s]" % (code, today_ma3, current_price))
+        if today_ma3 > current_price and today_ma5 > current_price:
+            self.logging.logger.info("ma_position check> [%s] today_ma3:[%s] today_ma5:[%s] current_price:[%s]" % (code, today_ma3, today_ma5, current_price))
             return {}
 
         if code not in self.current_hold_etf_stock_dict.keys():
@@ -1135,7 +1135,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.current_hold_etf_stock_dict[code].update({"half_sell": False})
 
                 # self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
-                self.logging.logger.info(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
+                # self.logging.logger.info(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
 
                 if code not in self.default_stock_list:
                     self.total_invest_amount = self.total_invest_amount + total_chegual_price
