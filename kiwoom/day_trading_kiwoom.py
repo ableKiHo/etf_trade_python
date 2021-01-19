@@ -211,8 +211,6 @@ class DayTradingKiwoom(ParentKiwoom):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '143000') <= currentDate <= (self.today + '143500'):
             pass
-        if (self.today + '150000') <= currentDate <= (self.today + '150500'):
-            pass
         else:
             return
         self.hold_stock_check_timer.stop()
