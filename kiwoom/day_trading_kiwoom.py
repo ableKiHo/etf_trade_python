@@ -379,14 +379,15 @@ class DayTradingKiwoom(ParentKiwoom):
                         std_limit_price = buy_point[self.customType.CURRENT_PRICE]
                         half_buy_amount = math.trunc(self.max_buy_amount_by_stock / 2)
                         half_quantity = math.trunc((half_buy_amount / std_limit_price))
-                        if math.trunc(half_quantity / 2) >= 1:
+                        std_quantity = math.trunc(half_quantity / 2)
+                        if std_quantity >= 1:
                             self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
                             limit_price = std_limit_price - 5
-                            self.send_order_limit_stock_price(code, math.trunc(half_quantity / 2), limit_price)
+                            self.send_order_limit_stock_price(code, std_quantity, limit_price)
 
                             self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
                             limit_price = std_limit_price - 10
-                            self.send_order_limit_stock_price(code, half_quantity - math.trunc(half_quantity / 2), limit_price)
+                            self.send_order_limit_stock_price(code, half_quantity - std_quantity, limit_price)
 
                         max_quantity = math.trunc((half_buy_amount / std_limit_price))
                         min_one_quantity = math.trunc(max_quantity / 3)
