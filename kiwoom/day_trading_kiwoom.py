@@ -458,12 +458,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
             if bool(buy_point):
 
-                if self.max_buy_total_amount_by_index >= total_chegual_price + self.max_buy_day_amount_by_index:
+                if self.max_buy_total_amount_by_index >= total_chegual_price + (self.max_buy_day_amount_by_index * 2):
                     self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-                    current_price = buy_point[self.customType.CURRENT_PRICE]
+                    limit_price = buy_point[self.customType.CURRENT_PRICE]
                     purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
-                    profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
+                    profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
 
                     max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
                     if profit_rate < -7.0:
@@ -482,6 +482,15 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     if profit_rate >= -7.0:
                         self.buy_inverse_flag = True
+
+                else:
+                    limit_amount = self.max_buy_total_amount_by_index - total_chegual_price
+                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
+                    if limit_amount > limit_price:
+                        limit_count = math.trunc(limit_amount / limit_price)
+                        if limit_count >= 1:
+                            self.send_order_limit_stock_price(code, limit_count, limit_price)
+                            self.buy_inverse_flag = True
 
             else:
                 self.buy_inverse_flag = True
