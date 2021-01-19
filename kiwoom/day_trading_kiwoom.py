@@ -308,9 +308,9 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.buy_inverse_flag is True:
             return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '102000') <= currentDate <= (self.today + '102300'):
+        if (self.today + '103000') <= currentDate <= (self.today + '103300'):
             pass
-        elif (self.today + '112000') <= currentDate <= (self.today + '112300'):
+        elif (self.today + '113000') <= currentDate <= (self.today + '113300'):
             pass
         else:
             return
@@ -444,6 +444,7 @@ class DayTradingKiwoom(ParentKiwoom):
         for code in self.default_stock_list:
             self.get_opt10081_info_all(code)
             create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
+            create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
 
             rows = self.target_etf_stock_dict[code]["row"]
             buy_point = self.get_conform_default_stock_buy_case(code, rows)
