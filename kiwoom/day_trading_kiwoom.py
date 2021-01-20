@@ -222,7 +222,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_search_stock_code = ''
         self.analysis_sell_etf_stock_list = []
         for key in self.current_hold_etf_stock_dict.keys():
-            self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
+            if key not in self.today_buy_etf_stock_dict.keys():
+                self.analysis_sell_etf_stock_list.append(copy.deepcopy(self.current_hold_etf_stock_dict[key]))
 
         self.hold_stock_check_timer = default_q_timer_setting(4)
         self.hold_stock_check_timer.timeout.connect(self.daily_candle_add_buy_point_check)
