@@ -214,6 +214,9 @@ class DayTradingKiwoom(ParentKiwoom):
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
         if (self.today + '143000') <= currentDate <= (self.today + '143500'):
             pass
+        elif (self.today + '144000') <= currentDate <= (self.today + '144500'):
+            pass
+
         else:
             return
         self.hold_stock_check_timer.stop()
@@ -230,11 +233,6 @@ class DayTradingKiwoom(ParentKiwoom):
     def daily_candle_add_buy_point_check(self):
         if len(self.analysis_sell_etf_stock_list) == 0:
             self.logging.logger.info("analysis_add_buy_etf_stock_list nothing")
-            self.hold_stock_check_timer.stop()
-            return
-
-        if self.buy_possible_deposit < self.total_invest_amount + self.max_buy_amount_by_stock:
-            self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
             self.hold_stock_check_timer.stop()
             return
 
