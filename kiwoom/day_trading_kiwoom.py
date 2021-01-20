@@ -135,7 +135,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.75)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
 
-        self.line.notification("종목 별 MAX [%s] 최초매수 [%s] 추가매수 [%s]" % (self.max_buy_total_amount, self.max_buy_amount_by_stock, self.add_buy_max_amount_by_day))
+        self.line.notification("종목 별 MAX [%s] 최초매수 [%s] 추가매수 [%s] 최대보유 [%s]" % (self.max_buy_total_amount, self.max_buy_amount_by_stock, self.add_buy_max_amount_by_day, self.max_hold_stock_count))
 
         self.screen_number_setting(self.current_hold_etf_stock_dict)
 
@@ -252,7 +252,7 @@ class DayTradingKiwoom(ParentKiwoom):
             add_buy_point = self.get_conform_add_default_amount_buy_case(code, self.current_hold_etf_stock_dict)
             if bool(add_buy_point):
                 stock_info = self.current_hold_etf_stock_dict[code]
-                if stock_info[self.customType.PURCHASE_AMOUNT] < self.max_buy_amount_by_stock:
+                if stock_info[self.customType.PURCHASE_AMOUNT] + self.add_buy_max_amount_by_day < self.max_buy_amount_by_stock:
                     limit_purchase_amount = self.max_buy_amount_by_stock - stock_info[self.customType.PURCHASE_AMOUNT]
                 else:
                     limit_purchase_amount = 0
@@ -1146,6 +1146,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     self.total_invest_amount = self.total_invest_amount + total_chegual_price
                 else:
                     self.total_inverse_amount = self.total_inverse_amount + total_chegual_price
+                    self.current_hold_stock_count = self.current_hold_stock_count + 1
 
         if sPrevNext == "2":
             self.detail_account_mystock(sPrevNext="2")
