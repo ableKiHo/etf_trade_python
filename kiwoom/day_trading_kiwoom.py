@@ -233,6 +233,11 @@ class DayTradingKiwoom(ParentKiwoom):
             self.hold_stock_check_timer.stop()
             return
 
+        if self.max_invest_amount < self.total_invest_amount + self.max_buy_amount_by_stock:
+            self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
+            self.hold_stock_check_timer.stop()
+            return
+
         self.get_sell_next_search_etf_stock_code(len(self.analysis_sell_etf_stock_list))
 
         code = self.sell_search_stock_code
