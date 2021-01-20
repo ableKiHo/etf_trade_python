@@ -132,10 +132,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.max_invest_amount = tmp_max_invest_amount
         self.max_buy_total_amount = math.trunc(self.max_invest_amount / self.max_hold_stock_count)
-        self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.75)
+        self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.70)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
 
-        self.line.notification("종목 별 MAX [%s] 최초매수 [%s] 추가매수 [%s] 최대보유 [%s]" % (self.max_buy_total_amount, self.max_buy_amount_by_stock, self.add_buy_max_amount_by_day, self.max_hold_stock_count))
+        self.line.notification("종목 별 MAX [%s] 최초매수 [%s] 추가매수 [%s]" % (self.max_buy_total_amount, self.max_buy_amount_by_stock, self.add_buy_max_amount_by_day))
+        self.line.notification("최대보유 [%s/%s]" % (self.max_hold_stock_count, self.current_hold_stock_count))
 
         self.screen_number_setting(self.current_hold_etf_stock_dict)
 
@@ -258,13 +259,27 @@ class DayTradingKiwoom(ParentKiwoom):
                     limit_purchase_amount = 0
 
                 if limit_purchase_amount > 0:
+                    reamin_rate = math.trunc(limit_purchase_amount / self.max_buy_amount_by_stock * 100)
+
                     limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
                     max_quantity = math.trunc(limit_purchase_amount / limit_price)
+                    quantity = 0
                     if max_quantity >= 1:
-                        quantity = math.trunc(max_quantity / 2)
-                        self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 5) break >> %s" % code)
-                        self.today_order_etf_stock_list.append(code)
-                        self.send_order_limit_stock_price(code, (max_quantity - quantity), limit_price)
+                        if reamin_rate < 50:
+                            quantity = math.trunc(max_quantity / 2)
+                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 5) break >> %s" % code)
+                            self.today_order_etf_stock_list.append(code)
+                            self.send_order_limit_stock_price(code, (max_quantity - quantity), limit_price)
+                        else:
+                            quantity = math.trunc(max_quantity / 3)
+                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 5) break >> %s" % code)
+                            self.today_order_etf_stock_list.append(code)
+                            self.send_order_limit_stock_price(code, quantity, limit_price)
+
+                            limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 30
+                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 30) break >> %s" % code)
+                            self.today_order_etf_stock_list.append(code)
+                            self.send_order_limit_stock_price(code, quantity, limit_price)
 
                         limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
                         self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 15) break >> %s" % code)
