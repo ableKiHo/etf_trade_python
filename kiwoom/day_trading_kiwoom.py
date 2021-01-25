@@ -349,8 +349,6 @@ class DayTradingKiwoom(ParentKiwoom):
             pass
         elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
             pass
-        elif (self.today + '120100') <= currentDate <= (self.today + '120500'):
-            pass
         else:
             return
         self.logging.logger.info("analysis target etf")
