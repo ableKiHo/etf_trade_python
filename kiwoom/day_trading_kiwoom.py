@@ -850,7 +850,9 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
-                        self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
+                        self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s / half_sell:%s" % (sCode, highest_profit_rate, profit_rate, current_hold_stock["half_sell"]))
+                        if "half_sell_receipt" in current_hold_stock:
+                            self.logging.logger.info("current_hold_stock[%s] >> half_sell_receipt:%s" % (sCode, current_hold_stock["half_sell_receipt"]))
 
                         if profit_rate > 20.0:
                             self.logging.logger.info("highest_20_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
@@ -951,7 +953,8 @@ class DayTradingKiwoom(ParentKiwoom):
                         if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
                             if (highest_profit_rate - 1.8) <= profit_rate < (highest_profit_rate - 1.5):
                                 self.logging.logger.info("inverse_minus_two_per_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                                self.realtime_stop_loss_sell(sCode)
+                                half_sell_limit_price = current_price - 50
+                                self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
