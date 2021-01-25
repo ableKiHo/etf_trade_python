@@ -265,16 +265,19 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
                     max_quantity = math.trunc(limit_purchase_amount / limit_price)
-                    quantity = 0
+                    purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+                    if purchase_price >= add_buy_point[self.customType.CURRENT_PRICE] + 30:
+                        limit_price = add_buy_point[self.customType.CURRENT_PRICE] + 50
+
                     if max_quantity >= 1:
                         if reamin_rate < 50:
                             quantity = math.trunc(max_quantity / 2)
-                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 5) break >> %s" % code)
+                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(current) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
                             self.send_order_limit_stock_price(code, (max_quantity - quantity), limit_price)
                         else:
                             quantity = math.trunc(max_quantity / 3)
-                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 5) break >> %s" % code)
+                            self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(current) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
                             self.send_order_limit_stock_price(code, quantity, limit_price)
 
@@ -303,9 +306,18 @@ class DayTradingKiwoom(ParentKiwoom):
                     second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
                     third_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
 
+                    purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+                    if purchase_price >= add_buy_point[self.customType.CURRENT_PRICE] + 30:
+                        third_limit_price = add_buy_point[self.customType.CURRENT_PRICE] + 50
+
                     if max_buy_count >= 3:
                         buy_count = math.trunc(max_buy_count / 3)
                         self.send_order_limit_stock_price(code, buy_count, second_limit_price)
+                        self.send_order_limit_stock_price(code, buy_count, first_limit_price)
+                        self.send_order_limit_stock_price(code, buy_count, third_limit_price)
+                        self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+                    elif max_buy_count >= 2:
+                        buy_count = math.trunc(max_buy_count / 2)
                         self.send_order_limit_stock_price(code, buy_count, first_limit_price)
                         self.send_order_limit_stock_price(code, buy_count, third_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
