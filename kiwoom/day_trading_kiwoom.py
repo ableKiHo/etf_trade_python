@@ -856,9 +856,6 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.logging.logger.info("highest_20_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             self.realtime_stop_loss_half_sell(sCode)
 
-                        if realdata_std_lowest_price == current_price:
-                            return
-
                         if "half_sell_receipt" not in current_hold_stock and 20.0 >= profit_rate > 11.0 and current_hold_stock["half_sell"] is False and (highest_profit_rate - 0.5) > profit_rate:
                             self.logging.logger.info("profit_10_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["half_sell_receipt"] = True
@@ -944,6 +941,13 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
+
+                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 5.5 and current_hold_stock["half_sell"] is False:
+                            if (highest_profit_rate - 0.1) > profit_rate:
+                                self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                current_hold_stock["half_sell_receipt"] = True
+                                self.realtime_stop_loss_half_sell(sCode)
+
                         if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
                             if (highest_profit_rate - 1.8) <= profit_rate < (highest_profit_rate - 1.5):
                                 self.logging.logger.info("inverse_minus_two_per_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
