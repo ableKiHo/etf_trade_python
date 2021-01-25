@@ -863,7 +863,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["half_sell_receipt"] = True
                             self.realtime_stop_loss_half_sell(sCode)
                         self.logging.logger.info(
-                            "test[%s] >> half_sell_recepit:%s / profit_rate >= 5.5:%s / half_sell:%s" % (sCode, ("half_sell_receipt" not in current_hold_stock), (profit_rate >= 5.5), (current_hold_stock["half_sell"] is False)))
+                            "test[%s] >> half_sell_recepit:%s / profit_rate >= 5.5:%s / half_sell:%s" % (sCode, ("half_sell_receipt" not in current_hold_stock), (profit_rate >= 5.5), (current_hold_stock["half_sell"])))
                         if ("half_sell_receipt" not in current_hold_stock) and (profit_rate >= 5.5) and (current_hold_stock["half_sell"] is False):
                             self.logging.logger.info("profit_std_half_sell_point total_chegual_price check > [%s] >> %s " % (sCode, total_chegual_price))
                             if (highest_profit_rate - 0.1) > profit_rate and total_chegual_price > self.half_sell_std_amount:
@@ -1312,7 +1312,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         half_sell = ls[2].rstrip('\n')
                     if stock_code in self.current_hold_etf_stock_dict.keys():
                         self.current_hold_etf_stock_dict[stock_code].update({self.customType.DATE: purchase_date.strip()})
-                        self.current_hold_etf_stock_dict[stock_code].update({"half_sell": half_sell})
+                        self.current_hold_etf_stock_dict[stock_code].update({"half_sell": eval(half_sell)})
             f.close()
 
     def screen_number_setting(self, cal_dict):
