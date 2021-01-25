@@ -170,7 +170,7 @@ class DayTradingKiwoom(ParentKiwoom):
         sell_quantity = math.trunc(quantity / 2) if quantity >= 2 else 0
         if sell_quantity > 0:
             self.logging.logger.info("realtime_stop_loss_half_sell_point break >> %s" % code)
-            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, sell_quantity)
             self.sell_receive_stock_code.append(code)
 
     def realtime_stop_loss_limit_price_sell(self, code, limit_price):
