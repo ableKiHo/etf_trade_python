@@ -264,7 +264,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     limit_purchase_amount = 0
 
                 if limit_purchase_amount > 0:
-                    reamin_rate = math.trunc(limit_purchase_amount / self.max_buy_amount_by_stock * 100)
+                    remain_rate = math.trunc(limit_purchase_amount / self.max_buy_amount_by_stock * 100)
 
                     limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
                     max_quantity = math.trunc(limit_purchase_amount / limit_price)
@@ -273,7 +273,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         limit_price = add_buy_point[self.customType.CURRENT_PRICE] + 50
 
                     if max_quantity >= 1:
-                        if reamin_rate < 50:
+                        if remain_rate < 50:
                             quantity = math.trunc(max_quantity / 2)
                             self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(current) break >> %s" % code)
                             self.today_order_etf_stock_list.append(code)
