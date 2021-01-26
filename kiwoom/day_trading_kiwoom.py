@@ -505,7 +505,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.send_order_limit_stock_price(code, buy_count, min_limit_price)
 
                     max_buy_count = max_buy_count - buy_count
-                    second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
+                    second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate < -3.0 else buy_point[self.customType.CURRENT_PRICE]
                     if max_buy_count >= 1:
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
@@ -515,7 +515,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 else:
                     limit_amount = self.max_buy_total_amount_by_index - total_chegual_price
-                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
+                    limit_price = buy_point[self.customType.CURRENT_PRICE]
+                    purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
+
+                    profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
+                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate < -3.0 else buy_point[self.customType.CURRENT_PRICE]
                     if limit_amount > limit_price:
                         limit_count = math.trunc(limit_amount / limit_price)
                         if limit_count >= 1:
