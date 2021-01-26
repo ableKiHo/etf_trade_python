@@ -51,6 +51,7 @@ class ParentKiwoom(QAxWidget):
         self.use_money_percent = 0.25  # 예수금에서 실제 사용할 비율
         self.deposit = 0  # 예수금
         self.buy_possible_deposit = 0  # 주문가능 금액
+        self.d2_deposit = 0  # d+2 추정예수금
         self.purchased_deposit = 0  # 구매한 금액
         self.max_sell_stock_count = 3  # 일일 최대 구매 가능 종목 수
 

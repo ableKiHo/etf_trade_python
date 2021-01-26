@@ -123,8 +123,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
     def init_stock_values(self):
         tmp_buy_invest_possible_deposit = self.buy_possible_deposit - (1000000 - self.total_inverse_amount)
+        tmp_d2_buy_inves_possibel_deposit = self.d2_deposit - (1000000 - self.total_inverse_amount)
         tmp_max_invest_amount = self.total_invest_amount + tmp_buy_invest_possible_deposit
+        tmp_d2_max_invest_amount = self.total_invest_amount + tmp_d2_buy_inves_possibel_deposit
         self.line.notification("투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_max_invest_amount, tmp_buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
+        self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, tmp_d2_buy_inves_possibel_deposit, self.total_invest_amount, self.total_inverse_amount))
 
         if tmp_max_invest_amount > 12000000:
             self.max_hold_stock_count = 8
@@ -459,7 +462,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
                             limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
                             self.logging.logger.info("current_hold_etf_stock_dict conform_buy_case buy_point(- 15) break >> %s" % code)
-                            self.today_order_etf_stock_list.append(code)
                             self.send_order_limit_stock_price(code, (max_quantity - quantity), limit_price)
 
                             self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
@@ -505,7 +507,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.send_order_limit_stock_price(code, buy_count, min_limit_price)
 
                     max_buy_count = max_buy_count - buy_count
-                    second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate < -3.0 else buy_point[self.customType.CURRENT_PRICE]
+                    second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
                     if max_buy_count >= 1:
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
@@ -519,7 +521,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
                     profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
-                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate < -3.0 else buy_point[self.customType.CURRENT_PRICE]
+                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
                     if limit_amount > limit_price:
                         limit_count = math.trunc(limit_amount / limit_price)
                         if limit_count >= 1:
@@ -1204,6 +1206,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.deposit = int(deposit)
         buy_possible_deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.AVAILABLE_AMOUNT)
         self.buy_possible_deposit = int(buy_possible_deposit)
+        d2_deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "d+2추정예수금")
+        self.d2_deposit = int(d2_deposit)
         # self.buy_possible_deposit = math.trunc(self.buy_possible_deposit / 2)
 
         self.logging.logger.info(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
