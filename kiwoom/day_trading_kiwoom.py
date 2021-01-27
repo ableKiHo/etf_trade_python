@@ -126,15 +126,15 @@ class DayTradingKiwoom(ParentKiwoom):
         tmp_d2_buy_inves_possibel_deposit = self.d2_deposit - (1000000 - self.total_inverse_amount)
         tmp_max_invest_amount = self.total_invest_amount + tmp_buy_invest_possible_deposit
         tmp_d2_max_invest_amount = self.total_invest_amount + tmp_d2_buy_inves_possibel_deposit
-        self.line.notification("투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_max_invest_amount, tmp_buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
+        # self.line.notification("투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_max_invest_amount, tmp_buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
         self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, tmp_d2_buy_inves_possibel_deposit, self.total_invest_amount, self.total_inverse_amount))
 
-        if tmp_max_invest_amount > 12000000:
+        if tmp_d2_max_invest_amount > 12000000:
             self.max_hold_stock_count = 8
-        elif tmp_max_invest_amount > 16000000:
+        elif tmp_d2_max_invest_amount > 16000000:
             self.max_hold_stock_count = 10
 
-        self.max_invest_amount = tmp_max_invest_amount
+        self.max_invest_amount = tmp_d2_max_invest_amount
         self.max_buy_total_amount = math.trunc(self.max_invest_amount / self.max_hold_stock_count)
         self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.70)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
@@ -636,7 +636,11 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = today_tic[self.customType.CURRENT_PRICE]
         today_ma3 = today_tic["ma3"]
         today_ma5 = today_tic["ma5"]
-        if today_ma3 > current_price and today_ma5 > current_price:
+        if today_ma3 < current_price or today_ma5 < current_price:
+            pass
+        elif today_tic[self.customType.LOWEST_PRICE] < today_ma5 < today_tic[self.customType.HIGHEST_PRICE]:
+            pass
+        else:
             self.logging.logger.info("ma_position check> [%s] today_ma3:[%s] today_ma5:[%s] current_price:[%s]" % (code, today_ma3, today_ma5, current_price))
             return {}
 
