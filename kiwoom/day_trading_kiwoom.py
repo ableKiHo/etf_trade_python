@@ -528,9 +528,6 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.send_order_limit_stock_price(code, limit_count, limit_price)
                             self.buy_inverse_flag = True
 
-            else:
-                self.buy_inverse_flag = True
-
             if self.weekend.isFriday:
                 buy_point = self.get_conform_default_stock_buy_min_case(code, rows)
                 if bool(buy_point):
