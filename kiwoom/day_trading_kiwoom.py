@@ -40,6 +40,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_hold_stock_count = 6
         self.max_buy_amount_by_stock = 0
         self.max_buy_total_amount = 0
+        self.buy_invest_possible_deposit = 0
         self.half_sell_std_amount = 1000000
         self.max_buy_total_amount_by_index = 1000000
         self.max_buy_day_amount_by_index = 50000
@@ -122,12 +123,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def init_stock_values(self):
-        tmp_buy_invest_possible_deposit = self.buy_possible_deposit - (1000000 - self.total_inverse_amount)
-        tmp_d2_buy_inves_possibel_deposit = self.d2_deposit - (1000000 - self.total_inverse_amount)
-        tmp_max_invest_amount = self.total_invest_amount + tmp_buy_invest_possible_deposit
-        tmp_d2_max_invest_amount = self.total_invest_amount + tmp_d2_buy_inves_possibel_deposit
+        #self.buy_invest_possible_deposit = self.buy_possible_deposit - (1000000 - self.total_inverse_amount)
+        self.buy_invest_possible_deposit = self.d2_deposit - (1000000 - self.total_inverse_amount)
+        #tmp_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
+        tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
         # self.line.notification("투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_max_invest_amount, tmp_buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
-        self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, tmp_d2_buy_inves_possibel_deposit, self.total_invest_amount, self.total_inverse_amount))
+        self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
 
         if tmp_d2_max_invest_amount > 12000000:
             self.max_hold_stock_count = 8
@@ -341,9 +342,9 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.buy_inverse_flag is True:
             return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '103000') <= currentDate <= (self.today + '103300'):
+        if (self.today + '101500') <= currentDate <= (self.today + '101800'):
             pass
-        elif (self.today + '113000') <= currentDate <= (self.today + '113300'):
+        elif (self.today + '111500') <= currentDate <= (self.today + '111800'):
             pass
         else:
             return
@@ -488,19 +489,27 @@ class DayTradingKiwoom(ParentKiwoom):
                 total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
 
             if bool(buy_point):
+                limit_price = buy_point[self.customType.CURRENT_PRICE]
+                purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
-                if self.max_buy_total_amount_by_index >= total_chegual_price + (self.max_buy_day_amount_by_index * 2):
+                profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
+                remain_rate = math.trunc((self.max_buy_total_amount_by_index - total_chegual_price) / self.max_buy_total_amount_by_index) * 100
+                if profit_rate > -2.0 and remain_rate < 10 and self.max_hold_stock_count == self.current_hold_stock_count and self.buy_invest_possible_deposit > (self.max_buy_total_amount_by_index * 2):
+                    self.max_buy_total_amount_by_index = self.max_buy_total_amount_by_index + 400000
+
+                if self.max_buy_total_amount_by_index >= total_chegual_price + (self.max_buy_day_amount_by_index * 4):
                     self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-                    limit_price = buy_point[self.customType.CURRENT_PRICE]
-                    purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
-                    profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
-
-                    max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
                     if profit_rate < -5.0:
+                        max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
+                        limit_price = buy_point[self.customType.CURRENT_PRICE] + 50
+                        self.send_order_limit_stock_price(code, max_buy_count, limit_price)
+                    else:
+                        max_buy_count = math.trunc((self.max_buy_day_amount_by_index * 2) / buy_point[self.customType.CURRENT_PRICE])
                         limit_price = buy_point[self.customType.CURRENT_PRICE] + 50
                         self.send_order_limit_stock_price(code, max_buy_count, limit_price)
 
+                    max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
                     buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
                     min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
                     if buy_count >= 1:
@@ -512,15 +521,10 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
 
-                    if profit_rate >= -5.0:
-                        self.buy_inverse_flag = True
-
                 else:
                     limit_amount = self.max_buy_total_amount_by_index - total_chegual_price
-                    limit_price = buy_point[self.customType.CURRENT_PRICE]
-                    purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
-
-                    profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
+                    if limit_amount < 0:
+                        return
                     limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
                     if limit_amount > limit_price:
                         limit_count = math.trunc(limit_amount / limit_price)
@@ -989,15 +993,24 @@ class DayTradingKiwoom(ParentKiwoom):
                             half_sell_limit_price = current_price - 50
                             self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
+                        if 2.0 <= highest_profit_rate and highest_profit_rate > profit_rate and 1.45 < profit_rate <= 1.65:
+                            self.logging.logger.info("inverse_highest_2.0_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
-                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 5.5 and current_hold_stock["half_sell"] is False:
-                            if (highest_profit_rate - 0.1) > profit_rate:
-                                self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                                current_hold_stock["half_sell_receipt"] = True
-                                self.realtime_stop_loss_half_sell(sCode)
+                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 1.5 and current_hold_stock["half_sell"] is False:
+                            self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            current_hold_stock["half_sell_receipt"] = True
+                            self.realtime_stop_loss_half_sell(sCode)
 
-                        if highest_profit_rate >= 3.1 and highest_profit_rate > profit_rate:
+                        if profit_rate >= 3.0 and current_hold_stock["half_sell"] is True:
+                            self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if 1.0 < profit_rate < highest_profit_rate:
                             if (highest_profit_rate - 1.8) <= profit_rate < (highest_profit_rate - 1.5):
                                 self.logging.logger.info("inverse_minus_two_per_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 half_sell_limit_price = current_price - 50
