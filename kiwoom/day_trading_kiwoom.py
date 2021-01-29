@@ -42,7 +42,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_total_amount = 0
         self.buy_invest_possible_deposit = 0
         self.half_sell_std_amount = 1000000
-        self.max_buy_total_amount_by_index = 1000000
+        self.max_buy_total_amount_by_index = 1500000
         self.max_buy_day_amount_by_index = 50000
         self.add_buy_max_amount_by_day = 0
         self.max_invest_amount = 0
@@ -123,11 +123,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def init_stock_values(self):
-        #self.buy_invest_possible_deposit = self.buy_possible_deposit - (1000000 - self.total_inverse_amount)
-        self.buy_invest_possible_deposit = self.d2_deposit - (1000000 - self.total_inverse_amount)
-        #tmp_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
+        self.buy_invest_possible_deposit = self.d2_deposit - (self.max_buy_total_amount_by_index - self.total_inverse_amount)
         tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
-        # self.line.notification("투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_max_invest_amount, tmp_buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
         self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
 
         if tmp_d2_max_invest_amount > 12000000:
@@ -493,9 +490,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
 
                 profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
-                remain_rate = math.trunc((self.max_buy_total_amount_by_index - total_chegual_price) / self.max_buy_total_amount_by_index) * 100
-                if profit_rate > -2.0 and remain_rate < 10 and self.max_hold_stock_count == self.current_hold_stock_count and self.buy_invest_possible_deposit > (self.max_buy_total_amount_by_index * 2):
-                    self.max_buy_total_amount_by_index = self.max_buy_total_amount_by_index + 400000
 
                 if self.max_buy_total_amount_by_index >= total_chegual_price + (self.max_buy_day_amount_by_index * 4):
                     self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
@@ -1001,18 +995,23 @@ class DayTradingKiwoom(ParentKiwoom):
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
                         if "half_sell_receipt" not in current_hold_stock and profit_rate >= 1.5 and current_hold_stock["half_sell"] is False:
-                            self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            self.logging.logger.info("profit_std_half_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["half_sell_receipt"] = True
                             self.realtime_stop_loss_half_sell(sCode)
 
-                        if profit_rate >= 3.0 and current_hold_stock["half_sell"] is True:
-                            self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                        if "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and profit_rate >= 5.0:
+                            self.logging.logger.info("profit_std_half_sell_point check2 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                            half_sell_limit_price = current_price - 50
+                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
+
+                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 3.0 and current_hold_stock["half_sell"] is True:
+                            self.logging.logger.info("profit_std_half_sell_point check3 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             half_sell_limit_price = current_price - 50
                             self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
                         if 1.0 < profit_rate < highest_profit_rate:
                             if (highest_profit_rate - 1.8) <= profit_rate < (highest_profit_rate - 1.5):
-                                self.logging.logger.info("inverse_minus_two_per_profit_sell_point(3.1) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                self.logging.logger.info("inverse_minus_two_per_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 half_sell_limit_price = current_price - 50
                                 self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
