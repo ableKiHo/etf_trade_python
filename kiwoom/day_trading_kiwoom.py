@@ -994,22 +994,12 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
-                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 1.5 and current_hold_stock["half_sell"] is False:
+                        if "half_sell_receipt" not in current_hold_stock and 3.0 <= profit_rate <= (highest_profit_rate - 0.3) and current_hold_stock["half_sell"] is False:
                             self.logging.logger.info("profit_std_half_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["half_sell_receipt"] = True
                             self.realtime_stop_loss_half_sell(sCode)
 
-                        if "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and profit_rate >= 5.0:
-                            self.logging.logger.info("profit_std_half_sell_point check2 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            half_sell_limit_price = current_price - 50
-                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
-
-                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 3.0 and current_hold_stock["half_sell"] is True:
-                            self.logging.logger.info("profit_std_half_sell_point check3 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            half_sell_limit_price = current_price - 50
-                            self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
-
-                        if 1.0 < profit_rate < highest_profit_rate:
+                        if 3.0 <= profit_rate <= (highest_profit_rate - 0.3):
                             if (highest_profit_rate - 1.8) <= profit_rate < (highest_profit_rate - 1.5):
                                 self.logging.logger.info("inverse_minus_two_per_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 half_sell_limit_price = current_price - 50
