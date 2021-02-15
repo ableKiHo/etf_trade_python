@@ -1476,7 +1476,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 if meme_gubun == self.customType.SELL and sCode in self.current_hold_etf_stock_dict.keys():
                     if holding_quantity == 0:
                         del self.current_hold_etf_stock_dict[sCode]
-                        self.current_hold_stock_count = self.current_hold_stock_count - 1
+                        if sCode not in self.default_stock_list:
+                            self.current_hold_stock_count = self.current_hold_stock_count - 1
                     elif holding_quantity > 0:
                         if sCode in self.today_buy_etf_stock_dict.keys():
                             self.today_buy_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
