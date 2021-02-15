@@ -413,14 +413,18 @@ class DayTradingKiwoom(ParentKiwoom):
                         std_limit_price = buy_point[self.customType.CURRENT_PRICE]
                         half_buy_amount = math.trunc(self.max_buy_amount_by_stock / 2)
                         half_quantity = math.trunc((half_buy_amount / std_limit_price))
-                        std_quantity = math.trunc(half_quantity / 2)
+                        std_quantity = math.trunc(half_quantity / 3)
                         if std_quantity >= 1:
+                            self.logging.logger.info("conform_buy_case buy_point(current) break >> %s" % code)
+                            limit_price = std_limit_price + 50
+                            self.send_order_limit_stock_price(code, std_quantity, limit_price)
+
                             self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
-                            limit_price = std_limit_price - 5
+                            limit_price = std_limit_price
                             self.send_order_limit_stock_price(code, std_quantity, limit_price)
 
                             self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
-                            limit_price = std_limit_price - 10
+                            limit_price = std_limit_price - 5
                             self.send_order_limit_stock_price(code, half_quantity - std_quantity, limit_price)
 
                         max_quantity = math.trunc((half_buy_amount / std_limit_price))
@@ -428,11 +432,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if min_one_quantity >= 1:
                             self.logging.logger.info("conform_buy_case buy_point(- 25) break >> %s" % code)
-                            limit_price = std_limit_price - 25
+                            limit_price = std_limit_price - 20
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
                             self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
-                            limit_price = std_limit_price - 15
+                            limit_price = std_limit_price - 10
                             self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
                             self.logging.logger.info("conform_buy_case buy_point(- 40) break >> %s" % code)
