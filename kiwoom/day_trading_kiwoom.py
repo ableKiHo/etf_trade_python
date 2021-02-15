@@ -64,6 +64,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.default_analysis_search_timer2 = QTimer()
 
         self.current_hold_stock_count = 0
+        self.current_full_invest_hold_count = 0
 
         self.current_hold_etf_stock_dict = {}
 
@@ -126,6 +127,9 @@ class DayTradingKiwoom(ParentKiwoom):
         self.buy_invest_possible_deposit = self.d2_deposit - (self.max_buy_total_amount_by_index - self.total_inverse_amount)
         tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
         self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
+
+        if self.current_full_invest_hold_count <= self.current_hold_stock_count - 2:
+            self.current_hold_stock_count = self.current_hold_stock_count - 2
 
         if tmp_d2_max_invest_amount > 12000000:
             self.max_hold_stock_count = 8
@@ -1222,6 +1226,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 if code not in self.default_stock_list:
                     self.current_hold_stock_count = self.current_hold_stock_count + 1
                     self.total_invest_amount = self.total_invest_amount + total_chegual_price
+                    if total_chegual_price > math.trunc(self.half_sell_std_amount / 2):
+                        self.current_full_invest_hold_count = self.current_full_invest_hold_count + 1
                 else:
                     self.total_inverse_amount = self.total_inverse_amount + total_chegual_price
 
