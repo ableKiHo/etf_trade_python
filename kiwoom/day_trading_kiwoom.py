@@ -48,6 +48,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_invest_amount = 0
         self.total_invest_amount = 0
         self.total_inverse_amount = 0
+        self.max_add_buy_amount_by_day = 0
+        self.invest_add_buy_amount = 0
 
         self.buy_inverse_flag = False
 
@@ -129,7 +131,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
 
         if self.current_full_invest_hold_count <= self.current_hold_stock_count - 2:
-            self.current_hold_stock_count = self.current_hold_stock_count - 2
+            self.current_hold_stock_count = self.current_hold_stock_count - 1
 
         if tmp_d2_max_invest_amount > 12000000:
             self.max_hold_stock_count = 8
@@ -139,6 +141,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_invest_amount = tmp_d2_max_invest_amount
         self.max_buy_total_amount = math.trunc(self.max_invest_amount / self.max_hold_stock_count)
         self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.70)
+        self.max_add_buy_amount_by_day = math.trunc(self.max_buy_total_amount * 0.50)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
 
         self.line.notification("종목 별 MAX [%s] 최초매수 [%s] 추가매수 [%s]" % (self.max_buy_total_amount, self.max_buy_amount_by_stock, self.add_buy_max_amount_by_day))
@@ -240,8 +243,13 @@ class DayTradingKiwoom(ParentKiwoom):
             self.hold_stock_check_timer.stop()
             return
 
-        if self.max_invest_amount < self.total_invest_amount + self.max_buy_amount_by_stock:
+        if self.max_invest_amount < self.total_invest_amount + self.max_add_buy_amount_by_day:
             self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
+            self.hold_stock_check_timer.stop()
+            return
+
+        if self.invest_add_buy_amount >= self.max_add_buy_amount_by_day:
+            self.logging.logger.info("add_buy_etf_stock by day surplus funds to lack")
             self.hold_stock_check_timer.stop()
             return
 
@@ -294,6 +302,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
                         self.logging.logger.info("current_hold_etf_stock_dict conform_add_default_buy_case buy_point(- 15) break >> %s" % code)
                         self.today_order_etf_stock_list.append(code)
+                        self.invest_add_buy_amount = self.invest_add_buy_amount + limit_purchase_amount
                         self.send_order_limit_stock_price(code, quantity, limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
             else:
@@ -306,6 +315,9 @@ class DayTradingKiwoom(ParentKiwoom):
                     else:
                         available_amount = self.max_buy_total_amount - total_chegual_price
                         max_buy_count = math.trunc(available_amount / add_buy_point[self.customType.CURRENT_PRICE]) if available_amount >= add_buy_point[self.customType.CURRENT_PRICE] else 0
+
+                    if max_buy_count > 0:
+                        self.invest_add_buy_amount = self.invest_add_buy_amount + (max_buy_count * add_buy_point[self.customType.CURRENT_PRICE])
 
                     first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
                     second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
