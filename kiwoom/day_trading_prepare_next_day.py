@@ -110,7 +110,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
             row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c,
                    self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e,
-                   "ma20": '', "ma5": '', "ma10": '', "ma60": '', "ma120": ''}
+                   "ma20": '', "ma5": '', "ma10": '', "ma60": '', "ma120": '', "ma3": ''}
             new_rows.append(row)
 
         self.analysis_etf_target_dict[stock_code].update({"row": new_rows})
