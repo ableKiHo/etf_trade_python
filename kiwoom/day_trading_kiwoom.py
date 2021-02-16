@@ -247,8 +247,8 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
             self.hold_stock_check_timer.stop()
             return
-
-        if self.invest_add_buy_amount >= self.max_add_buy_amount_by_day:
+        remain_budget_rate = math.trunc(self.invest_add_buy_amount / self.max_add_buy_amount_by_day) * 100
+        if remain_budget_rate > 90:
             self.logging.logger.info("add_buy_etf_stock by day surplus funds to lack")
             self.hold_stock_check_timer.stop()
             return
