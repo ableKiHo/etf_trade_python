@@ -173,6 +173,14 @@ class DayTradingKiwoom(ParentKiwoom):
         self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
         self.sell_receive_stock_code.append(code)
 
+    def realtime_stop_loss_some_sell(self, code, per):
+        quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
+        sell_quantity = math.trunc(quantity * per)
+        if sell_quantity > 0:
+            self.logging.logger.info("realtime_stop_loss_some_sell_point break >> [%s] per:%s" % (code, per))
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, sell_quantity)
+            self.sell_receive_stock_code.append(code)
+
     def realtime_stop_loss_half_sell(self, code):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
         sell_quantity = math.trunc(quantity / 2) if quantity >= 2 else 0
@@ -848,10 +856,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if is_add_buy_posible is False:
 
-                            if 2.0 <= profit_rate < 3.0 and current_hold_stock["half_sell"] is False:
+                            if 2.0 <= profit_rate < 3.0 and "some_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("third_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                                current_hold_stock["half_sell_receipt"] = True
-                                self.realtime_stop_loss_half_sell(sCode)
+                                current_hold_stock["some_sell_receipt"] = True
+                                self.realtime_stop_loss_some_sell(sCode, 0.20)
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] > current_price and len(buy_after_rows) > 1:
                         if start_price < current_price:
@@ -919,8 +927,8 @@ class DayTradingKiwoom(ParentKiwoom):
                                     current_hold_stock["half_sell_receipt"] = True
                                     self.realtime_stop_loss_half_sell(sCode)
 
-                        elif "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and current_hold_stock["half_sell"] is True and today_tic["ma3"] > current_price:
-                            if highest_profit_rate > profit_rate >= 3.0:
+                        elif "half_sell_receipt" in current_hold_stock and current_hold_stock["half_sell_receipt"] is True and current_hold_stock["half_sell"] is True:
+                            if today_tic["ma3"] > current_price and highest_profit_rate > profit_rate >= 3.0:
                                 if profit_rate < (highest_profit_rate - 4.5):
                                     self.logging.logger.info("max down profit_rate(-4.5) check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                     current_hold_stock["full_sell_receipt"] = True
@@ -1056,7 +1064,6 @@ class DayTradingKiwoom(ParentKiwoom):
                             half_sell_limit_price = current_price - 50
                             current_hold_stock["full_sell_receipt"] = True
                             self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
-
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
