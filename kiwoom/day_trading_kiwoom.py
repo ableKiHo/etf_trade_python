@@ -794,9 +794,6 @@ class DayTradingKiwoom(ParentKiwoom):
                         if start_price < current_price:
                             return
 
-                        if realdata_std_lowest_price == current_price:
-                            return
-
                         if profit_rate >= 15.0:
                             self.logging.logger.info("third_highest_15_profit_sell_point check > [%s] >> %s / %s " % (sCode, current_price, profit_rate))
                             half_sell_limit_price = current_price - 50
