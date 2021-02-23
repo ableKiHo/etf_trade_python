@@ -176,18 +176,20 @@ class DayTradingKiwoom(ParentKiwoom):
     def realtime_stop_loss_some_sell(self, code, per):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
         sell_quantity = math.trunc(quantity * per)
+        self.logging.logger.info("realtime_stop_loss_some_sell_point break >> [%s] per:%s" % (code, per))
         if sell_quantity > 0:
-            self.logging.logger.info("realtime_stop_loss_some_sell_point break >> [%s] per:%s" % (code, per))
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, sell_quantity)
-            # self.sell_receive_stock_code.append(code)
+        else:
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
 
     def realtime_stop_loss_half_sell(self, code):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
         sell_quantity = math.trunc(quantity / 2) if quantity >= 2 else 0
+        self.logging.logger.info("realtime_stop_loss_half_sell_point break >> %s" % code)
         if sell_quantity > 0:
-            self.logging.logger.info("realtime_stop_loss_half_sell_point break >> %s" % code)
             self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, sell_quantity)
-            # self.sell_receive_stock_code.append(code)
+        else:
+            self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
 
     def realtime_stop_loss_limit_price_sell(self, code, limit_price):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -198,10 +200,11 @@ class DayTradingKiwoom(ParentKiwoom):
     def realtime_stop_loss_limit_half_sell(self, code, limit_price):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
         sell_quantity = math.trunc(quantity / 2) if quantity >= 2 else 0
+        self.logging.logger.info("realtime_stop_loss_half_sell_point break >> %s" % code)
         if sell_quantity > 0:
-            self.logging.logger.info("realtime_stop_loss_half_sell_point break >> %s" % code)
             self.sell_send_order_limit_price(code, self.sell_screen_meme_stock, sell_quantity, limit_price)
-            # self.sell_receive_stock_code.append(code)
+        else:
+            self.sell_send_order_limit_price(code, self.sell_screen_meme_stock, quantity, limit_price)
 
     def daily_candle_goni_point_check(self):
         if len(self.analysis_sell_etf_stock_list) == 0:
@@ -971,7 +974,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if current_hold_stock["half_sell"] is True and 10.0 > profit_rate >= 5.0 and "some_sell_receipt" not in current_hold_stock:
                             current_hold_stock["some_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.20)
+                            self.realtime_stop_loss_some_sell(sCode, 0.30)
 
                         if highest_profit_rate > profit_rate > 3.0:
                             if (highest_profit_rate - 3.3) <= profit_rate < (highest_profit_rate - 3.0):
