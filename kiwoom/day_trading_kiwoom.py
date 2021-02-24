@@ -860,7 +860,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             if 2.0 <= profit_rate < 3.0 and "some_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("third_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 current_hold_stock["some_sell_receipt"] = True
-                                self.realtime_stop_loss_some_sell(sCode, 0.20)
+                                self.realtime_stop_loss_some_sell(sCode, 0.30)
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] > current_price and len(buy_after_rows) > 1:
                         if start_price < current_price:
@@ -956,11 +956,11 @@ class DayTradingKiwoom(ParentKiwoom):
                                 self.realtime_stop_loss_sell(sCode)
                             else:
                                 current_hold_stock["half_sell_receipt"] = True
-                                self.realtime_stop_loss_half_sell(sCode)
+                                self.realtime_stop_loss_some_sell(sCode, 0.30)
 
                         if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is False and profit_rate >= 5.5 and "some_sell_receipt" not in current_hold_stock:
                             current_hold_stock["some_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.30)
+                            self.realtime_stop_loss_some_sell(sCode, 0.50)
 
                         if highest_profit_rate > profit_rate > 3.0:
                             if (highest_profit_rate - 3.3) <= profit_rate < (highest_profit_rate - 3.0):
@@ -1048,7 +1048,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         if "some_sell_receipt" not in current_hold_stock and 1.6 <= profit_rate < 3.0:
                             self.logging.logger.info("profit_std_half_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["some_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.20)
+                            self.realtime_stop_loss_some_sell(sCode, 0.30)
 
                         if "half_sell_receipt" not in current_hold_stock and 3.0 <= profit_rate < 5.5:
                             self.logging.logger.info("profit_std_half_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
@@ -1545,13 +1545,14 @@ class DayTradingKiwoom(ParentKiwoom):
                         if sCode in self.today_buy_etf_stock_dict.keys():
                             self.today_buy_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
                                                                          self.customType.HOLDING_QUANTITY: holding_quantity,
-                                                                         self.customType.PURCHASE_AMOUNT: total_buy_price,
-                                                                         "half_sell": True})
+                                                                         self.customType.PURCHASE_AMOUNT: total_buy_price})
+
                         if sCode in self.current_hold_etf_stock_dict.keys():
                             self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
                                                                             self.customType.HOLDING_QUANTITY: holding_quantity,
-                                                                            self.customType.PURCHASE_AMOUNT: total_buy_price,
-                                                                            "half_sell": True})
+                                                                            self.customType.PURCHASE_AMOUNT: total_buy_price})
+                            if "half_sell_receipt" in self.current_hold_etf_stock_dict[sCode] and self.current_hold_etf_stock_dict[sCode]["half_sell_receipt"] is True:
+                                self.current_hold_etf_stock_dict[sCode].update({"half_sell": True})
                             if "some_sell_receipt" in self.current_hold_etf_stock_dict[sCode] and self.current_hold_etf_stock_dict[sCode]["some_sell_receipt"] is True:
                                 self.current_hold_etf_stock_dict[sCode].update({"some_sell": True})
 
