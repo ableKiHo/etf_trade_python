@@ -949,21 +949,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["full_sell_receipt"] = True
                             self.realtime_stop_loss_sell(sCode)
 
-                        if "half_sell_receipt" not in current_hold_stock and 20.0 >= profit_rate >= 10.0:
-                            if current_hold_stock["half_sell"] is False:
-                                self.logging.logger.info("profit_10_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                                if total_chegual_price < (self.max_buy_amount_by_stock / 2):
-                                    current_hold_stock["full_sell_receipt"] = True
-                                    self.realtime_stop_loss_sell(sCode)
-                                else:
-                                    current_hold_stock["half_sell_receipt"] = True
-                                    self.realtime_stop_loss_half_sell(sCode)
-                            else:
-                                self.logging.logger.info("profit_10_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                                current_hold_stock["full_sell_receipt"] = True
-                                self.realtime_stop_loss_sell(sCode)
-
-                        if ("half_sell_receipt" not in current_hold_stock) and (10.0 > profit_rate >= 3.0) and (current_hold_stock["half_sell"] is False):
+                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 3.5 and current_hold_stock["half_sell"] is False and current_hold_stock["some_sell"] is False:
                             self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             if total_chegual_price < (self.max_buy_amount_by_stock / 2):
                                 current_hold_stock["full_sell_receipt"] = True
@@ -972,7 +958,7 @@ class DayTradingKiwoom(ParentKiwoom):
                                 current_hold_stock["half_sell_receipt"] = True
                                 self.realtime_stop_loss_half_sell(sCode)
 
-                        if current_hold_stock["half_sell"] is True and 10.0 > profit_rate >= 5.0 and "some_sell_receipt" not in current_hold_stock:
+                        if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is False and profit_rate >= 5.5 and "some_sell_receipt" not in current_hold_stock:
                             current_hold_stock["some_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.30)
 
@@ -1286,6 +1272,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.current_hold_etf_stock_dict[code].update({self.customType.AMOUNT_OF_TRADING_AVAILABLE: possible_quantity})
                 self.current_hold_etf_stock_dict[code].update({"row": []})
                 self.current_hold_etf_stock_dict[code].update({"half_sell": False})
+                self.current_hold_etf_stock_dict[code].update({"some_sell": False})
 
                 # self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
                 # self.logging.logger.info(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
@@ -1424,17 +1411,20 @@ class DayTradingKiwoom(ParentKiwoom):
             for line in lines:
                 if line != "":
                     ls = line.split("\t")
-                    if len(ls) == 2:
+                    if len(ls) < 4:
                         stock_code = ls[0]
                         purchase_date = ls[1].rstrip('\n')
                         half_sell = False
+                        some_sell = False
                     else:
                         stock_code = ls[0]
                         purchase_date = ls[1]
-                        half_sell = ls[2].rstrip('\n')
+                        half_sell = ls[2]
+                        some_sell = ls[3].rstrip('\n')
                     if stock_code in self.current_hold_etf_stock_dict.keys():
                         self.current_hold_etf_stock_dict[stock_code].update({self.customType.DATE: purchase_date.strip()})
                         self.current_hold_etf_stock_dict[stock_code].update({"half_sell": eval(half_sell)})
+                        self.current_hold_etf_stock_dict[stock_code].update({"some_sell": eval(some_sell)})
             f.close()
 
     def screen_number_setting(self, cal_dict):
@@ -1562,6 +1552,9 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                             self.customType.HOLDING_QUANTITY: holding_quantity,
                                                                             self.customType.PURCHASE_AMOUNT: total_buy_price,
                                                                             "half_sell": True})
+                            if "some_sell_receipt" in self.current_hold_etf_stock_dict[sCode] and self.current_hold_etf_stock_dict[sCode]["some_sell_receipt"] is True:
+                                self.current_hold_etf_stock_dict[sCode].update({"some_sell": True})
+
                 else:
                     if sCode in self.today_buy_etf_stock_dict.keys():
                         self.today_buy_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
@@ -1583,7 +1576,8 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
                                                                       self.customType.TIGHTENING_TIME: get_today_by_format('%Y%m%d%H%M%S'),
                                                                       self.customType.PURCHASE_AMOUNT: total_buy_price,
-                                                                      "half_sell": False}})
+                                                                      "half_sell": False,
+                                                                      "some_sell": False}})
                         self.today_buy_stock_real_reg(sCode)
                     if sCode not in self.default_stock_list:
                         self.total_invest_amount = self.total_invest_amount + total_buy_price
@@ -1625,10 +1619,14 @@ class DayTradingKiwoom(ParentKiwoom):
                 half_sell = value["half_sell"]
             else:
                 half_sell = False
+            if "some_sell" in value.keys():
+                some_sell = value["some_sell"]
+            else:
+                some_sell = False
 
             f = open(self.hold_etf_file_path, "a", encoding="utf8")
-            f.write("%s\t%s\t%s\n" %
-                    (code, purchase_date, half_sell))
+            f.write("%s\t%s\t%s\t%s\n" %
+                    (code, purchase_date, half_sell, some_sell))
             f.close()
 
         for code in self.today_buy_etf_stock_dict.keys():
@@ -1637,10 +1635,14 @@ class DayTradingKiwoom(ParentKiwoom):
                 half_sell = value["half_sell"]
             else:
                 half_sell = False
+            if "some_sell" in value.keys():
+                some_sell = value["some_sell"]
+            else:
+                some_sell = False
 
             f = open(self.hold_etf_file_path, "a", encoding="utf8")
-            f.write("%s\t%s\t%s\n" %
-                    (code, self.today, half_sell))
+            f.write("%s\t%s\t%s\t%s\n" %
+                    (code, self.today, half_sell, some_sell))
             f.close()
 
     def get_next_search_etf_stock_code(self, max_index=4):
