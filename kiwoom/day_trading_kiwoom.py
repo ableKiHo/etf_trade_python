@@ -818,6 +818,11 @@ class DayTradingKiwoom(ParentKiwoom):
                                 current_hold_stock["full_sell_receipt"] = True
                                 self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
+                        if len(buy_after_rows) > 10 and current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is True:
+                            self.logging.logger.info("max period sell [%s] >> ma3:%s / period:%s / current_price:%s" % (sCode, today_tic["ma3"], len(buy_after_rows), current_price))
+                            current_hold_stock["full_sell_receipt"] = True
+                            self.realtime_stop_loss_sell(sCode)
+
                     if len(buy_after_rows) > 2 and thirdday_tic[self.customType.CURRENT_PRICE] > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                         if start_price < current_price:
                             return
