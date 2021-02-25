@@ -797,7 +797,26 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     self.logging.logger.info("price compare [%s] thirdday:[%s] yesterday:[%s] current:[%s]" % (
                         sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price))
-                    buy_after_rows = [x for x in rows if x[self.customType.DATE] >= current_hold_stock[self.customType.DATE]]
+                    buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
+
+                    if profit_rate > 3.0 and len(buy_after_rows) > 0 and today_tic["ma3"] > current_price:
+                        if start_price < current_price:
+                            pass
+                        highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
+                        max_highest_price = max(highest_list)
+                        if max_highest_price < realdata_std_higest_price:
+                            max_highest_price = realdata_std_higest_price
+
+                        if max_highest_price > current_price:
+                            max_profit_gap_price = max_highest_price - buy_price
+                            down_gap_price = max_highest_price - current_price
+                            down_gap_rate = (down_gap_price / max_profit_gap_price) * 100
+                            if down_gap_rate < 55:
+
+                                self.logging.logger.info("max down gap sell [%s] >> ma3:%s / max_highest_price:%s / current_price:%s" % (sCode, today_tic["ma3"], max_highest_price, current_price))
+                                half_sell_limit_price = current_price - 50
+                                current_hold_stock["full_sell_receipt"] = True
+                                self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
                     if len(buy_after_rows) > 2 and thirdday_tic[self.customType.CURRENT_PRICE] > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                         if start_price < current_price:
