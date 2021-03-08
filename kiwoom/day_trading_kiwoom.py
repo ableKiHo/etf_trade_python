@@ -369,9 +369,9 @@ class DayTradingKiwoom(ParentKiwoom):
         if self.buy_inverse_flag is True:
             return
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '101500') <= currentDate <= (self.today + '101800'):
+        if (self.today + '103500') <= currentDate <= (self.today + '103800'):
             pass
-        elif (self.today + '111500') <= currentDate <= (self.today + '111800'):
+        elif (self.today + '113500') <= currentDate <= (self.today + '113800'):
             pass
         else:
             return
@@ -388,9 +388,9 @@ class DayTradingKiwoom(ParentKiwoom):
     def loop_other_target_buy_etf_stock(self):
         self.analysis_search_timer1.start(1000 * 60)
         currentDate = get_today_by_format('%Y%m%d%H%M%S')
-        if (self.today + '100100') <= currentDate <= (self.today + '100500'):
+        if (self.today + '102100') <= currentDate <= (self.today + '102500'):
             pass
-        elif (self.today + '110100') <= currentDate <= (self.today + '110500'):
+        elif (self.today + '112100') <= currentDate <= (self.today + '112500'):
             pass
         else:
             return
@@ -920,7 +920,7 @@ class DayTradingKiwoom(ParentKiwoom):
                                 current_hold_stock["half_sell_receipt"] = True
                                 self.realtime_stop_loss_some_sell(sCode, 0.30)
 
-                        if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is False and profit_rate >= 7.0 and "some_sell_receipt" not in current_hold_stock:
+                        if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is False and profit_rate >= 5.5 and "some_sell_receipt" not in current_hold_stock:
                             current_hold_stock["some_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.50)
 
