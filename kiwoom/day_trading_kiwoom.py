@@ -958,7 +958,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                     yesterday_tic = analysis_rows[1]
-
+                    self.logging.logger.info("price compare [%s] yesterday:[%s] current:[%s]" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price))
                     if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                         if start_price < current_price:
                             return
