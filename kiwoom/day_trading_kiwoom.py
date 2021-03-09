@@ -530,21 +530,22 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     if profit_rate < -5.0:
                         max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
-                        limit_price = buy_point[self.customType.CURRENT_PRICE] + 50
-                        self.send_order_limit_stock_price(code, max_buy_count, limit_price)
+
                     else:
                         max_buy_count = math.trunc((self.max_buy_day_amount_by_index * 2) / buy_point[self.customType.CURRENT_PRICE])
-                        limit_price = buy_point[self.customType.CURRENT_PRICE] + 50
-                        self.send_order_limit_stock_price(code, max_buy_count, limit_price)
+
+                    limit_price = buy_point[self.customType.CURRENT_PRICE] + 50
+                    self.send_order_limit_stock_price(code, max_buy_count, limit_price)
+                    self.buy_inverse_flag = True
 
                     max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
                     buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
-                    min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
+                    min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 20
                     if buy_count >= 1:
                         self.send_order_limit_stock_price(code, buy_count, min_limit_price)
 
                     max_buy_count = max_buy_count - buy_count
-                    second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
+                    second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
                     if max_buy_count >= 1:
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
