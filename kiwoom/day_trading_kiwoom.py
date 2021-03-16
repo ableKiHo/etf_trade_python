@@ -126,8 +126,15 @@ class DayTradingKiwoom(ParentKiwoom):
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
     def init_stock_values(self):
+        self.logging.logger.info("init_stock_values")
         self.buy_invest_possible_deposit = self.d2_deposit - (self.max_buy_total_amount_by_index - self.total_inverse_amount)
         tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
+        self.logging.logger.info("buy_invest_possible_deposit:[%s]" % self.buy_invest_possible_deposit)
+        self.logging.logger.info("d2_deposit:[%s]" % self.d2_deposit)
+        self.logging.logger.info("max_buy_total_amount_by_index:[%s]" % self.max_buy_total_amount_by_index)
+        self.logging.logger.info("total_inverse_amount:[%s]" % self.total_inverse_amount)
+        self.logging.logger.info("tmp_d2_max_invest_amount:[%s]" % tmp_d2_max_invest_amount)
+        self.logging.logger.info("total_invest_amount:[%s]" % self.total_invest_amount)
         self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s] 인버스 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount, self.total_inverse_amount))
 
         if self.current_full_invest_hold_count <= self.current_hold_stock_count - 2:
@@ -143,6 +150,12 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.70)
         self.max_add_buy_amount_by_day = math.trunc(self.max_buy_total_amount * 0.50)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
+
+        self.logging.logger.info("max_invest_amount:[%s]" % self.max_invest_amount)
+        self.logging.logger.info("max_buy_total_amount:[%s]" % self.max_buy_total_amount)
+        self.logging.logger.info("max_buy_amount_by_stock:[%s]" % self.max_buy_amount_by_stock)
+        self.logging.logger.info("max_add_buy_amount_by_day:[%s]" % self.max_add_buy_amount_by_day)
+        self.logging.logger.info("add_buy_max_amount_by_day:[%s]" % self.add_buy_max_amount_by_day)
 
         self.line.notification("종목 별 MAX [%s] 최초매수 [%s] 추가매수 [%s]" % (self.max_buy_total_amount, self.max_buy_amount_by_stock, self.add_buy_max_amount_by_day))
         self.line.notification("최대보유 [%s/%s]" % (self.max_hold_stock_count, self.current_hold_stock_count))
@@ -256,12 +269,15 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if self.max_invest_amount < self.total_invest_amount + self.max_add_buy_amount_by_day:
             self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
+            self.logging.logger.info("max_invest_amount:[%s]/total_invest_amount:[%s]/max_add_buy_amount_by_day:[%s]" % (self.max_invest_amount, self.total_invest_amount, self.max_add_buy_amount_by_day))
             self.hold_stock_check_timer.stop()
             return
 
         remain_budget_rate = math.trunc(self.invest_add_buy_amount / self.max_add_buy_amount_by_day * 100)
         if remain_budget_rate > 90:
             self.logging.logger.info("add_buy_etf_stock by day surplus funds to lack")
+            self.logging.logger.info(
+                "remain_budget_rate:[%s]/invest_add_buy_amount:[%s]/max_add_buy_amount_by_day:[%s]" % (remain_budget_rate, self.invest_add_buy_amount, self.max_add_buy_amount_by_day))
             self.hold_stock_check_timer.stop()
             return
 
