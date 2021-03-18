@@ -335,8 +335,9 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
             else:
                 add_buy_point = self.get_conform_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
-                if bool(add_buy_point):
-                    total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+                total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
+                if bool(add_buy_point) and self.max_buy_total_amount > total_chegual_price:
+
                     self.logging.logger.info("conform_add_stock_buy_case buy_point break >> %s" % code)
                     if self.max_buy_total_amount >= total_chegual_price + self.add_buy_max_amount_by_day:
                         limit_purchase_amount = self.add_buy_max_amount_by_day
@@ -1470,6 +1471,11 @@ class DayTradingKiwoom(ParentKiwoom):
             if order_status == self.customType.CONCLUSION:
                 self.logging.logger.info(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
                 #self.line.notification(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
+                if sCode not in self.default_stock_list:
+                    if order_gubun == self.customType.BUY:
+                        self.total_invest_amount = self.total_invest_amount + (chegual_price * chegual_quantity)
+                    elif order_gubun == self.customType.SELL:
+                        self.total_invest_amount = self.total_invest_amount - (chegual_price * chegual_quantity)
 
         elif int(sGubun) == 1:  # 잔고
 
@@ -1538,8 +1544,6 @@ class DayTradingKiwoom(ParentKiwoom):
                                                                       "half_sell": False,
                                                                       "some_sell": False}})
                         self.today_buy_stock_real_reg(sCode)
-                    if sCode not in self.default_stock_list:
-                        self.total_invest_amount = self.total_invest_amount + total_buy_price
 
     def call_exit(self):
         sys.exit()
