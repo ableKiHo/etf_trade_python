@@ -792,7 +792,8 @@ class DayTradingKiwoom(ParentKiwoom):
             buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
             total_chegual_price = current_hold_stock[self.customType.PURCHASE_AMOUNT]
-            is_add_buy_posible = True if (total_chegual_price + self.add_buy_max_amount_by_day) < self.max_buy_total_amount else False
+            is_add_buy_posible = True if (math.trunc(total_chegual_price/self.max_buy_total_amount)*100) < 90 else False
+            #is_add_buy_posible = True if (total_chegual_price + self.add_buy_max_amount_by_day) < self.max_buy_total_amount else False
 
             if sCode not in self.default_stock_list:
 
