@@ -792,10 +792,12 @@ class DayTradingKiwoom(ParentKiwoom):
             buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
             total_chegual_price = current_hold_stock[self.customType.PURCHASE_AMOUNT]
-            is_add_buy_posible = True if (math.trunc(total_chegual_price/self.max_buy_total_amount)*100) < 90 else False
+
             #is_add_buy_posible = True if (total_chegual_price + self.add_buy_max_amount_by_day) < self.max_buy_total_amount else False
 
             if sCode not in self.default_stock_list:
+
+                is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount) * 100) < 90 else False
 
                 if current_price > buy_price and profit_rate >= 1.8:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
@@ -976,6 +978,8 @@ class DayTradingKiwoom(ParentKiwoom):
                                 self.realtime_stop_loss_some_sell(sCode, 0.20)
 
             else:
+                is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount_by_index) * 100) < 90 else False
+
                 if current_price > buy_price and profit_rate >= 1.0:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
@@ -1020,6 +1024,13 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.logging.logger.info("half_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["half_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.30)
+
+                        if is_add_buy_posible is False:
+
+                            if 1.1 <= profit_rate < 3.1 and "burn_sell_receipt" not in current_hold_stock:
+                                self.logging.logger.info("today_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
+                                current_hold_stock["burn_sell_receipt"] = True
+                                self.realtime_stop_loss_some_sell(sCode, 0.20)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
