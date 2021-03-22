@@ -799,7 +799,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount) * 100) < 90 else False
 
-                if current_price > buy_price and profit_rate >= 1.8:
+                if current_price > buy_price and profit_rate >= 1.0:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                     rows = current_hold_stock["row"]
@@ -816,8 +816,8 @@ class DayTradingKiwoom(ParentKiwoom):
                     yesterday_tic = analysis_rows[1]
                     thirdday_tic = analysis_rows[2]
 
-                    self.logging.logger.info("price compare [%s] thirdday:[%s] yesterday:[%s] current:[%s]" % (
-                        sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price))
+                    self.logging.logger.info("price compare [%s] thirdday:[%s] yesterday:[%s] current:[%s] is_add_buy_posible:[%s]" % (
+                        sCode, thirdday_tic[self.customType.CURRENT_PRICE], yesterday_tic[self.customType.CURRENT_PRICE], current_price, is_add_buy_posible))
                     buy_after_rows = [x for x in rows if x[self.customType.DATE] > current_hold_stock[self.customType.DATE]]
 
                     if profit_rate > 3.0 and len(buy_after_rows) > 0 and today_tic["ma3"] > current_price:
@@ -905,7 +905,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             if 1.5 <= profit_rate < 3.0 and "burn_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("third_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 current_hold_stock["burn_sell_receipt"] = True
-                                self.realtime_stop_loss_some_sell(sCode, 0.25)
+                                self.realtime_stop_loss_some_sell(sCode, 0.15)
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] > current_price and len(buy_after_rows) > 1:
                         if start_price < current_price:
@@ -938,10 +938,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if is_add_buy_posible is False and today_tic["ma3"] > current_price:
 
-                            if 1.3 <= profit_rate and "burn_sell_receipt" not in current_hold_stock:
+                            if 1.0 <= profit_rate and "burn_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("yesterday_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s" % (sCode, current_price, profit_rate))
                                 current_hold_stock["burn_sell_receipt"] = True
-                                self.realtime_stop_loss_some_sell(sCode, 0.20)
+                                self.realtime_stop_loss_some_sell(sCode, 0.10)
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
@@ -975,7 +975,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             if 1.1 <= profit_rate < 3.1 and "burn_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("today_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 current_hold_stock["burn_sell_receipt"] = True
-                                self.realtime_stop_loss_some_sell(sCode, 0.20)
+                                self.realtime_stop_loss_some_sell(sCode, 0.15)
 
             else:
                 is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount_by_index) * 100) < 90 else False
