@@ -269,7 +269,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
         if self.max_invest_amount < self.total_invest_amount + self.max_add_buy_amount_by_day:
             self.logging.logger.info("add_buy_etf_stock surplus funds to lack")
-            self.logging.logger.info("max_invest_amount:[%s]/total_invest_amount:[%s]/max_add_buy_amount_by_day:[%s]" % (self.max_invest_amount, self.total_invest_amount, self.max_add_buy_amount_by_day))
+            self.logging.logger.info(
+                "max_invest_amount:[%s]/total_invest_amount:[%s]/max_add_buy_amount_by_day:[%s]" % (self.max_invest_amount, self.total_invest_amount, self.max_add_buy_amount_by_day))
             self.hold_stock_check_timer.stop()
             return
 
@@ -793,11 +794,11 @@ class DayTradingKiwoom(ParentKiwoom):
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
             total_chegual_price = current_hold_stock[self.customType.PURCHASE_AMOUNT]
 
-            #is_add_buy_posible = True if (total_chegual_price + self.add_buy_max_amount_by_day) < self.max_buy_total_amount else False
+            # is_add_buy_posible = True if (total_chegual_price + self.add_buy_max_amount_by_day) < self.max_buy_total_amount else False
 
             if sCode not in self.default_stock_list:
 
-                is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount) * 100) < 90 else False
+                is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount * 100)) < 90 else False
 
                 if current_price > buy_price and profit_rate >= 1.0:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
@@ -833,7 +834,6 @@ class DayTradingKiwoom(ParentKiwoom):
                             down_gap_price = max_highest_price - current_price
                             down_gap_rate = (down_gap_price / max_profit_gap_price) * 100
                             if down_gap_rate < 55:
-
                                 self.logging.logger.info("max down gap sell [%s] >> ma3:%s / max_highest_price:%s / current_price:%s" % (sCode, today_tic["ma3"], max_highest_price, current_price))
                                 half_sell_limit_price = current_price - 50
                                 current_hold_stock["full_sell_receipt"] = True
@@ -945,7 +945,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
-                        self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s / half_sell:%s" % (sCode, highest_profit_rate, profit_rate, current_hold_stock["half_sell"]))
+                        self.logging.logger.info(
+                            "realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s / half_sell:%s" % (sCode, highest_profit_rate, profit_rate, current_hold_stock["half_sell"]))
                         # 20% 이상
                         if profit_rate > 20.0:
                             self.logging.logger.info("highest_20_profit_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
@@ -978,7 +979,7 @@ class DayTradingKiwoom(ParentKiwoom):
                                 self.realtime_stop_loss_some_sell(sCode, 0.15)
 
             else:
-                is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount_by_index) * 100) < 90 else False
+                is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount_by_index * 100)) < 90 else False
 
                 if current_price > buy_price and profit_rate >= 1.0:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
@@ -995,7 +996,8 @@ class DayTradingKiwoom(ParentKiwoom):
                         highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                     yesterday_tic = analysis_rows[1]
-                    self.logging.logger.info("price compare [%s] yesterday:[%s] current:[%s]" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price))
+                    self.logging.logger.info(
+                        "price compare [%s] yesterday:[%s] current:[%s] is_add_buy_posible" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price, is_add_buy_posible))
                     if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                         if start_price < current_price:
                             return
@@ -1272,7 +1274,7 @@ class DayTradingKiwoom(ParentKiwoom):
         # self.buy_possible_deposit = math.trunc(self.buy_possible_deposit / 2)
 
         self.logging.logger.info(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
-        #self.line.notification(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
+        # self.line.notification(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
 
         self.stop_screen_cancel(self.screen_my_info)
         self.detail_account_info_event_loop.exit()
@@ -1482,7 +1484,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
             if order_status == self.customType.CONCLUSION:
                 self.logging.logger.info(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
-                #self.line.notification(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
+                # self.line.notification(self.logType.CONCLUSION_ORDER_STATUS_LOG % (order_gubun, sCode, stock_name, order_status, chegual_price, chegual_quantity))
                 if sCode not in self.default_stock_list:
                     if order_gubun == self.customType.BUY:
                         self.total_invest_amount = self.total_invest_amount + (chegual_price * chegual_quantity)
@@ -1510,7 +1512,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 income_rate = self.dynamicCall("GetChejanData(int)", self.realType.REALTYPE[self.customType.BALANCE][self.customType.PROFIT_AND_LOSS])
 
                 self.logging.logger.info(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
-                #self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
+                # self.line.notification(self.logType.CHEJAN_STATUS_LOG % (meme_gubun, sCode, stock_name, holding_quantity, available_quantity, buy_price, total_buy_price, income_rate))
 
                 if meme_gubun == self.customType.SELL and sCode in self.current_hold_etf_stock_dict.keys():
                     if holding_quantity == 0:
