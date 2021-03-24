@@ -800,7 +800,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                 is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount * 100)) < 90 else False
 
-                if current_price > buy_price and profit_rate >= 1.0:
+                if current_price > buy_price and profit_rate > 0.9:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                     rows = current_hold_stock["row"]
@@ -953,7 +953,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["full_sell_receipt"] = True
                             self.realtime_stop_loss_sell(sCode)
 
-                        if "half_sell_receipt" not in current_hold_stock and profit_rate > 3.1 and current_hold_stock["half_sell"] is False and current_hold_stock["some_sell"] is False:
+                        if "half_sell_receipt" not in current_hold_stock and profit_rate >= 3.1 and current_hold_stock["half_sell"] is False and current_hold_stock["some_sell"] is False:
                             self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             if total_chegual_price < (self.max_buy_amount_by_stock / 2):
                                 current_hold_stock["full_sell_receipt"] = True
@@ -966,7 +966,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["some_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.50)
 
-                        if today_tic["ma5"] > current_price and profit_rate > 3.0:
+                        if today_tic["ma5"] > current_price and profit_rate >= 3.0:
                             self.logging.logger.info("ma5 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, today_tic["ma5"], profit_rate))
                             current_hold_stock["full_sell_receipt"] = True
                             self.realtime_stop_loss_sell(sCode)
@@ -981,7 +981,7 @@ class DayTradingKiwoom(ParentKiwoom):
             else:
                 is_add_buy_posible = True if (math.trunc(total_chegual_price / self.max_buy_total_amount_by_index * 100)) < 90 else False
 
-                if current_price > buy_price and profit_rate >= 1.0:
+                if current_price > buy_price and profit_rate >= 0.9:
                     highest_profit_rate = round((realdata_std_higest_price - buy_price) / buy_price * 100, 2)
 
                     rows = current_hold_stock["row"]
@@ -997,7 +997,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     yesterday_tic = analysis_rows[1]
                     self.logging.logger.info(
-                        "price compare [%s] yesterday:[%s] current:[%s] is_add_buy_posible" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price, is_add_buy_posible))
+                        "price compare [%s] yesterday:[%s] current:[%s] is_add_buy_posible:[%s]" % (sCode, yesterday_tic[self.customType.CURRENT_PRICE], current_price, is_add_buy_posible))
                     if yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
                         if start_price < current_price:
                             return
@@ -1017,19 +1017,19 @@ class DayTradingKiwoom(ParentKiwoom):
                     elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
                         self.logging.logger.info("realdata_std_info[%s] >> highest_profit_rate:%s / profit_rate:%s" % (sCode, highest_profit_rate, profit_rate))
 
-                        if "some_sell_receipt" not in current_hold_stock and profit_rate > 3.0:
+                        if "some_sell_receipt" not in current_hold_stock and profit_rate >= 3.0:
                             self.logging.logger.info("some_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["some_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.30)
+                            self.realtime_stop_loss_some_sell(sCode, 0.50)
 
-                        if "some_sell_receipt" not in current_hold_stock and "half_sell_receipt" not in current_hold_stock and profit_rate > 1.5:
+                        if "half_sell_receipt" not in current_hold_stock and 3.0 > profit_rate >= 1.5:
                             self.logging.logger.info("half_sell_point check1 > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["half_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.30)
 
                         if is_add_buy_posible is False:
 
-                            if 1.1 <= profit_rate < 3.1 and "burn_sell_receipt" not in current_hold_stock:
+                            if 1.1 <= profit_rate < 1.5 and "burn_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("today_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                                 current_hold_stock["burn_sell_receipt"] = True
                                 self.realtime_stop_loss_some_sell(sCode, 0.20)
