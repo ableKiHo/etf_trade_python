@@ -941,7 +941,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if total_chegual_price > math.trunc(self.max_buy_amount_by_stock / 2) and profit_rate >= 10.0 and "ten_per_sell_receipt" not in current_hold_stock:
                             current_hold_stock["ten_per_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.10)
+                            self.realtime_stop_loss_some_sell(sCode, 0.15)
 
                         if today_tic["ma5"] > current_price and profit_rate > 3.0:
                             self.logging.logger.info("ma5 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, today_tic["ma5"], profit_rate))
@@ -984,7 +984,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if total_chegual_price > math.trunc(self.max_buy_amount_by_stock / 2) and profit_rate >= 10.0 and "ten_per_sell_receipt" not in current_hold_stock:
                             current_hold_stock["ten_per_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.10)
+                            self.realtime_stop_loss_some_sell(sCode, 0.15)
 
                         if today_tic["ma5"] > current_price and profit_rate >= 3.0:
                             self.logging.logger.info("ma5 line under check > [%s] >> %s / %s / %s" % (sCode, current_price, today_tic["ma5"], profit_rate))
