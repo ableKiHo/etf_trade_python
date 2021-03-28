@@ -917,8 +917,6 @@ class DayTradingKiwoom(ParentKiwoom):
                         if start_price < current_price:
                             return
 
-                        yesterday_highest_profit_rate = round((yesterday_tic[self.customType.HIGHEST_PRICE] - buy_price) / buy_price * 100, 2)
-
                         if profit_rate >= 17.0:
                             self.logging.logger.info("yesterday_highest_17_profit_sell_point check > [%s] >> %s / %s " % (sCode, current_price, profit_rate))
                             current_hold_stock["some_sell_receipt"] = True
@@ -948,9 +946,14 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["full_sell_receipt"] = True
                             self.realtime_stop_loss_sell(sCode)
 
-                        if yesterday_highest_profit_rate >= 6.0 and (yesterday_highest_profit_rate / 2) >= profit_rate:
-                            current_hold_stock["full_sell_receipt"] = True
-                            self.realtime_stop_loss_sell(sCode)
+                        if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is True:
+                            yesterday_highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
+                            yesterday_max_highest_price = max(yesterday_highest_list)
+                            yesterday_max_highest_profit_rate = round((yesterday_max_highest_price - buy_price) / buy_price * 100, 2)
+
+                            if yesterday_max_highest_profit_rate >= 6.0 and (yesterday_max_highest_profit_rate / 2) >= profit_rate >= 3.0:
+                                current_hold_stock["full_sell_receipt"] = True
+                                self.realtime_stop_loss_sell(sCode)
 
                         if is_add_buy_posible is False and today_tic["ma3"] > current_price:
 
