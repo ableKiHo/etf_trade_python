@@ -27,7 +27,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.screen_etf_day_stock = "4050"
         self.screen_opt10080_info = "4060"
 
-        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '반도체': {}, 'KRX300': {}, '200TR': {}, '200': {}, 'MSCI': {}, '헬스케어': {}, '고배당': {}}
+        self.represent_keyword_dict = {self.customType.KOSPI: {}, self.customType.KOSDAQ: {}, '은행': {}, '반도체': {}, 'KRX300': {}, '200TR': {}, '200': {}, 'MSCI': {}, '헬스케어': {}, '고배당': {}}
         # self.recommand_keyword_list = ['TR', '고배당', 'TOP10', '저변동', '성장', '블루칩', '우선주', '배당성장']
         self.recommand_keyword_list = []
 
