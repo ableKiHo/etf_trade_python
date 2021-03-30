@@ -986,7 +986,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.realtime_stop_loss_sell(sCode)
 
                         if is_add_buy_posible is False or (
-                                total_chegual_price > math.trunc(self.max_buy_amount_by_stock / 2) and is_add_buy_posible is True and current_hold_stock["half_sell"] is False):
+                                total_chegual_price > math.trunc(self.max_buy_amount_by_stock * 0.66) and is_add_buy_posible is True and current_hold_stock["half_sell"] is False):
 
                             if 1.0 <= profit_rate < 3.0 and "burn_sell_receipt" not in current_hold_stock:
                                 self.logging.logger.info("today_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
