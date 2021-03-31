@@ -1544,6 +1544,9 @@ class DayTradingKiwoom(ParentKiwoom):
                             self.current_hold_etf_stock_dict[sCode].update({self.customType.PURCHASE_PRICE: buy_price,
                                                                             self.customType.HOLDING_QUANTITY: holding_quantity,
                                                                             self.customType.PURCHASE_AMOUNT: total_buy_price})
+                            if available_quantity != holding_quantity:
+                                return
+
                             if sCode not in self.default_stock_list and "half_sell_receipt" in self.current_hold_etf_stock_dict[sCode] and self.current_hold_etf_stock_dict[sCode]["half_sell_receipt"] is True:
                                 self.current_hold_etf_stock_dict[sCode].update({"half_sell": True})
                             if sCode not in self.default_stock_list and "some_sell_receipt" in self.current_hold_etf_stock_dict[sCode] and self.current_hold_etf_stock_dict[sCode]["some_sell_receipt"] is True:
