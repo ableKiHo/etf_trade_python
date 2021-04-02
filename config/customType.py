@@ -51,6 +51,7 @@ class CustomType():
         self.TOTAL_RETURN = '총수익률(%)'
         self.STOCK_NUMBER = '종목번호'
         self.PURCHASE_PRICE = '매입가'
+        self.TOTAL_CHARGE = '수수료합'
         self.YIELD = '수익률(%)'
         self.PURCHASE_AMOUNT = '매입금액'
         self.AMOUNT_OF_TRADING_AVAILABLE = '매매가능수량'

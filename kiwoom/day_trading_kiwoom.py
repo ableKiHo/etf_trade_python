@@ -796,7 +796,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if "full_sell_receipt" in current_hold_stock and current_hold_stock["full_sell_receipt"]:
                 return
 
-            buy_price = current_hold_stock[self.customType.PURCHASE_PRICE]
+            buy_price = current_hold_stock[self.customType.PURCHASE_PRICE] + current_hold_stock[self.customType.TOTAL_CHARGE]
             profit_rate = round((current_price - buy_price) / buy_price * 100, 2)
             total_chegual_price = current_hold_stock[self.customType.PURCHASE_AMOUNT]
 
@@ -1226,8 +1226,9 @@ class DayTradingKiwoom(ParentKiwoom):
             current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.CURRENT_PRICE)
             total_chegual_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.PURCHASE_AMOUNT)
             possible_quantity = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.AMOUNT_OF_TRADING_AVAILABLE)
+            charge = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.TOTAL_CHARGE)
 
-            self.logging.logger.info(self.logType.OPW00018_DETAIL_LOG % (code, code_nm, stock_quantity, buy_price, learn_rate, current_price))
+            self.logging.logger.info(self.logType.OPW00018_DETAIL_LOG % (code, code_nm, stock_quantity, buy_price, learn_rate, current_price, charge))
 
             stock_quantity = int(stock_quantity.strip())
             buy_price = int(buy_price.strip())
@@ -1235,6 +1236,10 @@ class DayTradingKiwoom(ParentKiwoom):
             current_price = int(current_price.strip())
             total_chegual_price = int(total_chegual_price.strip())
             possible_quantity = int(possible_quantity.strip())
+            if charge.strip() == '':
+                charge = 0
+            else:
+                charge = int(charge)
 
             if code not in self.current_hold_etf_stock_dict.keys():
                 self.current_hold_etf_stock_dict[code] = {}
@@ -1247,6 +1252,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.current_hold_etf_stock_dict[code].update({self.customType.CURRENT_PRICE: current_price})
                 self.current_hold_etf_stock_dict[code].update({self.customType.PURCHASE_AMOUNT: total_chegual_price})
                 self.current_hold_etf_stock_dict[code].update({self.customType.AMOUNT_OF_TRADING_AVAILABLE: possible_quantity})
+                self.current_hold_etf_stock_dict[code].update({self.customType.TOTAL_CHARGE: charge})
                 self.current_hold_etf_stock_dict[code].update({"row": []})
                 self.current_hold_etf_stock_dict[code].update({"half_sell": False})
                 self.current_hold_etf_stock_dict[code].update({"some_sell": False})
