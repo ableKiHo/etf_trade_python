@@ -1239,7 +1239,7 @@ class DayTradingKiwoom(ParentKiwoom):
             if charge.strip() == '':
                 charge = 0
             else:
-                charge = int(charge)
+                charge = math.trunc(int(charge)/possible_quantity)
 
             if code not in self.current_hold_etf_stock_dict.keys():
                 self.current_hold_etf_stock_dict[code] = {}
