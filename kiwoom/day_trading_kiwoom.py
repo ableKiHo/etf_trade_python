@@ -875,6 +875,11 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["full_sell_receipt"] = True
                             self.realtime_stop_loss_sell(sCode)
 
+                        if 3.0 <= profit_rate < 4.0:
+                            self.logging.logger.info("min profit rate check > [%s] >> %s / %s" % (sCode, current_price, profit_rate))
+                            current_hold_stock["full_sell_receipt"] = True
+                            self.realtime_stop_loss_sell(sCode)
+
                         if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is True:
                             yesterday_highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
                             yesterday_max_highest_price = max(yesterday_highest_list)
@@ -1561,6 +1566,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             is_add_buy_posible = True if (total_buy_price + self.add_buy_max_amount_by_day) < self.max_buy_amount_by_stock else False
                             if is_add_buy_posible:
                                 self.current_hold_etf_stock_dict[sCode].update({"half_sell": False})
+                                self.current_hold_etf_stock_dict[sCode].update({"some_sell": False})
 
                     if sCode not in self.today_buy_etf_stock_dict.keys() and sCode not in self.current_hold_etf_stock_dict.keys():
                         self.today_buy_etf_stock_dict.update({sCode: {self.customType.PURCHASE_PRICE: buy_price,
