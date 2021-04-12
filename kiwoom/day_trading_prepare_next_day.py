@@ -1,9 +1,11 @@
 import sys
 import shutil
 
+import numpy
 from PyQt5.QtCore import QEventLoop
 from PyQt5.QtTest import QTest
 
+from config.customType import CustomType
 from kiwoom.parent_kiwoom import ParentKiwoom
 from kiwoom.util_kiwoom import *
 
@@ -107,10 +109,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             d = abs(int(d.strip()))
             e = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.LOWEST_PRICE)
             e = abs(int(e.strip()))
+            f = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.VOLUME)
+            f = abs(int(f.strip()))
 
             row = {self.customType.CURRENT_PRICE: a, self.customType.START_PRICE: b, "일자": c,
-                   self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e,
-                   "ma20": '', "ma5": '', "ma10": '', "ma60": '', "ma120": '', "ma3": ''}
+                   self.customType.HIGHEST_PRICE: d, self.customType.LOWEST_PRICE: e, self.customType.VOLUME: f,
+                   "ma20": '', "ma5": '', "ma10": '', "ma60": '', "ma120": '', "ma3": '', "upper": '', "lower": '', "pb": '', "mfi10": ''}
             new_rows.append(row)
 
         self.analysis_etf_target_dict[stock_code].update({"row": new_rows})
@@ -619,7 +623,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line3_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return copy.deepcopy(first_tic)
+        return self.get_conform_bollingerband_point_case(code)
 
     def get_conform_ma_line2_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
@@ -679,7 +683,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return copy.deepcopy(first_tic)
+        return self.get_conform_bollingerband_point_case(code)
 
     def get_conform_ma_line_case(self, code):
 
@@ -733,7 +737,23 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return copy.deepcopy(first_tic)
+        return self.get_conform_bollingerband_point_case(code)
+
+    def get_conform_bollingerband_point_case(self, code):
+
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 3:
+            return {}
+
+        analysis_rows = rows[:3]
+        self.logging.logger.info("bollingerband_point_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        first_tic = analysis_rows[0]
+
+        if first_tic["pb"] > 0.70 and first_tic["mfi10"] > 70 and first_tic["ma20"] <= first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("pass bollingerband_point_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
+            return copy.deepcopy(first_tic)
+
+        return {}
 
     def get_etf_stock_info(self):
         copy_dict = copy.deepcopy(self.target_etf_stock_dict)
@@ -754,9 +774,78 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma120", 120)
             create_moving_average_gap_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
 
+            create_bollingerband_line(code, self.analysis_etf_target_dict, "row", self.customType.CURRENT_PRICE)
+            create_mfi(code, self.analysis_etf_target_dict, "row")
+
     def get_individual_etf_daily_candle_info(self, code):
         QTest.qWait(5000)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
         self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", "tr_opt10081", "opt10081", 0, self.screen_etf_stock)
         self.tr_opt10080_info_event_loop.exec_()
+
+
+def create_mfi(code, target_dict, orgin_field):
+    customType = CustomType()
+
+    gap = 10 + 1
+    rows = target_dict[code][orgin_field]
+    new_rows = sorted(rows, key=itemgetter("일자"), reverse=False)
+    for i in range(len(new_rows)):
+
+        max_ma_gap_len = i + gap
+        if len(new_rows) < max_ma_gap_len:
+            max_ma_gap_len = len(new_rows)
+        ma_gap_list = copy.deepcopy(new_rows[i: max_ma_gap_len])
+        if len(ma_gap_list) < gap:
+            break
+
+        for sub in ma_gap_list:
+            sub["tp"] = (sub[customType.HIGHEST_PRICE] + sub[customType.LOWEST_PRICE] + sub[customType.CURRENT_PRICE]) / 3
+            sub["pmf"] = 0
+            sub["nmf"] = 0
+
+        for s in range(len(ma_gap_list) - 1):
+            ss = ma_gap_list[s]
+            next_sub = ma_gap_list[s + 1]
+            if ss["tp"] < next_sub["tp"]:
+                next_sub["pmf"] = next_sub["tp"] * next_sub[customType.VOLUME]
+                next_sub["nmf"] = 0
+            else:
+                next_sub["nmf"] = next_sub["tp"] * next_sub[customType.VOLUME]
+                next_sub["pmf"] = 0
+
+        row = new_rows[i+gap-1]
+        sum_pmf = sum(item["pmf"] for item in ma_gap_list)
+        sum_nmf = sum(item["nmf"] for item in ma_gap_list)
+        if sum_nmf > 0:
+            mfr = sum_pmf / sum_nmf
+            row["mfi10"] = 100 - (100 / (1 + mfr))
+        else:
+            row["mfi10"] = 100.0
+
+    target_dict[code][orgin_field] = sorted(new_rows, key=itemgetter("일자"), reverse=True)
+
+
+def create_bollingerband_line(code, target_dict, origin_field, source_field):
+    customType = CustomType()
+    gap = 20
+    rows = target_dict[code][origin_field]
+    for i in range(len(rows)):
+        max_ma_gap_len = i + gap
+        if len(rows) < max_ma_gap_len:
+            max_ma_gap_len = len(rows)
+        ma_gap_list = copy.deepcopy(rows[i: max_ma_gap_len])
+        if len(ma_gap_list) < gap:
+            break
+
+        for sub in ma_gap_list:
+            sub["tp"] = (sub[customType.HIGHEST_PRICE] + sub[customType.LOWEST_PRICE] + sub[customType.CURRENT_PRICE]) / 3
+
+        stddev = numpy.std([item["tp"] for item in ma_gap_list])
+
+        row = rows[i]
+
+        row["upper"] = numpy.mean([item["tp"] for item in ma_gap_list]) + (stddev * 2)
+        row["lower"] = numpy.mean([item["tp"] for item in ma_gap_list]) - (stddev * 2)
+        row["pb"] = (row[source_field] - row["lower"]) / (row["upper"] - row["lower"])
