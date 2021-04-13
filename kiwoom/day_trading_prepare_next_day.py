@@ -248,6 +248,15 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         second_tic = analysis_rows[1]
         last_three_day_rows = analysis_rows[1:]
 
+        # 3일동안 종가가 3일선 위에 위치
+        # 어제와 오늘의 변동폭(고가-저가)이 오늘이 더 크다
+        # 아래 꼬리가 달렸다
+        # 3일선 5일선 10일선 정배열
+        # 저가가 10일 선 위에 위치
+        # 종가가 5일 선 위에 위치
+        # 음봉
+        # 3일선, 5일선, 10일선 상승중
+
         ma3_under_list = [x for x in last_three_day_rows if x["ma3"] > x[self.customType.CURRENT_PRICE]]
         if len(ma3_under_list) > 0:
             self.logging.logger.info("ma3_under_list check> [%s]" % code)
@@ -296,7 +305,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("is_increase_ma5 check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
-        ma3_list = [item["ma5"] for item in compare_rows]
+        ma3_list = [item["ma3"] for item in compare_rows]
         ma3_inverselist = ma3_list[::-1]
         if not is_increase_trend(ma3_inverselist):
             self.logging.logger.info("is_increase_ma3 check> [%s] >> %s  " % (code, first_tic["일자"]))
@@ -319,6 +328,13 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("cross_candle2_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
         first_tic = analysis_rows[0]
+        
+        # 20일선과 종가 간격 5%이내
+        # 양봉
+        # 종가가 20일선 위에 위치
+        # 20일선 상승중
+        # 저가가 2일선 아래에 위치 또는 저가와 20일선 간격체크
+        # 망치
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
         if ma20_percent > 5.0:
@@ -371,6 +387,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         first_tic = analysis_rows[0]
 
+        # 20일선과 종가 간격 5%이내
+        # 20일선 상승중
+        # 20일선이 종가 아래에 위치
+        # 3일동내에 음봉만 존재
+        # 망치 찾기
+
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
         if ma20_percent > 5.0:
             self.logging.logger.info("ma20_percent check> [%s]  " % code)
@@ -421,6 +443,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         if len(empty_gap_list) > 0:
             return {}
 
+        # 양봉
+        # 어제종가 보다 오늘 종가가 높음
+        # 종가가 20일선 위에 위치
+        # 3일선, 5일선, 10일선, 20일선 상승중
+        # 3일선, 5일선, 10일선, 20일선 간격이 10 이하
+
         if first_tic[self.customType.START_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
@@ -469,6 +497,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '' or x["ma60"] == '' or x["ma120"] == '']
         if len(empty_gap_list) > 0:
             return {}
+
+        # 5일선, 10일선, 20일선, 60일선, 120일선이 종가 아래에 위치
+        # 양봉
+        # 종가와 5일선, 10일선, 20일선, 60일선, 120일선간격 체크
+
         for field in ma_field_list:
             if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
                 self.logging.logger.info("first_tic current_price check > [%s]" % code)
@@ -517,6 +550,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("cable_tie_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        # 종가가 120일선 위에 위치
+        # 5일선 10일선 20일선 60일선이 25간격안에 위치
+        # 종가 상승중
+        # 20일선 상승중
+        # 5일선이 20일선 보다 위에 있거나 10일선이 60일선 위에 위치
 
         ma120_line_up_list = [x for x in analysis_rows if x["ma120"] > x[self.customType.CURRENT_PRICE]]
         if len(ma120_line_up_list) > 0:
@@ -586,6 +625,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("ma_line3_case analysis_rows > [%s] >> %s " % (code, compare_rows))
 
+        # 종가가 5일선, 10일선, 20일선 위에 위치
+        # 20일선 상승중
+        # 5일선 상승중
+        # 5일선, 10일선, 20일선 정배열
+        # 5일선, 10일선 20일선과 종가의 간격
+        
         for field in ma_field_list:
             if first_tic[field] >= first_tic[self.customType.CURRENT_PRICE]:
                 self.logging.logger.info("first_tic current_price check > [%s]" % code)
@@ -642,6 +687,13 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("ma_line2_case analysis_rows > [%s] >> %s " % (code, compare_rows))
+
+        # 20일선과 간격 5% 이내
+        # 20일선 상승중
+        # 5일선, 10일선 20일선 정배열
+        # 종가 상승중
+        # 종가가 5일선, 10일선, 20일선 위에 위치
+        # 어제 또는 오늘 20일선이 저가와 고가 사이에 위치
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
         if ma20_percent > 5.0:
@@ -704,6 +756,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        # 20일선과 거리가 5프로 이내
+        # 20일선이 상증중
+        # 5일선이 상승중
+        # 양봉
+        # 종가 상승중
 
         ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
         if ma20_percent > 5.0:
