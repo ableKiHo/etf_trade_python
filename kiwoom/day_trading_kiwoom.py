@@ -488,11 +488,6 @@ class DayTradingKiwoom(ParentKiwoom):
         code = self.goal_buy_search_stock_code
         self.logging.logger.info("other_target_candle_analysis_check loop [%s]" % (code))
 
-        if self.current_hold_stock_count == self.max_hold_stock_count and code not in self.current_hold_etf_stock_dict.keys():
-            self.logging.logger.info("max buy stock")
-            self.analysis_search_timer2.stop()
-            return
-
         self.search_stock_code.append(code)
 
         self.get_opt10081_info_all(code)
@@ -503,6 +498,11 @@ class DayTradingKiwoom(ParentKiwoom):
         if code not in self.today_order_etf_stock_list:
             buy_point = self.get_conform_buy_case(code, rows)
             if code not in self.current_hold_etf_stock_dict.keys():
+                if self.current_hold_stock_count == self.max_hold_stock_count and code not in self.current_hold_etf_stock_dict.keys():
+                    self.logging.logger.info("max buy stock")
+                    self.analysis_search_timer2.stop()
+                    return
+
                 if bool(buy_point):
                     if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
                         std_limit_price = buy_point[self.customType.CURRENT_PRICE]
