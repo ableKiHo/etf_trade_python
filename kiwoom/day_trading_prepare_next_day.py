@@ -223,8 +223,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         if not bool(buy_point):
             buy_point = self.get_conform_cross_candle_case(code)
         if not bool(buy_point):
-            buy_point = self.get_conform_cross_candle2_case(code)
-        if not bool(buy_point):
             buy_point = self.get_pushup_candle_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie3_case(code)
@@ -389,36 +387,33 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         # 20일선과 종가 간격 5%이내
         # 20일선 상승중
-        # 20일선이 종가 아래에 위치
-        # 3일동내에 음봉만 존재
+        # 3일선 하락중
         # 망치 찾기
 
-        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 5.0:
-            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+        separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if separation <= 103:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
 
         ma20_list = [item["ma20"] for item in analysis_rows]
-        inverselist = ma20_list[::-1]
-        if not is_increase_trend(inverselist):
+        inverse_20_list = ma20_list[::-1]
+        if not is_increase_trend(inverse_20_list):
             self.logging.logger.info("is_increase_trend ma20 check> [%s]  " % code)
             return {}
 
-        if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
-            self.logging.logger.info("first_tic current price position check> [%s] >> %s " % (code, first_tic["일자"]))
-            return {}
-
-        black_candle_compare_rows = analysis_rows[1:]
-        black_candle_list = [x for x in black_candle_compare_rows if x[self.customType.START_PRICE] < x[self.customType.CURRENT_PRICE]]
-        if len(black_candle_list) > 0:
-            self.logging.logger.info("3days black candle check> [%s] >> %s " % (code, first_tic["일자"]))
+        ma3_list = [item["ma3"] for item in analysis_rows]
+        inverse_3_list = ma3_list[::-1]
+        if is_increase_trend(inverse_3_list):
+            self.logging.logger.info("is_increase_trend ma3 check> [%s]  " % code)
             return {}
 
         if first_tic[self.customType.LOWEST_PRICE] < first_tic[self.customType.START_PRICE] <= first_tic[self.customType.CURRENT_PRICE]:
             if first_tic[self.customType.CURRENT_PRICE] <= first_tic[self.customType.HIGHEST_PRICE]:
                 highest_gap = first_tic[self.customType.HIGHEST_PRICE] - first_tic[self.customType.CURRENT_PRICE]
                 lowest_gap = first_tic[self.customType.START_PRICE] - first_tic[self.customType.LOWEST_PRICE]
-                if lowest_gap >= highest_gap:
+                body_gap = abs(first_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.START_PRICE])
+                if lowest_gap > highest_gap and lowest_gap > body_gap:
                     self.logging.logger.info("pass cross_candle_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
                     return copy.deepcopy(first_tic)
 
@@ -513,21 +508,16 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("first_tic white candle check > [%s]" % code)
             return {}
 
-        ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
-        ma10_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma10"]) / first_tic["ma10"] * 100
-        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        ma60_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma60"]) / first_tic["ma60"] * 100
-        ma120_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma120"]) / first_tic["ma120"] * 100
-        if ma120_percent >= ma5_percent:
-            self.logging.logger.info("ma120_percent check > [%s]" % code)
-            return {}
+        separation5 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma5"] * 100)
+        separation10 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma10"] * 100)
+        separation20 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+        separation60 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma60"] * 100)
 
-        percent_list = [abs(ma5_percent), abs(ma10_percent), abs(ma20_percent), abs(ma60_percent)]
-        min_percent = min(percent_list)
-        max_percent = max(percent_list)
-
-        if (max_percent - min_percent) <= 0.5:
-            self.logging.logger.info("ma5_percent check> [%s]" % code)
+        separation_list = [abs(separation5), abs(separation10), abs(separation20), abs(separation60)]
+        min_separation = min(separation_list)
+        max_separation = max(separation_list)
+        if min_separation < 97 or max_separation > 103:
+            self.logging.logger.info("separation check > [%s]" % code)
             return {}
 
         self.logging.logger.info("pass cable_tie2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
@@ -654,17 +644,22 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("is regular arrangement check> [%s]" % code)
             return {}
 
-        ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
-        if ma5_percent > 0.3:
-            self.logging.logger.info("ma5_percent check> [%s]" % code)
+        separation20 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if separation20 <= 107:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
-        ma10_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma10"]) / first_tic["ma10"] * 100
-        if ma10_percent > 0.7:
-            self.logging.logger.info("ma10_percent check> [%s]" % code)
+
+        separation10 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma10"] * 100)
+
+        if separation10 <= 105:
+            self.logging.logger.info("ma10_separation level check> [%s]  " % code)
             return {}
-        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 1.0:
-            self.logging.logger.info("ma20_percent check> [%s]" % code)
+
+        separation5 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma5"] * 100)
+
+        if separation5 <= 103:
+            self.logging.logger.info("ma5_separation level check> [%s]  " % code)
             return {}
 
         self.logging.logger.info("pass ma_line3_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
@@ -688,16 +683,17 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("ma_line2_case analysis_rows > [%s] >> %s " % (code, compare_rows))
 
-        # 20일선과 간격 5% 이내
+        # 20일선 이격도 103 이하
         # 20일선 상승중
         # 5일선, 10일선 20일선 정배열
         # 종가 상승중
         # 종가가 5일선, 10일선, 20일선 위에 위치
         # 어제 또는 오늘 20일선이 저가와 고가 사이에 위치
 
-        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 5.0:
-            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+        separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if separation <= 103:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
 
         ma20_list = [item["ma20"] for item in analysis_rows]
@@ -756,15 +752,21 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("ma_line_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
-        # 20일선과 거리가 5프로 이내
+        # 20일선 이격도 98 이상, 102 이하
+        # 종가 20일선 위에 위치
         # 20일선이 상증중
         # 5일선이 상승중
         # 양봉
         # 종가 상승중
 
-        ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        if ma20_percent > 5.0:
-            self.logging.logger.info("ma20_percent check> [%s]  " % code)
+        separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if separation <= 103:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
+            return {}
+
+        if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
+            self.logging.logger.info("first_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         ma20_list = [item["ma20"] for item in analysis_rows]
@@ -781,10 +783,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic black candle check > [%s] >> %s " % (code, first_tic["일자"]))
-            return {}
-
-        if first_tic[self.customType.CURRENT_PRICE] < first_tic["ma20"]:
-            self.logging.logger.info("first_tic position check > [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
         last_price_list = [item[self.customType.CURRENT_PRICE] for item in analysis_rows]
