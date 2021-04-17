@@ -516,7 +516,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         separation_list = [abs(separation5), abs(separation10), abs(separation20), abs(separation60)]
         min_separation = min(separation_list)
         max_separation = max(separation_list)
-        if min_separation < 97 or max_separation > 103:
+        if (max_separation - min_separation) < 5:
             self.logging.logger.info("separation check > [%s]" % code)
             return {}
 
@@ -804,7 +804,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.logging.logger.info("bollingerband_point_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
         first_tic = analysis_rows[0]
 
-        if first_tic["pb"] > 0.70 and first_tic["mfi10"] > 70 and first_tic["ma20"] <= first_tic[self.customType.CURRENT_PRICE]:
+        if 0.81 > first_tic["pb"] > 0.70 and 81 > first_tic["mfi10"] > 70 and first_tic["ma20"] <= first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("pass bollingerband_point_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
             return copy.deepcopy(first_tic)
 
