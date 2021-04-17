@@ -366,8 +366,8 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.invest_add_buy_amount = self.invest_add_buy_amount + limit_purchase_amount
                         self.spare_buy_total_amount = self.spare_buy_total_amount - limit_purchase_amount
 
-                        first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 10
-                        second_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 15
+                        first_limit_price = add_buy_point[self.customType.CURRENT_PRICE] - 5
+                        second_limit_price = add_buy_point[self.customType.CURRENT_PRICE]
                         third_limit_price = add_buy_point[self.customType.CURRENT_PRICE] + 5
 
                         if max_buy_count >= 3:
@@ -498,49 +498,46 @@ class DayTradingKiwoom(ParentKiwoom):
         if code not in self.today_order_etf_stock_list:
             buy_point = self.get_conform_buy_case(code, rows)
             if code not in self.current_hold_etf_stock_dict.keys():
-                if self.current_hold_stock_count == self.max_hold_stock_count and code not in self.current_hold_etf_stock_dict.keys():
-                    self.logging.logger.info("max buy stock")
-                    self.analysis_search_timer2.stop()
-                    return
+                if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.current_hold_etf_stock_dict.keys():
 
-                if bool(buy_point):
-                    if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
-                        std_limit_price = buy_point[self.customType.CURRENT_PRICE]
-                        half_buy_amount = math.trunc(self.max_buy_amount_by_stock / 2)
-                        half_quantity = math.trunc((half_buy_amount / std_limit_price))
-                        std_quantity = math.trunc(half_quantity / 3)
-                        if std_quantity >= 1:
-                            self.logging.logger.info("conform_buy_case buy_point(current) break >> %s" % code)
-                            limit_price = std_limit_price + 50
-                            self.send_order_limit_stock_price(code, std_quantity, limit_price)
+                    if bool(buy_point):
+                        if self.current_hold_stock_count < self.max_hold_stock_count and code not in self.today_buy_etf_stock_dict.keys():
+                            std_limit_price = buy_point[self.customType.CURRENT_PRICE]
+                            half_buy_amount = math.trunc(self.max_buy_amount_by_stock / 2)
+                            half_quantity = math.trunc((half_buy_amount / std_limit_price))
+                            std_quantity = math.trunc(half_quantity / 3)
+                            if std_quantity >= 1:
+                                self.logging.logger.info("conform_buy_case buy_point(current) break >> %s" % code)
+                                limit_price = std_limit_price + 50
+                                self.send_order_limit_stock_price(code, std_quantity, limit_price)
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
-                            limit_price = std_limit_price
-                            self.send_order_limit_stock_price(code, std_quantity, limit_price)
+                                self.logging.logger.info("conform_buy_case buy_point(- 5) break >> %s" % code)
+                                limit_price = std_limit_price
+                                self.send_order_limit_stock_price(code, std_quantity, limit_price)
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
-                            limit_price = std_limit_price - 5
-                            self.send_order_limit_stock_price(code, half_quantity - std_quantity, limit_price)
+                                self.logging.logger.info("conform_buy_case buy_point(- 10) break >> %s" % code)
+                                limit_price = std_limit_price - 5
+                                self.send_order_limit_stock_price(code, half_quantity - std_quantity, limit_price)
 
-                        max_quantity = math.trunc((half_buy_amount / std_limit_price))
-                        min_one_quantity = math.trunc(max_quantity / 3)
+                            max_quantity = math.trunc((half_buy_amount / std_limit_price))
+                            min_one_quantity = math.trunc(max_quantity / 3)
 
-                        if min_one_quantity >= 1:
-                            self.logging.logger.info("conform_buy_case buy_point(- 25) break >> %s" % code)
-                            limit_price = std_limit_price - 20
-                            self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                            if min_one_quantity >= 1:
+                                self.logging.logger.info("conform_buy_case buy_point(- 25) break >> %s" % code)
+                                limit_price = std_limit_price - 20
+                                self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
-                            limit_price = std_limit_price - 10
-                            self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                                self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
+                                limit_price = std_limit_price - 10
+                                self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
-                            self.logging.logger.info("conform_buy_case buy_point(- 40) break >> %s" % code)
-                            limit_price = std_limit_price - 40
-                            self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                                self.logging.logger.info("conform_buy_case buy_point(- 40) break >> %s" % code)
+                                limit_price = std_limit_price - 40
+                                self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
-                        self.today_order_etf_stock_list.append(code)
-                        self.current_hold_stock_count = self.current_hold_stock_count + 1
-                        self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+                            self.today_order_etf_stock_list.append(code)
+                            self.current_hold_stock_count = self.current_hold_stock_count + 1
+                            self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
 
             else:
                 if bool(buy_point):
@@ -560,8 +557,8 @@ class DayTradingKiwoom(ParentKiwoom):
 
                                 self.spare_buy_total_amount = self.spare_buy_total_amount - limit_purchase_amount
 
-                                first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
-                                second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 15
+                                first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
+                                second_limit_price = buy_point[self.customType.CURRENT_PRICE]
                                 third_limit_price = buy_point[self.customType.CURRENT_PRICE] + 5
 
                                 if max_buy_count >= 3:
@@ -1020,7 +1017,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                         if "half_sell_receipt" not in current_hold_stock and profit_rate > 3.1 and current_hold_stock["half_sell"] is False and current_hold_stock["some_sell"] is False:
                             self.logging.logger.info("profit_std_half_sell_point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
-                            if total_chegual_price < (self.max_buy_amount_by_stock / 2):
+                            if total_chegual_price < (self.max_buy_amount_by_stock / 4):
                                 current_hold_stock["full_sell_receipt"] = True
                                 self.realtime_stop_loss_sell(sCode)
                             else:
@@ -1031,7 +1028,7 @@ class DayTradingKiwoom(ParentKiwoom):
                             current_hold_stock["some_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.50)
 
-                        if total_chegual_price > math.trunc(self.max_buy_amount_by_stock / 2) and profit_rate >= 10.0 and "ten_per_sell_receipt" not in current_hold_stock:
+                        if total_chegual_price > math.trunc(self.max_buy_amount_by_stock / 4) and profit_rate >= 10.0 and "ten_per_sell_receipt" not in current_hold_stock:
                             current_hold_stock["ten_per_sell_receipt"] = True
                             self.realtime_stop_loss_some_sell(sCode, 0.50)
 
