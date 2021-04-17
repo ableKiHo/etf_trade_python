@@ -392,7 +392,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
 
-        if separation <= 103:
+        if separation > 103:
             self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
 
@@ -516,7 +516,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         separation_list = [abs(separation5), abs(separation10), abs(separation20), abs(separation60)]
         min_separation = min(separation_list)
         max_separation = max(separation_list)
-        if (max_separation - min_separation) < 5:
+        if (max_separation - min_separation) > 1:
             self.logging.logger.info("separation check > [%s]" % code)
             return {}
 
@@ -646,19 +646,19 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         separation20 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
 
-        if separation20 <= 107:
+        if separation20 > 103:
             self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
 
         separation10 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma10"] * 100)
 
-        if separation10 <= 105:
+        if separation10 > 102:
             self.logging.logger.info("ma10_separation level check> [%s]  " % code)
             return {}
 
         separation5 = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma5"] * 100)
 
-        if separation5 <= 103:
+        if separation5 > 101:
             self.logging.logger.info("ma5_separation level check> [%s]  " % code)
             return {}
 
@@ -692,7 +692,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
 
-        if separation <= 103:
+        if separation > 103:
             self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
 
@@ -761,7 +761,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
 
-        if separation <= 103:
+        if separation > 103:
             self.logging.logger.info("ma20_separation level check> [%s]  " % code)
             return {}
 

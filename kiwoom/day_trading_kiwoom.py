@@ -1180,11 +1180,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.logging.logger.info("conform_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
-        if first_tic["ma5"] >= first_tic["ma20"]:
-            pass
-        else:
-            self.logging.logger.info("is regular arrangement check> [%s] >> %s " % (code, first_tic["일자"]))
-            return {}
+        # if first_tic["ma3"] >= first_tic["ma5"]:
+        #     pass
+        # else:
+        #     self.logging.logger.info("is regular arrangement check> [%s] >> %s " % (code, first_tic["일자"]))
+        #     return {}
 
         # for field in ma_field_list:
         #     if first_tic[field] >= first_tic[self.customType.START_PRICE]:
