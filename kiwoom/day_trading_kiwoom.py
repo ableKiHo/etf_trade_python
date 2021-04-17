@@ -493,6 +493,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.get_opt10081_info_all(code)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+        create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
         rows = self.target_etf_stock_dict[code]["row"]
 
         if code not in self.today_order_etf_stock_list:
@@ -1185,16 +1186,20 @@ class DayTradingKiwoom(ParentKiwoom):
             self.logging.logger.info("is regular arrangement check> [%s] >> %s " % (code, first_tic["일자"]))
             return {}
 
-        for field in ma_field_list:
-            if first_tic[field] >= first_tic[self.customType.START_PRICE]:
-                self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
-                return {}
+        # for field in ma_field_list:
+        #     if first_tic[field] >= first_tic[self.customType.START_PRICE]:
+        #         self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
+        #         return {}
 
         if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE] and first_tic["ma5"] > first_tic[self.customType.CURRENT_PRICE]:
+        # if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE] and first_tic["ma5"] > first_tic[self.customType.CURRENT_PRICE]:
+        #     self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
+        #     return {}
+
+        if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE] and first_tic["ma3"] > first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
 
