@@ -211,7 +211,9 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                             self.line.notification("OPEN API SUGGEST STOCK [%s][%s]" % (sCode, value[self.customType.STOCK_NAME]))
 
     def is_ma_line_analysis(self, code):
-        buy_point = self.get_conform_ma_line_case(code)
+        buy_point = self.get_conform_bollingerband_point_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_ma_line_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line2_case(code)
         if not bool(buy_point):
@@ -234,7 +236,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
         analysis_rows = rows[:4]
 
-        ma_field_list = ["ma3", "ma5", "ma10"]
+        ma_field_list = ["ma3", "ma5", "ma10", "ma20"]
 
         empty_gap_list = [x for x in analysis_rows for field in ma_field_list if x[field] == '']
         if len(empty_gap_list) > 0:
@@ -247,17 +249,27 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         last_three_day_rows = analysis_rows[1:]
 
         # 3일동안 종가가 3일선 위에 위치
+        # 3일동안 저가가 5일선 위에 위치
         # 어제와 오늘의 변동폭(고가-저가)이 오늘이 더 크다
         # 아래 꼬리가 달렸다
-        # 3일선 5일선 10일선 정배열
+        # 3일선 5일선 10일선 20일선 정배열
         # 저가가 10일 선 위에 위치
         # 종가가 5일 선 위에 위치
-        # 음봉
-        # 3일선, 5일선, 10일선 상승중
+        # 3일선, 5일선, 20일선 상승중
 
         ma3_under_list = [x for x in last_three_day_rows if x["ma3"] > x[self.customType.CURRENT_PRICE]]
         if len(ma3_under_list) > 0:
             self.logging.logger.info("ma3_under_list check> [%s]" % code)
+            return {}
+
+        ma5_under_list = [x for x in last_three_day_rows if x["ma5"] > x[self.customType.LOWEST_PRICE]]
+        if len(ma5_under_list) > 0:
+            self.logging.logger.info("ma5_under_list check> [%s]" % code)
+            return {}
+
+        regular_arrangement_list = [x for x in last_three_day_rows if not (x["ma3"] > x["ma5"] > x["ma10"])]
+        if len(regular_arrangement_list) > 0:
+            self.logging.logger.info("regular_arrangement_list check> [%s]" % code)
             return {}
 
         tail = first_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.LOWEST_PRICE]
@@ -272,7 +284,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("is pushup candle check> [%s]" % code)
             return {}
 
-        if first_tic["ma3"] >= first_tic["ma5"] >= first_tic["ma10"]:
+        if first_tic["ma3"] >= first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"]:
             pass
         else:
             self.logging.logger.info("is regular arrangement check> [%s]" % code)
@@ -286,15 +298,11 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("current_price position check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
-        if first_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.START_PRICE]:
-            self.logging.logger.info("start_price position check> [%s] >> %s  " % (code, first_tic["일자"]))
-            return {}
-
         compare_rows = analysis_rows[:4]
-        ma10_list = [item["ma10"] for item in compare_rows]
-        ma10_inverselist = ma10_list[::-1]
-        if not is_increase_trend(ma10_inverselist):
-            self.logging.logger.info("is_increase_ma10 check> [%s] >> %s  " % (code, first_tic["일자"]))
+        ma20_list = [item["ma20"] for item in compare_rows]
+        ma20_inverselist = ma20_list[::-1]
+        if not is_increase_trend(ma20_inverselist):
+            self.logging.logger.info("is_increase_ma20 check> [%s] >> %s  " % (code, first_tic["일자"]))
             return {}
 
         ma5_list = [item["ma5"] for item in compare_rows]
@@ -406,6 +414,16 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         inverse_3_list = ma3_list[::-1]
         if is_increase_trend(inverse_3_list):
             self.logging.logger.info("is_increase_trend ma3 check> [%s]  " % code)
+            return {}
+
+        if first_tic["ma20"] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("first tic position check> [%s]" % code)
+            return {}
+
+        if first_tic["ma3"] >= first_tic["ma20"]:
+            pass
+        else:
+            self.logging.logger.info("is regular arrangement check> [%s]" % code)
             return {}
 
         if first_tic[self.customType.LOWEST_PRICE] < first_tic[self.customType.START_PRICE] <= first_tic[self.customType.CURRENT_PRICE]:
@@ -663,7 +681,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line3_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return self.get_conform_bollingerband_point_case(code)
+        return self.get_conform_mfi10_point_case(code)
 
     def get_conform_ma_line2_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
@@ -731,7 +749,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return self.get_conform_bollingerband_point_case(code)
+        return self.get_conform_mfi10_point_case(code)
 
     def get_conform_ma_line_case(self, code):
 
@@ -792,7 +810,22 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return self.get_conform_bollingerband_point_case(code)
+        return self.get_conform_mfi10_point_case(code)
+
+    def get_conform_mfi10_point_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+        if len(rows) < 3:
+            return {}
+
+        analysis_rows = rows[:3]
+        self.logging.logger.info("bollingerband_point_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        first_tic = analysis_rows[0]
+
+        if 85 > first_tic["mfi10"] > 75 and first_tic["ma20"] <= first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("pass bollingerband_point_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
+            return copy.deepcopy(first_tic)
+
+        return {}
 
     def get_conform_bollingerband_point_case(self, code):
 
