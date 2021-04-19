@@ -211,9 +211,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                             self.line.notification("OPEN API SUGGEST STOCK [%s][%s]" % (sCode, value[self.customType.STOCK_NAME]))
 
     def is_ma_line_analysis(self, code):
-        buy_point = self.get_conform_bollingerband_point_case(code)
-        if not bool(buy_point):
-            buy_point = self.get_conform_ma_line_case(code)
+        buy_point = self.get_conform_ma_line_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line2_case(code)
         if not bool(buy_point):
@@ -681,7 +679,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line3_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return self.get_conform_mfi10_point_case(code)
+        return self.get_conform_bollingerband_point_case(code)
 
     def get_conform_ma_line2_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
@@ -749,7 +747,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line2_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return self.get_conform_mfi10_point_case(code)
+        return self.get_conform_bollingerband_point_case(code)
 
     def get_conform_ma_line_case(self, code):
 
@@ -810,7 +808,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             return {}
 
         self.logging.logger.info("pass ma_line_case analysis_rows > [%s] [%s]" % (code, first_tic[self.customType.CURRENT_PRICE]))
-        return self.get_conform_mfi10_point_case(code)
+        return self.get_conform_bollingerband_point_case(code)
 
     def get_conform_mfi10_point_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
