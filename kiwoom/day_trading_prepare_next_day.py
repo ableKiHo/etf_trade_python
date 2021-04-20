@@ -211,21 +211,23 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                             self.line.notification("OPEN API SUGGEST STOCK [%s][%s]" % (sCode, value[self.customType.STOCK_NAME]))
 
     def is_ma_line_analysis(self, code):
-        buy_point = self.get_conform_ma_line_case(code)
+        buy_point = self.get_conform_doji_candle_point_case(code)
         if not bool(buy_point):
-            buy_point = self.get_conform_ma_line2_case(code)
-        if not bool(buy_point):
-            buy_point = self.get_conform_ma_line3_case(code)
+            buy_point = self.get_conform_cross_candle_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie2_case(code)
         if not bool(buy_point):
-            buy_point = self.get_conform_cross_candle_case(code)
+            buy_point = self.get_conform_cable_tie3_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_ma_line_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_ma_line2_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_ma_line3_case(code)
         if not bool(buy_point):
             buy_point = self.get_pushup_candle_case(code)
-        if not bool(buy_point):
-            buy_point = self.get_conform_cable_tie3_case(code)
         return bool(buy_point)
 
     def get_pushup_candle_case(self, code):
@@ -374,6 +376,66 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
         return {}
+
+    def get_conform_doji_candle_point_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 7:
+            return {}
+
+        analysis_rows = rows[:7]
+
+        first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
+
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '' or x["ma3"] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        # 3일 음봉
+        # 3일 종가 하락중
+        # 오늘 도지 캔들
+        # 20일선 위에 3, 5, 10일선 위치
+        # 어제 종가 < 오늘 종가
+        # 20일선 과 위치 체크
+        compare_rows = analysis_rows[1:4]
+        ma3_list = [item["ma3"] for item in compare_rows]
+        inverselist = ma3_list[::-1]
+        if is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic["일자"], inverselist))
+            return {}
+
+        last_price_list = [item[self.customType.CURRENT_PRICE] for item in compare_rows]
+        last_price_inverse_list = last_price_list[::-1]
+        if is_increase_trend(last_price_inverse_list):
+            self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic["일자"], last_price_inverse_list))
+            return {}
+
+        white_candle_list = [item for item in compare_rows if item[self.customType.START_PRICE] < item[self.customType.CURRENT_PRICE]]
+        if len(white_candle_list) > 0:
+            self.logging.logger.info("white_candle_list check> [%s] >> %s / %s  " % (code, first_tic["일자"], white_candle_list))
+            return {}
+
+        if first_tic[self.customType.CURRENT_PRICE] == first_tic[self.customType.LOWEST_PRICE]:
+            self.logging.logger.info("doji candle1 check> [%s] >> %s / %s  " % (code, first_tic["일자"], first_tic))
+            return {}
+
+        if abs(first_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.START_PRICE]) >= 10:
+            self.logging.logger.info("doji candle2 check> [%s] >> %s / %s  " % (code, first_tic["일자"], first_tic))
+            return {}
+
+        if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
+            self.logging.logger.info("today last price check> [%s] >> %s / %s  " % (code, second_tic[self.customType.CURRENT_PRICE] , first_tic[self.customType.CURRENT_PRICE]))
+            return {}
+
+        separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if separation >= 100:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
+            return {}
+        return copy.deepcopy(first_tic)
 
     def get_conform_cross_candle_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
