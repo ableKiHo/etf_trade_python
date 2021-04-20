@@ -100,7 +100,6 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.detail_account_mystock()
         QTest.qWait(5000)
-        self.init_stock_values()
 
         self.get_search_goal_price_etf()
         QTest.qWait(5000)
@@ -152,17 +151,6 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.70)
         self.max_add_buy_amount_by_day = math.trunc(self.max_buy_total_amount * 0.50)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
-
-        for code in self.current_hold_etf_stock_dict.keys():
-            value = self.current_hold_etf_stock_dict[code]
-            if code not in self.default_stock_list:
-                if value[self.customType.PURCHASE_AMOUNT] > math.trunc(self.max_buy_amount_by_stock / 2):
-                    self.current_full_invest_hold_count = self.current_full_invest_hold_count + 1
-                if value[self.customType.PURCHASE_AMOUNT] > self.max_buy_total_amount:
-                    self.spare_buy_total_amount = self.spare_buy_total_amount - (value[self.customType.PURCHASE_AMOUNT] - self.max_buy_total_amount)
-
-        if self.current_full_invest_hold_count <= self.current_hold_stock_count - 2:
-            self.current_hold_stock_count = self.current_hold_stock_count - 1
 
         self.max_hold_stock_count = self.max_hold_stock_count - self.spare_stock_count
 
@@ -824,6 +812,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.read_target_etf_file()
         QTest.qWait(5000)
         self.read_hold_etf_file()
+        self.init_stock_values()
 
         self.get_all_etf_info()
         QTest.qWait(5000)
@@ -1523,6 +1512,9 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.current_hold_etf_stock_dict[stock_code].update({self.customType.DATE: purchase_date.strip()})
                         self.current_hold_etf_stock_dict[stock_code].update({"half_sell": eval(half_sell)})
                         self.current_hold_etf_stock_dict[stock_code].update({"some_sell": eval(some_sell)})
+
+                        if self.current_hold_etf_stock_dict[stock_code]["some_sell"] is False:
+                            self.current_hold_stock_count = self.current_hold_stock_count + 1
             f.close()
 
     def screen_number_setting(self, cal_dict):
