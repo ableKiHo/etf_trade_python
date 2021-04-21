@@ -1367,7 +1367,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 # self.logging.logger.info(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
 
                 if code not in self.default_stock_list:
-                    self.current_hold_stock_count = self.current_hold_stock_count + 1
+                    # self.current_hold_stock_count = self.current_hold_stock_count + 1
                     self.total_invest_amount = self.total_invest_amount + total_chegual_price
                 else:
                     self.total_inverse_amount = self.total_inverse_amount + total_chegual_price
@@ -1513,7 +1513,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.current_hold_etf_stock_dict[stock_code].update({"half_sell": eval(half_sell)})
                         self.current_hold_etf_stock_dict[stock_code].update({"some_sell": eval(some_sell)})
 
-                        if self.current_hold_etf_stock_dict[stock_code]["some_sell"] is False:
+                        if self.current_hold_etf_stock_dict[stock_code]["some_sell"] is False and stock_code not in self.default_stock_list:
                             self.current_hold_stock_count = self.current_hold_stock_count + 1
             f.close()
 
