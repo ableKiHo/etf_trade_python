@@ -213,6 +213,8 @@ class DayTradingPrepareNextDay(ParentKiwoom):
     def is_ma_line_analysis(self, code):
         buy_point = self.get_conform_doji_candle_point_case(code)
         if not bool(buy_point):
+            buy_point = self.get_conform_box_pattern_escape_point_case(code)
+        if not bool(buy_point):
             buy_point = self.get_conform_cross_candle_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_cable_tie_case(code)
@@ -376,6 +378,76 @@ class DayTradingPrepareNextDay(ParentKiwoom):
 
         self.logging.logger.info("corss_candle check> [%s] >> %s" % (code, first_tic))
         return {}
+
+    def get_conform_box_pattern_escape_point_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 100:
+            return {}
+
+        analysis_rows = rows[:100]
+
+        first_tic = analysis_rows[0]
+
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma10"] == '' or x["ma60"] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+
+        # N기간 동안 신고가(최근 100봉중)에 근접했는가
+        # 이동선 5 10, 20 60 정배열인가
+        # 20일 이격도 5%이내
+        # 최근 20일선이 60일선을 돌파했는가
+        # 최근 3일 5, 10, 20일선 중 하나라도 이동평균선을 타고 올라가는가(이격도 99~101)
+        highest_price_list = [item[self.customType.HIGHEST_PRICE] for item in analysis_rows]
+        max_high_price = max(highest_price_list)
+        close_rate = math.trunc((max_high_price - first_tic[self.customType.CURRENT_PRICE]) / max_high_price * 100)
+        if 0 <= close_rate <= 2:
+            pass
+        else:
+            self.logging.logger.info("max high price to be close check> [%s] >> %s / %s  " % (code, first_tic["일자"], close_rate))
+            return {}
+
+        if first_tic["ma5"] >= first_tic["ma10"] >= first_tic["ma20"] >= first_tic["ma60"]:
+            pass
+        else:
+            self.logging.logger.info("is regular arrangement check> [%s] / %s" % (code, first_tic))
+            return {}
+        separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if separation > 105:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
+            return {}
+
+        follow_maline_flag = True
+        compare_rows = analysis_rows[:4]
+        for tic in compare_rows:
+            if (99 <= math.trunc(tic[self.customType.CURRENT_PRICE] / tic["ma20"] * 100) <= 101) or (
+                    99 <= math.trunc(tic[self.customType.CURRENT_PRICE] / tic["ma10"] * 100) <= 101) or (
+                    99 <= math.trunc(tic[self.customType.CURRENT_PRICE] / tic["ma5"] * 100) <= 101):
+                pass
+            else:
+                follow_maline_flag = False
+                break
+        if follow_maline_flag is False:
+            self.logging.logger.info("follow maline check> [%s] >> %s / %s  " % (code, first_tic["일자"], follow_maline_flag))
+            return {}
+
+        prev_max_high_price_index = analysis_rows.index(list(filter(lambda n: n.get(self.customType.HIGHEST_PRICE) == max_high_price, analysis_rows))[0])
+        compare_rows = analysis_rows[1:prev_max_high_price_index]
+        break_point_flag = False
+        for tic in compare_rows:
+            if tic["ma20"] > tic["ma60"]:
+                pass
+            else:
+                break_point_flag = True
+                break
+        if break_point_flag is False:
+            self.logging.logger.info("ma60 point check> [%s] >> %s / %s  " % (code, first_tic["일자"], break_point_flag))
+            return {}
+
+        return copy.deepcopy(first_tic)
 
     def get_conform_doji_candle_point_case(self, code):
         rows = self.analysis_etf_target_dict[code]["row"]
