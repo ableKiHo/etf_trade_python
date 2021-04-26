@@ -154,6 +154,10 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.max_hold_stock_count = self.max_hold_stock_count - self.spare_stock_count
 
+        for item in self.current_hold_etf_stock_dict:
+            if item[self.customType.PURCHASE_AMOUNT] > self.max_buy_total_amount:
+                self.spare_buy_total_amount = self.spare_buy_total_amount - (item[self.customType.PURCHASE_AMOUNT] - self.max_buy_total_amount)
+
         self.logging.logger.info("max_invest_amount:[%s]" % self.max_invest_amount)
         self.logging.logger.info("max_buy_total_amount:[%s]" % self.max_buy_total_amount)
         self.logging.logger.info("max_buy_amount_by_stock:[%s]" % self.max_buy_amount_by_stock)
@@ -599,6 +603,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.get_opt10081_info_all(code)
             create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
             create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+            create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
 
             rows = self.target_etf_stock_dict[code]["row"]
             buy_point = self.get_conform_default_stock_buy_case(code, rows)
@@ -638,17 +643,6 @@ class DayTradingKiwoom(ParentKiwoom):
                     if max_buy_count >= 1:
                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
-
-                else:
-                    limit_amount = self.max_buy_total_amount_by_index - total_chegual_price
-                    if limit_amount < 0:
-                        return
-                    limit_price = buy_point[self.customType.CURRENT_PRICE] - 5 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
-                    if limit_amount > limit_price:
-                        limit_count = math.trunc(limit_amount / limit_price)
-                        if limit_count >= 1:
-                            self.send_order_limit_stock_price(code, limit_count, limit_price)
-                            self.buy_inverse_flag = True
 
             if self.weekend.isFriday:
                 buy_point = self.get_conform_default_stock_buy_min_case(code, rows)
@@ -767,6 +761,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
         profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
 
+        today_ma5 = today_tic["ma5"]
+        if today_ma5 < current_price:
+            pass
+        else:
+            self.logging.logger.info("ma_position check> [%s] today_ma5:[%s] current_price:[%s]" % (code, today_ma5, current_price))
+            return {}
+
         if profit_rate > -7.0:
             self.logging.logger.info("min profit_rate [%s] profit_rate[%s]" % (code, profit_rate))
             return {}
@@ -785,19 +786,17 @@ class DayTradingKiwoom(ParentKiwoom):
         today_tic = analysis_rows[0]
         yesterday_tic = analysis_rows[1]
         current_price = today_tic[self.customType.CURRENT_PRICE]
-        today_ma3 = today_tic["ma3"]
+        today_ma20 = today_tic["ma20"]
         today_ma5 = today_tic["ma5"]
-        if today_ma3 < current_price or today_ma5 < current_price:
-            pass
-        elif today_tic[self.customType.LOWEST_PRICE] < today_ma5 < today_tic[self.customType.HIGHEST_PRICE]:
+        if today_ma20 < current_price and today_ma5 >= today_ma20:
             pass
         else:
-            self.logging.logger.info("ma_position check> [%s] today_ma3:[%s] today_ma5:[%s] current_price:[%s]" % (code, today_ma3, today_ma5, current_price))
+            self.logging.logger.info("ma_position check> [%s] today_ma20:[%s] today_ma5:[%s] current_price:[%s]" % (code, today_ma20, today_ma5, current_price))
             return {}
 
         if code not in self.current_hold_etf_stock_dict.keys():
             if today_tic[self.customType.CURRENT_PRICE] > today_tic[self.customType.START_PRICE]:
-                if yesterday_tic["ma3"] > yesterday_tic[self.customType.CURRENT_PRICE]:
+                if yesterday_tic["ma20"] > yesterday_tic[self.customType.CURRENT_PRICE]:
                     return copy.deepcopy(today_tic)
         else:
             purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
