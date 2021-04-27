@@ -154,9 +154,11 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.max_hold_stock_count = self.max_hold_stock_count - self.spare_stock_count
 
-        for item in self.current_hold_etf_stock_dict:
+        for code in self.current_hold_etf_stock_dict.keys():
+            item = self.current_hold_etf_stock_dict[code]
             if item[self.customType.PURCHASE_AMOUNT] > self.max_buy_total_amount:
                 self.spare_buy_total_amount = self.spare_buy_total_amount - (item[self.customType.PURCHASE_AMOUNT] - self.max_buy_total_amount)
+
 
         self.logging.logger.info("max_invest_amount:[%s]" % self.max_invest_amount)
         self.logging.logger.info("max_buy_total_amount:[%s]" % self.max_buy_total_amount)
