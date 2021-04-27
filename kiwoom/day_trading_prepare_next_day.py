@@ -230,8 +230,6 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             buy_point = self.get_conform_ma_line2_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_ma_line3_case(code)
-        if not bool(buy_point):
-            buy_point = self.get_pushup_candle_case(code)
         return bool(buy_point)
 
     def get_pushup_candle_case(self, code):
