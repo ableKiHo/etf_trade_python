@@ -930,7 +930,7 @@ class DayTradingKiwoom(ParentKiwoom):
 
                     if profit_rate >= 5.0 and len(buy_after_rows) > 0 and today_tic["ma5"] > current_price:
                         if start_price < current_price:
-                            pass
+                            return
                         highest_list = [item[self.customType.HIGHEST_PRICE] for item in buy_after_rows]
                         max_highest_price = max(highest_list)
                         if max_highest_price < realdata_std_higest_price:
@@ -949,7 +949,7 @@ class DayTradingKiwoom(ParentKiwoom):
                     if 2.5 < profit_rate < 7.0 and len(buy_after_rows) > 0 and today_tic["ma20"] > current_price:
                         if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is True:
                             if start_price < current_price:
-                                pass
+                                return
                             self.logging.logger.info("ma20 sell [%s] >> ma20:%s / period:%s / current_price:%s" % (sCode, today_tic["ma20"], len(buy_after_rows), current_price))
                             half_sell_limit_price = current_price - 50
                             current_hold_stock["full_sell_receipt"] = True
