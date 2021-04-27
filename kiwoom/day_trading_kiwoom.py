@@ -890,6 +890,7 @@ class DayTradingKiwoom(ParentKiwoom):
                 current_hold_stock["row"][0][self.customType.CURRENT_PRICE] = current_price
                 create_moving_average_gap_line(sCode, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
                 create_moving_average_gap_line(sCode, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
+                create_moving_average_gap_line(sCode, self.current_hold_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
             else:
                 return
 
