@@ -211,7 +211,9 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                             self.line.notification("OPEN API SUGGEST STOCK [%s][%s]" % (sCode, value[self.customType.STOCK_NAME]))
 
     def is_ma_line_analysis(self, code):
-        buy_point = self.get_conform_doji_candle_point_case(code)
+        buy_point = self.get_conform_ma20_squashed_section_point_case(code)
+        if not bool(buy_point):
+            buy_point = self.get_conform_doji_candle_point_case(code)
         if not bool(buy_point):
             buy_point = self.get_conform_box_pattern_escape_point_case(code)
         if not bool(buy_point):
@@ -445,6 +447,75 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                 break
         if break_point_flag is False:
             self.logging.logger.info("ma60 point check> [%s] >> %s / %s  " % (code, first_tic["일자"], break_point_flag))
+            return {}
+
+        return copy.deepcopy(first_tic)
+
+    def get_conform_ma20_squashed_section_point_case(self, code):
+        rows = self.analysis_etf_target_dict[code]["row"]
+
+        if len(rows) < 21:
+            return {}
+
+        analysis_rows = rows[:21]
+
+        first_tic = analysis_rows[0]
+        second_tic = analysis_rows[1]
+
+        empty_gap_list = [x for x in analysis_rows if x["ma20"] == '' or x["ma5"] == '' or x["ma60"] == '']
+        if len(empty_gap_list) > 0:
+            return {}
+
+        self.logging.logger.info("analysis_rows > [%s] >> %s " % (code, analysis_rows))
+        # 주가등락률 - 오늘 종가가 3프로 이하 => ( 어제 종가 - 오늘 종가) / 오늘 종가
+        # 기간내 주가변동폭 - 오늘 과거 5봉전부터 20봉간 10프로 이상
+        # => n 일간의 종가중 최고값과 최저값의 차를 종가 중 최저값에 대한 비율로 표시
+        # 정배열 - 과거 5일간 5, 20, 60 정배열
+        # 20선 지지 - 오늘 종가 20선과의 이격도 100% 이상 103%이하
+        # 5일선 - 오늘 종가 5일선 위
+        # 20일선 상승중
+        rate_of_fluctuation = (second_tic[self.customType.CURRENT_PRICE] - first_tic[self.customType.CURRENT_PRICE]) / first_tic[self.customType.CURRENT_PRICE] * 100
+        if rate_of_fluctuation <= 3.0:
+            pass
+        else:
+            self.logging.logger.info("rate_of_fluctuation check> [%s] >> %s / %s  " % (code, first_tic["일자"], rate_of_fluctuation))
+            return {}
+
+        compare_rows = analysis_rows[5:21]
+        max_close_price = max([item[self.customType.CURRENT_PRICE] for item in compare_rows])
+        min_close_price = min([item[self.customType.CURRENT_PRICE] for item in compare_rows])
+        n_period_rate_of_fluctuation = (max_close_price - min_close_price) / min_close_price * 100
+        if n_period_rate_of_fluctuation >= 10.0:
+            pass
+        else:
+            self.logging.logger.info("n_period_rate_of_fluctuation check> [%s] >> %s / %s  " % (code, first_tic["일자"], n_period_rate_of_fluctuation))
+            return {}
+
+        if first_tic["ma5"] > first_tic["ma20"] > first_tic["ma60"]:
+            pass
+        else:
+            self.logging.logger.info("is regular arrangement check> [%s] / %s" % (code, first_tic))
+            return {}
+
+        separation = math.trunc(first_tic[self.customType.CURRENT_PRICE] / first_tic["ma20"] * 100)
+
+        if 100 <= separation <= 103:
+            pass
+        else:
+            self.logging.logger.info("ma20_separation level check> [%s]  " % code)
+            return {}
+
+        if first_tic["ma5"] < first_tic[self.customType.CURRENT_PRICE]:
+            pass
+        else:
+            self.logging.logger.info("ma5_position check> [%s]  " % code)
+            return {}
+
+        compare_rows = analysis_rows[:4]
+        ma20_list = [item["ma20"] for item in compare_rows]
+        inverselist = ma20_list[::-1]
+        if not is_increase_trend(inverselist):
+            self.logging.logger.info("is_increase_trend check> [%s] >> %s / %s  " % (code, first_tic["일자"], inverselist))
             return {}
 
         return copy.deepcopy(first_tic)
