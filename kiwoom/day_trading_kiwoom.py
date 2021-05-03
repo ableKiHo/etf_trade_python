@@ -105,7 +105,7 @@ class DayTradingKiwoom(ParentKiwoom):
         QTest.qWait(5000)
 
         self.loop_analysis_buy_etf()
-        self.loop_default_analysis_buy_etf()
+        # self.loop_default_analysis_buy_etf()
         self.loop_system_off()
         self.loop_add_buy_hold_etf_stock()
         self.loop_goni_hold_etf_stock()
