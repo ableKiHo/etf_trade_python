@@ -130,7 +130,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("init_stock_values")
         # self.buy_invest_possible_deposit = self.d2_deposit - (self.max_buy_total_amount_by_index - self.total_inverse_amount)
         self.buy_invest_possible_deposit = self.d2_deposit
-        tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
+        tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit - 2500000
         self.logging.logger.info("buy_invest_possible_deposit:[%s]" % self.buy_invest_possible_deposit)
         self.logging.logger.info("d2_deposit:[%s]" % self.d2_deposit)
         # self.logging.logger.info("max_buy_total_amount_by_index:[%s]" % self.max_buy_total_amount_by_index)
