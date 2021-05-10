@@ -1043,7 +1043,7 @@ class DayTradingKiwoom(ParentKiwoom):
             else:
 
                 if current_price > buy_price and profit_rate >= 0.9:
-                    if 1.0 <= profit_rate < 1.5:
+                    if 1.0 <= profit_rate:
                         self.logging.logger.info("default stock full sell point check > [%s] >> %s / %s " % (sCode, current_price, profit_rate))
                         current_hold_stock["burn_sell_receipt"] = True
                         self.realtime_stop_loss_some_sell(sCode, 0.20)
