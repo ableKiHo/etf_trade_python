@@ -148,7 +148,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                         is_match_exclude = True
                         break
                 if is_match_exclude is False:
-                    if code not in self.target_etf_stock_dict:
+                    if code not in self.target_etf_stock_dict and code not in self.default_stock_list :
                         self.target_etf_stock_dict[code] = {}
 
         if sPrevNext == "2":  # 다음페이지 존재
