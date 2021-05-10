@@ -944,7 +944,7 @@ class DayTradingKiwoom(ParentKiwoom):
                                 current_hold_stock["full_sell_receipt"] = True
                                 self.realtime_stop_loss_limit_price_sell(sCode, half_sell_limit_price)
 
-                    if 2.5 < profit_rate < 7.0 and len(buy_after_rows) > 0 and today_tic["ma20"] > current_price:
+                    if 2.5 < profit_rate and len(buy_after_rows) > 0 and today_tic["ma20"] > current_price:
                         if current_hold_stock["half_sell"] is True and current_hold_stock["some_sell"] is True:
                             if start_price < current_price:
                                 return
