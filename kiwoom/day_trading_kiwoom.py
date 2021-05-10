@@ -37,13 +37,13 @@ class DayTradingKiwoom(ParentKiwoom):
         self.screen_opt10080_info = "4030"
         self.screen_sell_opt10081_info = "4040"
 
-        self.max_hold_stock_count = 7
+        self.max_hold_stock_count = 6
         self.spare_stock_count = 1
         self.max_buy_amount_by_stock = 0
         self.max_buy_total_amount = 0
         self.buy_invest_possible_deposit = 0
         self.spare_buy_total_amount = 0
-        self.half_sell_std_amount = 1000000
+        # self.half_sell_std_amount = 1000000
         # self.max_buy_total_amount_by_index = 1500000
         # self.max_buy_day_amount_by_index = 50000
         self.add_buy_max_amount_by_day = 0
