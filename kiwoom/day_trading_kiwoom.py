@@ -1423,7 +1423,7 @@ class DayTradingKiwoom(ParentKiwoom):
                         self.current_hold_etf_stock_dict[stock_code].update({"half_sell": eval(half_sell)})
                         self.current_hold_etf_stock_dict[stock_code].update({"some_sell": eval(some_sell)})
 
-                        if self.current_hold_etf_stock_dict[stock_code]["some_sell"] is False:
+                        if self.current_hold_etf_stock_dict[stock_code]["some_sell"] is False and stock_code not in self.default_stock_list:
                             self.current_hold_stock_count = self.current_hold_stock_count + 1
             f.close()
 
