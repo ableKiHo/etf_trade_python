@@ -42,18 +42,19 @@ class DayTradingKiwoom(ParentKiwoom):
         self.max_buy_total_amount = 0
         self.buy_invest_possible_deposit = 0
         self.spare_buy_total_amount = 0
-        self.std_max_buy_amount = 1300000
-        # self.half_sell_std_amount = 1000000
-        # self.max_buy_total_amount_by_index = 1500000
-        # self.max_buy_day_amount_by_index = 50000
+
         self.add_buy_max_amount_by_day = 0
-        self.max_invest_amount = 0
+
         self.total_invest_amount = 0
-        # self.total_inverse_amount = 0
+
         self.max_add_buy_amount_by_day = 0
         self.invest_add_buy_amount = 0
 
-        # self.buy_inverse_flag = False
+        self.max_invest_amount = 0
+        self.std_max_buy_amount = 1300000
+        self.std_max_buy_total_amount_by_stock = 2000000
+        self.spare_rate = 0.2
+        self.first_buy_rate = 0.70
 
         self.analysis_search_timer1 = QTimer()
         self.analysis_search_timer2 = QTimer()
@@ -126,25 +127,30 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("today_buy_stock_real_reg >> %s %s" % (code, screen_num))
         self.dynamicCall("SetRealReg(QString, QString, QString, QString)", screen_num, code, fids, "1")
 
+    def get_max_invest_amount(self):
+        self.buy_invest_possible_deposit = self.d2_deposit
+        if self.max_invest_amount > 0:
+            self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s]" % (self.max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount))
+        else:
+            tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
+            self.logging.logger.info("buy_invest_possible_deposit:[%s]" % self.buy_invest_possible_deposit)
+            self.logging.logger.info("d2_deposit:[%s]" % self.d2_deposit)
+            self.logging.logger.info("tmp_d2_max_invest_amount:[%s]" % tmp_d2_max_invest_amount)
+            self.logging.logger.info("total_invest_amount:[%s]" % self.total_invest_amount)
+            self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount))
+
+            self.max_invest_amount = tmp_d2_max_invest_amount
+
     def init_stock_values(self):
         self.logging.logger.info("init_stock_values")
         # self.buy_invest_possible_deposit = self.d2_deposit - (self.max_buy_total_amount_by_index - self.total_inverse_amount)
-        self.buy_invest_possible_deposit = self.d2_deposit
-        tmp_d2_max_invest_amount = self.total_invest_amount + self.buy_invest_possible_deposit
-        self.logging.logger.info("buy_invest_possible_deposit:[%s]" % self.buy_invest_possible_deposit)
-        self.logging.logger.info("d2_deposit:[%s]" % self.d2_deposit)
-        # self.logging.logger.info("max_buy_total_amount_by_index:[%s]" % self.max_buy_total_amount_by_index)
-        # self.logging.logger.info("total_inverse_amount:[%s]" % self.total_inverse_amount)
-        self.logging.logger.info("tmp_d2_max_invest_amount:[%s]" % tmp_d2_max_invest_amount)
-        self.logging.logger.info("total_invest_amount:[%s]" % self.total_invest_amount)
-        self.line.notification("d2 투자 총계 [%s] 예수금 [%s] 체결 [%s]" % (tmp_d2_max_invest_amount, self.buy_invest_possible_deposit, self.total_invest_amount))
+        self.get_max_invest_amount()
 
-        self.max_invest_amount = tmp_d2_max_invest_amount
-        self.spare_buy_total_amount = math.trunc(self.max_invest_amount * 0.20)
-        self.max_hold_stock_count = round((self.max_invest_amount - self.spare_buy_total_amount)/self.std_max_buy_amount)
+        self.spare_buy_total_amount = math.trunc(self.max_invest_amount * self.spare_rate)
+        self.max_hold_stock_count = round((self.max_invest_amount - self.spare_buy_total_amount) / self.std_max_buy_amount)
         self.max_buy_total_amount = math.trunc((self.max_invest_amount - self.spare_buy_total_amount) / self.max_hold_stock_count)
 
-        self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * 0.70)
+        self.max_buy_amount_by_stock = math.trunc(self.max_buy_total_amount * self.first_buy_rate)
         self.max_add_buy_amount_by_day = math.trunc(self.max_buy_total_amount * 0.50)
         self.add_buy_max_amount_by_day = math.trunc((self.max_buy_total_amount - self.max_buy_amount_by_stock) / 3)
 
@@ -187,6 +193,10 @@ class DayTradingKiwoom(ParentKiwoom):
         self.logging.logger.info("realtime_stop_loss_sell_point break >> %s" % code)
         self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
         # self.sell_receive_stock_code.append(code)
+
+    def realtime_stop_loss_some_sell_quantity(self, code, quantity):
+        self.logging.logger.info("realtime_stop_loss_some_sell_quantity break >> [%s] per:%s" % (code, quantity))
+        self.sell_send_order_favorable_limit_price(code, self.sell_screen_meme_stock, quantity)
 
     def realtime_stop_loss_some_sell(self, code, per):
         quantity = self.current_hold_etf_stock_dict[code][self.customType.HOLDING_QUANTITY]
@@ -341,7 +351,7 @@ class DayTradingKiwoom(ParentKiwoom):
             is_spare_add_buy_posible = True if (math.trunc(stock_info[self.customType.PURCHASE_AMOUNT] / self.max_buy_total_amount * 100)) >= 99 else False
             if is_spare_add_buy_posible is True and self.spare_buy_total_amount > self.add_buy_max_amount_by_day:
                 add_buy_point = self.get_conform_spare_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
-                if bool(add_buy_point) and stock_info[self.customType.PURCHASE_AMOUNT] < 1900000:
+                if bool(add_buy_point) and stock_info[self.customType.PURCHASE_AMOUNT] < self.std_max_buy_total_amount_by_stock:
                     self.logging.logger.info("spare_conform_add_stock_buy_case buy_point break >> %s" % code)
                     limit_purchase_amount = math.trunc(self.add_buy_max_amount_by_day / 2)
                     max_buy_count = math.trunc(limit_purchase_amount / add_buy_point[self.customType.CURRENT_PRICE])
@@ -414,27 +424,6 @@ class DayTradingKiwoom(ParentKiwoom):
         if len(self.sell_search_stock_code_list) == len(self.analysis_sell_etf_stock_list):
             self.logging.logger.info("daily_candle_add_buy_point_check end")
             self.hold_stock_check_timer.stop()
-
-    # def loop_default_analysis_buy_etf(self):
-    #     self.default_analysis_search_timer1 = default_q_timer_setting(60)
-    #     self.default_analysis_search_timer1.timeout.connect(self.loop_default_target_buy_etf_stock)
-
-    # def loop_default_target_buy_etf_stock(self):
-    #     self.default_analysis_search_timer1.start(1000 * 60)
-    #     if self.buy_inverse_flag is True:
-    #         return
-    #     currentDate = get_today_by_format('%Y%m%d%H%M%S')
-    #     if (self.today + '103500') <= currentDate <= (self.today + '103800'):
-    #         pass
-    #     elif (self.today + '113500') <= currentDate <= (self.today + '113800'):
-    #         pass
-    #     else:
-    #         return
-    #     self.logging.logger.info("default analysis target etf")
-    #     self.default_analysis_search_timer1.stop()
-    #
-    #     self.default_analysis_search_timer2 = default_q_timer_setting(5)
-    #     self.default_analysis_search_timer2.timeout.connect(self.default_stock_candle_analysis_check)
 
     def loop_analysis_buy_etf(self):
         self.analysis_search_timer1 = default_q_timer_setting(60)
@@ -591,69 +580,6 @@ class DayTradingKiwoom(ParentKiwoom):
             self.analysis_search_timer1.start(1000 * 300)
             return
 
-    # def default_stock_candle_analysis_check(self):
-    #
-    #     for code in self.default_stock_list:
-    #         self.get_opt10081_info_all(code)
-    #         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma3", 3)
-    #         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma5", 5)
-    #         create_moving_average_gap_line(code, self.target_etf_stock_dict, "row", self.customType.CURRENT_PRICE, "ma20", 20)
-    #
-    #         rows = self.target_etf_stock_dict[code]["row"]
-    #         buy_point = self.get_conform_default_stock_buy_case(code, rows)
-    #
-    #         if code not in self.current_hold_etf_stock_dict.keys():
-    #             total_chegual_price = 0
-    #         else:
-    #             total_chegual_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_AMOUNT]
-    #
-    #         if bool(buy_point):
-    #             limit_price = buy_point[self.customType.CURRENT_PRICE]
-    #             purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
-    #
-    #             profit_rate = round((limit_price - purchase_price) / purchase_price * 100, 2)
-    #
-    #             if self.max_buy_total_amount_by_index >= total_chegual_price + (self.max_buy_day_amount_by_index * 4):
-    #                 self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-    #
-    #                 if profit_rate < -5.0:
-    #                     max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
-    #
-    #                 else:
-    #                     max_buy_count = math.trunc((self.max_buy_day_amount_by_index * 2) / buy_point[self.customType.CURRENT_PRICE])
-    #
-    #                 limit_price = buy_point[self.customType.CURRENT_PRICE] + 50
-    #                 self.send_order_limit_stock_price(code, max_buy_count, limit_price)
-    #                 self.buy_inverse_flag = True
-    #
-    #                 max_buy_count = math.trunc(self.max_buy_day_amount_by_index / buy_point[self.customType.CURRENT_PRICE])
-    #                 buy_count = math.ceil(max_buy_count / 2) if max_buy_count >= 2 else max_buy_count
-    #                 min_limit_price = buy_point[self.customType.CURRENT_PRICE] - 20
-    #                 if buy_count >= 1:
-    #                     self.send_order_limit_stock_price(code, buy_count, min_limit_price)
-    #
-    #                 max_buy_count = max_buy_count - buy_count
-    #                 second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 10 if profit_rate > -3.0 else buy_point[self.customType.CURRENT_PRICE]
-    #                 if max_buy_count >= 1:
-    #                     self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
-    #                     self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
-    #
-    #         if self.weekend.isFriday:
-    #             buy_point = self.get_conform_default_stock_buy_min_case(code, rows)
-    #             if bool(buy_point):
-    #                 monday_limit_amount = math.trunc(self.max_buy_day_amount_by_index / 2)
-    #                 if self.max_buy_total_amount_by_index >= total_chegual_price + monday_limit_amount:
-    #                     self.logging.logger.info("default_stock_candle_analysis buy_point break >> %s" % code)
-    #                     max_buy_count = math.trunc(monday_limit_amount / buy_point[self.customType.CURRENT_PRICE])
-    #                     second_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
-    #                     if max_buy_count >= 1:
-    #                         self.send_order_limit_stock_price(code, max_buy_count, second_limit_price)
-    #                         self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
-    #                         self.buy_inverse_flag = True
-    #
-    #     self.default_analysis_search_timer2.stop()
-    #     self.default_analysis_search_timer1.start(1000 * 300)
-
     def get_conform_add_default_amount_buy_case(self, code, target_dict):
         rows = target_dict[code]["row"]
 
@@ -695,7 +621,6 @@ class DayTradingKiwoom(ParentKiwoom):
         start_price = today_tic[self.customType.START_PRICE]
         purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
         profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
-
 
         if profit_rate > -3.0:
             self.logging.logger.info("profit rate under minus three percent check> [%s] profit_rate:[%s]" % (code, profit_rate))
@@ -991,7 +916,10 @@ class DayTradingKiwoom(ParentKiwoom):
                         if 1.0 <= profit_rate and "burn_sell_receipt" not in current_hold_stock:
                             self.logging.logger.info("yesterday_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s" % (sCode, current_price, profit_rate))
                             current_hold_stock["burn_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.20)
+
+                            sell_quantity = round((total_chegual_price - self.max_buy_amount_by_stock) / current_price * 0.2)
+                            if sell_quantity > 0:
+                                self.realtime_stop_loss_some_sell_quantity(sCode, sell_quantity)
 
                 elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
@@ -1025,12 +953,14 @@ class DayTradingKiwoom(ParentKiwoom):
                         current_hold_stock["full_sell_receipt"] = True
                         self.realtime_stop_loss_sell(sCode)
 
-                    if is_add_buy_posible is False:
+                    if is_add_buy_posible is False or total_chegual_price > self.max_buy_amount_by_stock:
 
                         if 1.0 <= profit_rate < 3.0 and "burn_sell_receipt" not in current_hold_stock:
                             self.logging.logger.info("today_not is_add_buy_posible flase half sell point check > [%s] >> %s / %s / %s" % (sCode, current_price, profit_rate, highest_profit_rate))
                             current_hold_stock["burn_sell_receipt"] = True
-                            self.realtime_stop_loss_some_sell(sCode, 0.20)
+                            sell_quantity = round((total_chegual_price - self.max_buy_amount_by_stock) / current_price * 0.2)
+                            if sell_quantity > 0:
+                                self.realtime_stop_loss_some_sell_quantity(sCode, sell_quantity)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
@@ -1061,38 +991,13 @@ class DayTradingKiwoom(ParentKiwoom):
 
         self.logging.logger.info("conform_buy_case analysis_rows > [%s] >> %s " % (code, analysis_rows))
 
-        # if first_tic["ma3"] >= first_tic["ma5"]:
-        #     pass
-        # else:
-        #     self.logging.logger.info("is regular arrangement check> [%s] >> %s " % (code, first_tic["일자"]))
-        #     return {}
-
-        # for field in ma_field_list:
-        #     if first_tic[field] >= first_tic[self.customType.START_PRICE]:
-        #         self.logging.logger.info("first_tic START_PRICE check > [%s] >> %s " % (code, first_tic))
-        #         return {}
-
         if second_tic[self.customType.CURRENT_PRICE] > first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic current_price check > [%s] >> %s " % (code, first_tic))
             return {}
 
-        # if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE] and first_tic["ma5"] > first_tic[self.customType.CURRENT_PRICE]:
-        #     self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
-        #     return {}
-
         if first_tic[self.customType.START_PRICE] >= first_tic[self.customType.CURRENT_PRICE] and first_tic["ma3"] > first_tic[self.customType.CURRENT_PRICE]:
             self.logging.logger.info("first_tic white candle check > [%s] >> %s " % (code, first_tic))
             return {}
-
-        # ma5_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma5"]) / first_tic["ma5"] * 100
-        # if ma5_percent > 1.5:
-        #     self.logging.logger.info("ma5_percent check> [%s][%s]" % (code, ma5_percent))
-        #     return {}
-        #
-        # ma20_percent = (first_tic[self.customType.CURRENT_PRICE] - first_tic["ma20"]) / first_tic["ma20"] * 100
-        # if ma20_percent > 3.0:
-        #     self.logging.logger.info("ma20_percent check> [%s][%s]" % (code, ma20_percent))
-        #     return {}
 
         return copy.deepcopy(first_tic)
 
@@ -1255,14 +1160,6 @@ class DayTradingKiwoom(ParentKiwoom):
                 self.current_hold_etf_stock_dict[code].update({"half_sell": False})
                 self.current_hold_etf_stock_dict[code].update({"some_sell": False})
 
-                # self.line.notification(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
-                # self.logging.logger.info(self.logType.OWN_STOCK_LOG % self.current_hold_etf_stock_dict[code])
-
-                # if code not in self.default_stock_list:
-                #     # self.current_hold_stock_count = self.current_hold_stock_count + 1
-                #     self.total_invest_amount = self.total_invest_amount + total_chegual_price
-                # else:
-                #     self.total_inverse_amount = self.total_inverse_amount + total_chegual_price
                 self.total_invest_amount = self.total_invest_amount + total_chegual_price
 
         if sPrevNext == "2":
