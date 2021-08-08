@@ -341,7 +341,7 @@ class DayTradingKiwoom(ParentKiwoom):
             is_spare_add_buy_posible = True if (math.trunc(stock_info[self.customType.PURCHASE_AMOUNT] / self.max_buy_total_amount * 100)) >= 99 else False
             if is_spare_add_buy_posible is True and self.spare_buy_total_amount > self.add_buy_max_amount_by_day:
                 add_buy_point = self.get_conform_spare_add_stock_buy_case(code, self.current_hold_etf_stock_dict)
-                if bool(add_buy_point):
+                if bool(add_buy_point) and stock_info[self.customType.PURCHASE_AMOUNT] < 1900000:
                     self.logging.logger.info("spare_conform_add_stock_buy_case buy_point break >> %s" % code)
                     limit_purchase_amount = math.trunc(self.add_buy_max_amount_by_day / 2)
                     max_buy_count = math.trunc(limit_purchase_amount / add_buy_point[self.customType.CURRENT_PRICE])
@@ -694,11 +694,11 @@ class DayTradingKiwoom(ParentKiwoom):
         current_price = today_tic[self.customType.CURRENT_PRICE]
         start_price = today_tic[self.customType.START_PRICE]
         purchase_price = self.current_hold_etf_stock_dict[code][self.customType.PURCHASE_PRICE]
-
         profit_rate = round((current_price - purchase_price) / purchase_price * 100, 2)
 
-        if profit_rate > -5.0:
-            self.logging.logger.info("profit rate under minus five percent check> [%s] profit_rate:[%s]" % (code, profit_rate))
+
+        if profit_rate > -3.0:
+            self.logging.logger.info("profit rate under minus three percent check> [%s] profit_rate:[%s]" % (code, profit_rate))
             return {}
 
         if start_price > current_price and yesterday_tic[self.customType.CURRENT_PRICE] > current_price:
