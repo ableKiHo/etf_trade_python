@@ -920,6 +920,12 @@ class DayTradingKiwoom(ParentKiwoom):
                             sell_quantity = round((total_chegual_price - self.max_buy_amount_by_stock) / current_price * 0.2)
                             if sell_quantity > 0:
                                 self.realtime_stop_loss_some_sell_quantity(sCode, sell_quantity)
+                            else:
+                                sell_quantity = round((total_chegual_price - self.max_buy_amount_by_stock) / current_price)
+                                if sell_quantity > 0:
+                                    self.realtime_stop_loss_some_sell_quantity(sCode, sell_quantity)
+                                else:
+                                    self.realtime_stop_loss_some_sell_quantity(sCode, 1)
 
                 elif yesterday_tic[self.customType.CURRENT_PRICE] <= current_price:
 
@@ -961,6 +967,12 @@ class DayTradingKiwoom(ParentKiwoom):
                             sell_quantity = round((total_chegual_price - self.max_buy_amount_by_stock) / current_price * 0.2)
                             if sell_quantity > 0:
                                 self.realtime_stop_loss_some_sell_quantity(sCode, sell_quantity)
+                            else:
+                                sell_quantity = round((total_chegual_price - self.max_buy_amount_by_stock) / current_price)
+                                if sell_quantity > 0:
+                                    self.realtime_stop_loss_some_sell_quantity(sCode, sell_quantity)
+                                else:
+                                    self.realtime_stop_loss_some_sell_quantity(sCode, 1)
 
     def get_opt10081_info(self, code):
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.STOCK_CODE, code)
