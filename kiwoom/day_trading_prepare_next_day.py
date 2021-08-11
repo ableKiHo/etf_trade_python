@@ -74,7 +74,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("remove %s" % self.target_etf_file_path)
 
     def get_all_etf_stock(self, sPrevNext="0"):
-        self.logging.logger.info("get_all_etf_stock")
+        self.logging.logger.info("get_all_etf_stock %s", sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
@@ -151,6 +151,7 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                     if code not in self.target_etf_stock_dict and code not in self.default_stock_list :
                         self.target_etf_stock_dict[code] = {}
 
+        self.logging.logger.info("trdata_slot_opt40004 sPrevNext %s", sPrevNext)
         if sPrevNext == "2":  # 다음페이지 존재
             self.get_all_etf_stock(sPrevNext="2")
         else:
