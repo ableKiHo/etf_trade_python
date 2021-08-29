@@ -495,21 +495,21 @@ class DayTradingKiwoom(ParentKiwoom):
                                 limit_price = std_limit_price - 5
                                 self.send_order_limit_stock_price(code, half_quantity - std_quantity, limit_price)
 
-                            max_quantity = math.trunc((half_buy_amount / std_limit_price))
-                            min_one_quantity = math.trunc(max_quantity / 3)
-
-                            if min_one_quantity >= 1:
-                                self.logging.logger.info("conform_buy_case buy_point(- 25) break >> %s" % code)
-                                limit_price = std_limit_price - 20
-                                self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
-
-                                self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
-                                limit_price = std_limit_price - 10
-                                self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
-
-                                self.logging.logger.info("conform_buy_case buy_point(- 40) break >> %s" % code)
-                                limit_price = std_limit_price - 40
-                                self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                            # max_quantity = math.trunc((half_buy_amount / std_limit_price))
+                            # min_one_quantity = math.trunc(max_quantity / 3)
+                            #
+                            # if min_one_quantity >= 1:
+                            #     self.logging.logger.info("conform_buy_case buy_point(- 25) break >> %s" % code)
+                            #     limit_price = std_limit_price - 20
+                            #     self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                            #
+                            #     self.logging.logger.info("conform_buy_case buy_point(- 15) break >> %s" % code)
+                            #     limit_price = std_limit_price - 10
+                            #     self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
+                            #
+                            #     self.logging.logger.info("conform_buy_case buy_point(- 40) break >> %s" % code)
+                            #     limit_price = std_limit_price - 40
+                            #     self.send_order_limit_stock_price(code, min_one_quantity, limit_price)
 
                             self.today_order_etf_stock_list.append(code)
                             self.current_hold_stock_count = self.current_hold_stock_count + 1
@@ -519,45 +519,8 @@ class DayTradingKiwoom(ParentKiwoom):
                 if bool(buy_point):
                     stock_info = self.current_hold_etf_stock_dict[code]
                     purchase_price = stock_info[self.customType.PURCHASE_PRICE]
-                    is_spare_add_buy_posible = True if (math.trunc(stock_info[self.customType.PURCHASE_AMOUNT] / self.max_buy_total_amount * 100)) >= 99 else False
-                    if is_spare_add_buy_posible is True and self.spare_buy_total_amount > self.add_buy_max_amount_by_day:
-                        profit_rate = round((buy_point[self.customType.CURRENT_PRICE] - purchase_price) / purchase_price * 100, 2)
-                        if purchase_price + 10 > buy_point[self.customType.CURRENT_PRICE]:
-                            if profit_rate <= -5.0:
-                                self.logging.logger.info("spare_conform_hold_add_stock_buy_case buy_point break >> %s" % code)
-                                limit_purchase_amount = math.trunc(self.add_buy_max_amount_by_day / 2)
-                                max_buy_count = math.trunc(limit_purchase_amount / buy_point[self.customType.CURRENT_PRICE])
-                                if max_buy_count == 0:
-                                    max_buy_count = 1
-                                    limit_purchase_amount = buy_point[self.customType.CURRENT_PRICE]
-
-                                self.spare_buy_total_amount = self.spare_buy_total_amount - limit_purchase_amount
-
-                                first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
-                                second_limit_price = buy_point[self.customType.CURRENT_PRICE]
-                                third_limit_price = buy_point[self.customType.CURRENT_PRICE] + 5
-
-                                if max_buy_count >= 3:
-                                    buy_count = math.trunc(max_buy_count / 3)
-                                    self.send_order_limit_stock_price(code, buy_count, second_limit_price)
-                                    self.send_order_limit_stock_price(code, buy_count, first_limit_price)
-                                    self.send_order_limit_stock_price(code, buy_count, third_limit_price)
-                                    self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
-                                elif max_buy_count >= 2:
-                                    buy_count = math.trunc(max_buy_count / 2)
-                                    self.send_order_limit_stock_price(code, buy_count, first_limit_price)
-                                    self.send_order_limit_stock_price(code, buy_count, third_limit_price)
-                                    self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
-                                elif max_buy_count > 0:
-                                    self.send_order_limit_stock_price(code, max_buy_count, first_limit_price)
-                                    self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
-
-                    else:
-                        if stock_info[self.customType.PURCHASE_AMOUNT] < self.max_buy_amount_by_stock:
-                            limit_purchase_amount = self.max_buy_amount_by_stock - stock_info[self.customType.PURCHASE_AMOUNT]
-                        else:
-                            limit_purchase_amount = 0
-
+                    if stock_info[self.customType.PURCHASE_AMOUNT] < self.max_buy_amount_by_stock:
+                        limit_purchase_amount = math.trunc((self.max_buy_amount_by_stock - stock_info[self.customType.PURCHASE_AMOUNT])/2)
                         if limit_purchase_amount > 0 and purchase_price + 10 > buy_point[self.customType.CURRENT_PRICE]:
 
                             limit_price = buy_point[self.customType.CURRENT_PRICE] - 10
@@ -573,6 +536,44 @@ class DayTradingKiwoom(ParentKiwoom):
                                 self.send_order_limit_stock_price(code, (max_quantity - quantity), limit_price)
 
                                 self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+                            else:
+                                quantity = 1
+                                self.logging.logger.info("current_hold_etf_stock_dict conform_buy_case buy_point(- 10) break >> %s" % code)
+                                self.today_order_etf_stock_list.append(code)
+                                self.send_order_limit_stock_price(code, quantity, limit_price)
+                    else:
+                        is_spare_add_buy_posible = True if (math.trunc(stock_info[self.customType.PURCHASE_AMOUNT] / self.max_buy_total_amount * 100)) >= 99 else False
+                        if is_spare_add_buy_posible is True and self.spare_buy_total_amount > self.add_buy_max_amount_by_day:
+                            profit_rate = round((buy_point[self.customType.CURRENT_PRICE] - purchase_price) / purchase_price * 100, 2)
+                            if purchase_price + 10 > buy_point[self.customType.CURRENT_PRICE]:
+                                if profit_rate <= -5.0:
+                                    self.logging.logger.info("spare_conform_hold_add_stock_buy_case buy_point break >> %s" % code)
+                                    limit_purchase_amount = math.trunc(self.add_buy_max_amount_by_day / 2)
+                                    max_buy_count = math.trunc(limit_purchase_amount / buy_point[self.customType.CURRENT_PRICE])
+                                    if max_buy_count == 0:
+                                        max_buy_count = 1
+                                        limit_purchase_amount = buy_point[self.customType.CURRENT_PRICE]
+
+                                    self.spare_buy_total_amount = self.spare_buy_total_amount - limit_purchase_amount
+
+                                    first_limit_price = buy_point[self.customType.CURRENT_PRICE] - 5
+                                    second_limit_price = buy_point[self.customType.CURRENT_PRICE]
+                                    third_limit_price = buy_point[self.customType.CURRENT_PRICE] + 5
+
+                                    if max_buy_count >= 3:
+                                        buy_count = math.trunc(max_buy_count / 3)
+                                        self.send_order_limit_stock_price(code, buy_count, second_limit_price)
+                                        self.send_order_limit_stock_price(code, buy_count, first_limit_price)
+                                        self.send_order_limit_stock_price(code, buy_count, third_limit_price)
+                                        self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+                                    elif max_buy_count >= 2:
+                                        buy_count = math.trunc(max_buy_count / 2)
+                                        self.send_order_limit_stock_price(code, buy_count, first_limit_price)
+                                        self.send_order_limit_stock_price(code, buy_count, third_limit_price)
+                                        self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
+                                    elif max_buy_count > 0:
+                                        self.send_order_limit_stock_price(code, max_buy_count, first_limit_price)
+                                        self.line.notification(self.logType.ORDER_BUY_SUCCESS_SIMPLE_LOG % code)
 
         if len(self.search_stock_code) == len(self.analysis_goal_etf_stock_list):
             self.logging.logger.info("other_target_candle_analysis_check end")
@@ -1031,7 +1032,7 @@ class DayTradingKiwoom(ParentKiwoom):
         self.OnReceiveChejanData.connect(self.new_chejan_slot)
 
     def detail_account_info(self, sPrevNext="0"):
-        self.logging.logger.info("detail_account_info")
+        self.logging.logger.info("detail_account_info sPrevNext[%s]" % sPrevNext)
         QTest.qWait(5000)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.ACCOUNT_NUMBER, self.account_num)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.PASSWORD, self.account_pw)
@@ -1042,7 +1043,8 @@ class DayTradingKiwoom(ParentKiwoom):
         self.detail_account_info_event_loop.exec_()
 
     def detail_account_mystock(self, sPrevNext="0"):
-        self.logging.logger.info("detail_account_mystock")
+
+        self.logging.logger.info("detail_account_mystock sPrevNext[%s]" % sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.ACCOUNT_NUMBER, self.account_num)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.PASSWORD, self.account_pw)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.CLASSIFICATION_OF_PASSWORD_INPUT_MEDIA, "00")
@@ -1181,6 +1183,7 @@ class DayTradingKiwoom(ParentKiwoom):
             self.detail_account_mystock_info_event_loop.exit()
 
     def trdata_slot_opw00001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        self.logging.logger.info("trdata_slot_opw00001")
         deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.DEPOSIT)
         self.deposit = int(deposit)
         buy_possible_deposit = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, self.customType.AVAILABLE_AMOUNT)
@@ -1193,6 +1196,7 @@ class DayTradingKiwoom(ParentKiwoom):
         # self.line.notification(self.logType.BUY_POSSIBLE_DEPOSIT_LOG % self.buy_possible_deposit)
 
         self.stop_screen_cancel(self.screen_my_info)
+        self.logging.logger.info("stop_screen_cancel self.screen_my_info")
         self.detail_account_info_event_loop.exit()
 
     def trdata_slot_opt10001(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
