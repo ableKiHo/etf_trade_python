@@ -74,15 +74,18 @@ class DayTradingPrepareNextDay(ParentKiwoom):
             self.logging.logger.info("remove %s" % self.target_etf_file_path)
 
     def get_all_etf_stock(self, sPrevNext="0"):
-        self.logging.logger.info("get_all_etf_stock %s", sPrevNext)
+        QTest.qWait(5000)
+        self.logging.logger.info("get_all_etf_stock1 %s", sPrevNext)
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.TAXATION_TYPE, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.COMPARED_TO_NAV, "0")
         self.dynamicCall("SetInputValue(QString, QString)", self.customType.MANAGER, "0000")
         self.dynamicCall("CommRqData(QString, QString, int, QString)", self.customType.OPT40004, "opt40004", sPrevNext, self.screen_all_etf_stock)
-
-        self.all_etc_info_event_loop.exec_()
+        self.logging.logger.info("get_all_etf_stock2 %s", sPrevNext)
+        if sPrevNext == "0":
+            self.all_etc_info_event_loop.exec_()
 
     def trdata_slot(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        self.logging.logger.info("trdata_slot %s %s %s %s %s", sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         if sRQName == self.customType.OPT40004:
             self.trdata_slot_opt40004(sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         elif sRQName == self.customType.OPT10001:
@@ -123,7 +126,9 @@ class DayTradingPrepareNextDay(ParentKiwoom):
         self.tr_opt10080_info_event_loop.exit()
 
     def trdata_slot_opt40004(self, sScrNo, sRQName, sTrCode, sRecordName, sPrevNext):
+        self.logging.logger.info("trdata_slot_opt40004 %s %s %s %s %s", sScrNo, sRQName, sTrCode, sRecordName, sPrevNext)
         rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+        self.logging.logger.info("trdata_slot_opt40004 len(rows) > %s ", rows)
         for i in range(rows):
             is_match_exclude = False
             volume = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, self.customType.VOLUME)
@@ -151,10 +156,12 @@ class DayTradingPrepareNextDay(ParentKiwoom):
                     if code not in self.target_etf_stock_dict and code not in self.default_stock_list :
                         self.target_etf_stock_dict[code] = {}
 
-        self.logging.logger.info("trdata_slot_opt40004 sPrevNext %s", sPrevNext)
+
         if sPrevNext == "2":  # 다음페이지 존재
+            self.logging.logger.info("trdata_slot_opt40004 sPrevNext %s", sPrevNext)
             self.get_all_etf_stock(sPrevNext="2")
         else:
+            self.logging.logger.info("trdata_slot_opt40004 stop_screen_cancel %s", sPrevNext)
             self.stop_screen_cancel(self.screen_all_etf_stock)
             self.all_etc_info_event_loop.exit()
 
